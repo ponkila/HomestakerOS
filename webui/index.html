@@ -1,0 +1,143 @@
+<html>
+
+<head>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪄</text></svg>">
+
+    <link rel="stylesheet" href="main.css">
+
+</head>
+
+<body>
+
+
+    <h1>🪄 Homestaker OS</h1>
+
+    <p><strong>ETH Denver 2023</strong></p>
+
+    <ol>
+        <li>Configure your OS</li>
+        <li>Click on #BUIDL</li>
+        <li>A download will start for your initrd and kernel</li>
+        <li>Execute the <a href="https://en.wikipedia.org/wiki/Kexec">kexec</a> script to boot</li>
+    </ol>
+
+
+    <form onsubmit="f(event); return false">
+
+        <fieldset>
+
+            <legend>Configuration</legend>
+
+            <div>
+                <input type="range" id="count" name="count" min="1" max="10">
+                <label for="count">Number of nodes
+                    <output id="value"></output>
+                </label>
+            </div>
+
+            <fieldset>
+
+                <legend>Networking</legend>
+
+                <input type="text" placeholder="Hostname base" />
+
+                <select>
+                    <option>Tailscale</option>
+                    <option>Wireguard</option>
+                </select>
+
+                <input type="text" placeholder="ssh public key" />
+
+            </fieldset>
+
+            <fieldset>
+
+                <legend>Disks</legend>
+
+                <input type="text" placeholder="what" />
+                <input type="text" placeholder="where" />
+                <input type="text" placeholder="options" />
+                <input type="text" placeholder="type" />
+
+            </fieldset>
+
+
+            <fieldset>
+
+                <legend>Execution Layer</legend>
+
+                <select name="el">
+                    <option>erigon</option>
+                </select>
+
+                <select name="el">
+                    <option>v2.39.0</option>
+                </select>
+
+            </fieldset>
+
+            <fieldset>
+
+                <legend>Consensus Layer</legend>
+
+                <select name="cl">
+                    <option>lighthouse</option>
+                </select>
+
+
+            </fieldset>
+
+            <fieldset>
+
+                <legend>Linux kernel</legend>
+
+                <div>
+                    <input type="checkbox" name="lto" checked>
+                    <label for="lto">LTO</label>
+                </div>
+
+            </fieldset>
+
+            <fieldset>
+
+                <legend>Addons</legend>
+
+                <div>
+                    <input type="checkbox" name="mev" checked>
+                    <label for="mev">MEV Boost</label>
+                </div>
+
+            </fieldset>
+
+
+
+        </fieldset>
+
+        <button type="submit">#BUIDL</button>
+
+    </form>
+
+</body>
+<script>
+    const value = document.querySelector("#value")
+    const input = document.querySelector("#count")
+    value.textContent = input.value
+    input.addEventListener("input", (event) => {
+        value.textContent = event.target.value
+    })
+
+    const f = async (e) => {
+
+        const form = new FormData(e.target)
+
+        console.log(form)
+
+        for (const p of form) {
+            console.log(p)
+        };
+
+    }
+</script>
+
+</html>

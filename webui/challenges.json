@@ -1,0 +1,127 @@
+{
+    "projectId": "71fd92a1-2a7e-459e-9b1f-b52b07e9c4fd",
+    "hackathonId": "7188260a-2241-4b6f-b8ab-f71842dbe944",
+    "name": "Validator OS",
+    "slug": "validator-os",
+    "description": "A web UI which creates custom Linux OS for Ethereum staking",
+    "longDescription": null,
+    "logoUrl": null,
+    "bannerUrl": null,
+    "workUrl": null,
+    "demoUrl": null,
+    "videoUrl": null,
+    "lookingForMembers": false,
+    "members": [{
+        "memberId": "fa8a2b9d-203e-4527-b126-b8e16b37e98d",
+        "userId": "38b6bd98-5831-45b5-a951-dd366cbe4551",
+        "email": "juuso@mail.com",
+        "avatarUrl": null,
+        "inviteStatus": "accepted"
+    }],
+    "challenges": [{
+            "challengeId": "c8d0f2c2-b127-48eb-b413-4ce8863fd1d9",
+            "trackId": "ddeb1c34-4925-443e-8795-86116f09d377",
+            "name": "#BUIDLathon 2023 Infrastructure + Scalability",
+            "description": "<p><strong>L1, L2, side chains, zk rollups, POA networks, dev tools, wallets, on-chain privacy, etc.</strong></p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "ec699990-1f1e-417a-a4c3-08d4ce44255c",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Best Use of Ethereum Archive Data",
+            "description": "<p>Infura provides free Ethereum archive data up to 25k requests/day.</p><ul><li><p>Archive data gives you access to Ethereum data older than 128 blocks granting developers access to historical data all the way back to the genesis block</p></li><li><p>Historical data opens up the opportunity for developers to build all sorts of applications including back-testing trading algorithms, business intelligence and analytics, auditing and audit trails. Archive data also allows you to fork a blockchain at a specific point in time for testing smart contract deployment.</p></li></ul><p></p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "7b25cd41-604a-4b50-8d3d-843ef296ce5a",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Integrate Tenderly Web3 Gateway",
+            "description": "<p>Web3 Gateway is a production-ready node supporting standard JSON RPC and provides RPC endpoints. Build a dapp that integrates Tenderly Gateway to access Mainnet or supported test networks.</p><p></p><p>3 best projects win 1000$ each in USDC!</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "5c5f32ee-37dd-472b-bb91-6ebf2cf135d1",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Build on Pocket Network",
+            "description": "<p>This task is designed to incentivize using decentralized architecture in your projects. Pocket Network provides the only reliable and decentralized RPC network in the world governed by a DAO with the most contributor-friendly ecosystem. Pocket offers free connections to dozens of chains, from Ethereum and Polygon to Fantom and FUSE.</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "ac09f022-338d-4858-bcbe-4bdd5c2a379d",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Use Orchid's Layer 2 protocol in an MVP",
+            "description": "<p>Use Orchid's layer 2 nanopayment system on any of the 9 supported blockchains in your project. Nanopayments allow for a tiny stream of probabilistic payments to flow from the sender to the receiver.</p><p></p><p>We have a JavaScript API that can be used to construct, send and claim the \"lottery tickets'' that serve as the individual payments in the nanopayment system. We also have a dApp that’s used to create your Orchid account, which is a requirement for sending a nanopayment.</p><p></p><p>The general flow is that a user or developer moves funds into the L2 using the Orchid account management dapp, then uses that Orchid account to send nanopayments as a payment for service. The JavaScript API will help users construct and send those nanopayments, and the recipient will accept the payment and use the API to claim the funds.</p><p></p><p>Example projects:</p><p>-A “per-API request”-billing for a web service allowing users to pay tiny amounts per API request</p><p>-A “per image” billing interface for an AI artwork generator -A VPN (we already made one though!)</p><p>-A decentralized network requiring tiny payments for resources</p><p></p><p>Note: Read the readme doc in the Github repo for links to our nanopayment API written in Javascript and Python.</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "b269b089-c028-4d39-8d5d-c159af89ab09",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "OpenZeppelin Defender Integration",
+            "description": "<p>Integrate OpenZeppelin Defender into your ETHDenver project using at least one platform feature that is highlighted in your project presentation. Defender platform features include Admin for contract management, Autotasks for automation, Relayers for transaction delivery and Sentinels for monitoring and alerts. You can get started using a variety of pre-built Defender serverless templates for each track category or build your own from scratch.</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "dde2b71a-3987-4427-a96f-3eb990b35c78",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Use fRPC to connect your dApp to Blockchain",
+            "description": "<p>Number of Bounties: 5</p><p></p><p>Use the Fluence decentralized RPC ( fRPC) starter code in your dAPP instead of connecting to one centralized RPC SaaS. Criteria Submit your repo, a dockerized demo of your dAPP and a 60 to 90 second video how fRPC has helped your dAPP stay decentralized.</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "4a0d6b63-cc2c-446c-bf4a-505cf830e5d0",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Improve fRPC Substrate",
+            "description": "<p>Number of Bounties: 3</p><p></p><p>Improve the fRPC Starter substrate to make it more general, robust or performant. Improvements which may include * expanding the available set of blockchain API providers, i.e., Infura, Alchemy, and Link * creating an fRPC \"\"balancer\"\" for real-time blockchain API provider selection according to discriminators such as geolocation, reputation or availability * adding additional RPC methods to accommodate specific or custom EVM implementations * supporting different API key submissions mechanisms such as a string in the request header.</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "bdc7ceab-173f-422d-84cc-0a0d773297af",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Open Challenge - Resources & Tooling for the SSV Ecosystem",
+            "description": "<p>Develop any resources or open-source tooling that help developers building on SSV or benefits the entire SSV ecosystem.</p><p></p><p><strong>Out of eligible submissions, 3 winners will be rewarded. </strong></p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        },
+        {
+            "challengeId": "0e8446ac-c3ba-4ed4-80d0-1a22594c479a",
+            "trackId": "5bec93fc-a03d-4dea-a580-f53a92c54257",
+            "name": "Dynamic On-chain dWeb Applications Using web3:// Access Protocol",
+            "description": "<p>Current decentralized websites (dWebs) mainly use IPFS/AR to store static content with additional trust and limited capabilities. This bounty will encourage developers to create dynamic dWebs on smart contracts including dynamic NFTs, static websites, or powerful dynamic websites with multiple user interactions.&nbsp; We further encourage developers to use web3:// (defined in ERC-4804) to access these static/dynamic websites in a verifiable and minimum-trust way.<br><br>A couple of existing examples can be found at web3url.io, including<br>- Rendering mainnet NFTs<br>- Vitalik's blog on Arbitrum Nova<br>- Decentralized web2 applications (dropbox, blogger, etc) on EthStorage testnet</p><p></p><p>5 Projects can win 1000$ in USDC each</p>",
+            "logoUrl": null,
+            "reason": null,
+            "isEvaluated": false,
+            "isEvaluatedByCurrentUser": false
+        }
+    ],
+    "socialData": [],
+    "createdByUserId": "38b6bd98-5831-45b5-a951-dd366cbe4551",
+    "projectStatus": "created",
+    "submissionDate": null,
+    "averageScores": []
+}
