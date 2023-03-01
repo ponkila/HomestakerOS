@@ -1,0 +1,3 @@
+[submodule "nixobolus"]
+	path = nixobolus
+	url = https://github.com/ponkila/nixobolus
