@@ -11,13 +11,41 @@ app.use(express.urlencoded({
 }))
 
 app.post('/', (req, res) => {
-    console.log(req)
     console.log(req.body)
 
     let config = {};
+    let host = {
+        services: {
+            ethereum: {
+                clients: {},
+            },
+        },
+    };
 
-    let host = {};
     host.name = req.body.hostname;
+    host.user = "core"
+    host.shell = "bash"
+    host.timezone = "Europe/Helsinki"
+
+    let home_manager = {}
+    home_manager.enable = true
+    home_manager.version = "23.05"
+    home_manager.programs = ["vim", "git"]
+    host.home_manager = home_manager
+
+    let openssh = {}
+    openssh.enable = true
+    openssh.permit_root_login = false
+    openssh.password_auth = false
+    openssh.public_keys = [req.body.ssh]
+    host.services.ssh = openssh
+
+    let erigon = {};
+    erigon.enable = true
+    erigon.data_dir = ""
+    erigon.infra_ip = ""
+    erigon.authrpc_hosts = []
+    erigon.authrpc_addr = ""
 
     config.hosts = [host];
 
