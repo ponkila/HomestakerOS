@@ -49,16 +49,15 @@ app.post('/', (req, res) => {
 
     config.hosts = [host];
 
-    exec('./nixobolus/echo.sh', (error, stdout, stderr) => {
+    exec("echo '" + JSON.stringify(config) + "' | ./nixobolus/build.sh -o webui/test", (error, stdout, stderr) => {
         if (error) {
             console.error(`exec error: ${error}`);
             return;
         }
         console.log(`stdout: ${stdout}`);
         console.error(`stderr: ${stderr}`);
+	res.send('<a href="/test/' + host.name + '/initrd">initrd</a> </br> <a href="test/' + host.name + '/bzImage">bzImage</a> </br> <a href="test/' + host.name + '/kexec-boot">kexec-boot</a>' );
     });
-
-    res.json(config);
 })
 
 app.use(express.static('webui'))
