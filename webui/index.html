@@ -1,4 +1,5 @@
-<html>
+<!doctype html>
+<html lang="en">
 
 <head>
 
@@ -7,6 +8,8 @@
     <meta name="description" content="HomestakerOS is a software wizard 🪄 which guides users through an optimal configuration of Ethereum staking nodes using a Web UI. The wizard 🪄 covers both execution & consensus layer nodes, and nodes to run validator clients.">
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪄</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-fork-ribbon-css/0.2.3/gh-fork-ribbon.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -14,19 +17,62 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             justify-content: space-around;
             display: grid;
-            max-width: 60em;
+            max-width: 40em;
             margin: auto;
         }
+
+        .github-fork-ribbon:before {
+            background-color: #333;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .embeddable-buttondown-form {
+            display: flex;
+            flex-direction: column;
+            align-self: center;
+        }
+
+        hr {
+            width: 100%;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+        }
+
+        header>div {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label[for=bd-email] {}
     </style>
 
 </head>
 
 <body>
 
+    <header>
+        <div>
+            <h1>🪄 Homestaker OS</h1>
+            <form action="https://buttondown.email/api/emails/embed-subscribe/ponkila" method="post" target="popupwindow" onsubmit="window.open('https://buttondown.email/ponkila', 'popupwindow')" class="embeddable-buttondown-form">
+                <label for="bd-email">Newsletter sign-up</label>
+                <div>
+                    <input type="email" name="email" id="bd-email" placeholder="home@staker.com" />
+                    <input type="submit" value="Subscribe" />
+                </div>
+            </form>
+        </div>
 
-    <h1>🪄 Homestaker OS</h1>
+        <span>HomestakerOS is a web UI which creates custom Linux OS for Ethereum homestaking.</span>
+    </header>
 
-    <sub>A web UI which creates custom Linux OS for Ethereum staking</sub>
+    <hr \>
 
     <ol>
         <li>Configure your OS</li>
@@ -43,7 +89,7 @@
             <legend>Configuration</legend>
 
             <div>
-                <input type="range" id="count" value="1" name="count" min="1" max="10">
+                <input disabled type="range" id="count" value="1" name="count" min="1" max="10">
                 <label for="count">Number of nodes
                     <output id="value"></output>
                 </label>
@@ -102,17 +148,6 @@
 
             <fieldset>
 
-                <legend>Linux kernel</legend>
-
-                <div>
-                    <input type="checkbox" name="lto" checked>
-                    <label for="lto">LTO</label>
-                </div>
-
-            </fieldset>
-
-            <fieldset>
-
                 <legend>Addons</legend>
 
                 <div>
@@ -122,12 +157,16 @@
 
             </fieldset>
 
+
+            <button class="pure-button pure-button-primary" type="submit" disabled>#BUIDL</button>
+            <p>Building your OS is disabled for now, but you may sign-up to the newsletter to hear when it becomes available.</p>
+
         </fieldset>
 
-        <button type="submit">#BUIDL</button>
 
     </form>
 
+    <a class="github-fork-ribbon" href="https://github.com/ponkila/HomestakerOS" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
 </body>
 <script>
     const value = document.querySelector("#value")
