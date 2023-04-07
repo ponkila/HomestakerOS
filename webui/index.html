@@ -38,6 +38,7 @@
 
         hr {
             width: 100%;
+            border: 1px solid #fafafa;
         }
 
         header {
@@ -50,7 +51,33 @@
             justify-content: space-between;
         }
 
-        label[for=bd-email] {}
+        footer {
+            text-transform: uppercase;
+            font-size: small;
+            color: #ccc;
+        }
+
+        footer a {
+            color: inherit;
+        }
+
+        legend {
+            text-transform: uppercase;
+            font-size: small;
+        }
+
+        .disabled {
+            opacity: .5;
+        }
+
+        .disabled legend {
+            text-decoration: line-through;
+        }
+
+        main form>fieldset {
+            display: grid;
+            row-gap: .5em;
+        }
     </style>
 
 </head>
@@ -59,7 +86,7 @@
 
     <header>
         <div>
-            <h1>🪄 Homestaker OS</h1>
+            <h1>🪄 HomestakerOS</h1>
             <form action="https://buttondown.email/api/emails/embed-subscribe/ponkila" method="post" target="popupwindow" onsubmit="window.open('https://buttondown.email/ponkila', 'popupwindow')" class="embeddable-buttondown-form">
                 <label for="bd-email">Newsletter sign-up</label>
                 <div>
@@ -81,92 +108,102 @@
         <li>Execute the <a href="https://en.wikipedia.org/wiki/Kexec">kexec</a> script to boot</li>
     </ol>
 
-
-    <form method="post">
-
-        <fieldset>
-
-            <legend>Configuration</legend>
-
-            <div>
-                <input disabled type="range" id="count" value="1" name="count" min="1" max="10">
-                <label for="count">Number of nodes
-                    <output id="value"></output>
-                </label>
-            </div>
+    <main>
+        <form method="post">
 
             <fieldset>
 
-                <legend>Networking</legend>
+                <legend>Configuration</legend>
 
-                <input type="text" name="hostname" placeholder="Hostname base" />
+                <fieldset class="disabled">
 
-                <select name="networking">
-                    <option>Wireguard</option>
-                </select>
+                    <legend>Node count</legend>
 
-                <input type="text" name="ssh" placeholder="ssh public key" />
+                    <div>
+                        <input disabled type="range" id="count" value="1" name="count" min="1" max="10">
+                        <output id="value"></output>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+
+                    <legend>Networking</legend>
+
+                    <input type="text" name="hostname" placeholder="Hostname base" />
+
+                    <select name="networking">
+                        <option>Wireguard</option>
+                    </select>
+
+                    <input type="text" name="ssh" placeholder="ssh public key" />
+
+                </fieldset>
+
+                <fieldset>
+
+                    <legend>Disks</legend>
+
+                    <input type="text" name="what" placeholder="what" />
+                    <input type="text" name="where" placeholder="where" />
+                    <input type="text" name="options" placeholder="options" />
+                    <input type="text" name="type" placeholder="type" />
+
+                </fieldset>
+
+
+                <fieldset>
+
+                    <legend>Execution Layer</legend>
+
+                    <select name="el">
+                        <option>erigon</option>
+                    </select>
+
+                    <select name="el">
+                        <option>v2.39.0</option>
+                    </select>
+
+                </fieldset>
+
+                <fieldset>
+
+                    <legend>Consensus Layer</legend>
+
+                    <select name="cl">
+                        <option>lighthouse</option>
+                    </select>
+
+
+                </fieldset>
+
+                <fieldset>
+
+                    <legend>Addons</legend>
+
+                    <div>
+                        <input type="checkbox" name="mev" checked>
+                        <label for="mev">MEV Boost</label>
+                    </div>
+
+                </fieldset>
+
+
+                <button class="pure-button pure-button-primary" type="submit" disabled>#BUIDL</button>
+                <span>Building is currently disabled, but you may sign-up to the newsletter to hear when it becomes available.</span>
 
             </fieldset>
 
-            <fieldset>
 
-                <legend>Disks</legend>
-
-                <input type="text" name="what" placeholder="what" />
-                <input type="text" name="where" placeholder="where" />
-                <input type="text" name="options" placeholder="options" />
-                <input type="text" name="type" placeholder="type" />
-
-            </fieldset>
-
-
-            <fieldset>
-
-                <legend>Execution Layer</legend>
-
-                <select name="el">
-                    <option>erigon</option>
-                </select>
-
-                <select name="el">
-                    <option>v2.39.0</option>
-                </select>
-
-            </fieldset>
-
-            <fieldset>
-
-                <legend>Consensus Layer</legend>
-
-                <select name="cl">
-                    <option>lighthouse</option>
-                </select>
-
-
-            </fieldset>
-
-            <fieldset>
-
-                <legend>Addons</legend>
-
-                <div>
-                    <input type="checkbox" name="mev" checked>
-                    <label for="mev">MEV Boost</label>
-                </div>
-
-            </fieldset>
-
-
-            <button class="pure-button pure-button-primary" type="submit" disabled>#BUIDL</button>
-            <p>Building your OS is disabled for now, but you may sign-up to the newsletter to hear when it becomes available.</p>
-
-        </fieldset>
-
-
-    </form>
+        </form>
+    </main>
 
     <a class="github-fork-ribbon" href="https://github.com/ponkila/HomestakerOS" data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+
+    <hr \>
+
+    <footer>
+        HomestakerOS is a project by <a href="https://www.ponkila.com">Ponkila Oy</a>. Developed by <a href="https://github.com/tupakkatapa">tupakkatapa</a> and <a href="https://juuso.dev">osnnr</a>. Powered by <a href="https://nixos.org">NixOS</a>.
+    </footer>
 </body>
 <script>
     const value = document.querySelector("#value")
