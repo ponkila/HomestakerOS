@@ -11,4 +11,4 @@ Web frontend source code of [HomestakerOS.com](https://homestakeros.com).
 1. Install [Nix](https://nixos.org). This project uses [direnv](https://direnv.net) integration in Nix to build pre-requisite tooling.
 2. `git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS`
 3. `direnv allow`
-4. `npm run`
+4. `npm start`

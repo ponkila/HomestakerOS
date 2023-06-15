@@ -1,6 +1,6 @@
 {
   inputs = {
-    nixobolus.url = "github:ponkila/nixobolus/juuso/options-extractions";
+    nixobolus.url = "github:ponkila/nixobolus";
   };
   outputs =
     { self
@@ -21,11 +21,24 @@
     in
     {
 
-      erigon = inputs.nixobolus.outputs.exports.erigon.options;
+      erigon = inputs.nixobolus.outputs.exports.erigon;
 
       devShells = forAllSystems (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in import ./shell.nix { inherit pkgs; }
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        {
+
+          default = pkgs.mkShell {
+            # Enable experimental features without having to specify the argument
+            NIX_CONFIG = "experimental-features = nix-command flakes";
+            nativeBuildInputs = with pkgs; [
+              nodejs
+              just
+            ];
+          };
+
+        }
       );
     };
 }
