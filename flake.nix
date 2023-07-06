@@ -1,44 +1,74 @@
 {
   inputs = {
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    flake-root.url = "github:srid/flake-root";
+    mission-control.url = "github:Platonic-Systems/mission-control";
     nixobolus.url = "github:ponkila/nixobolus";
   };
   outputs =
-    { self
+    inputs@{ self
     , nixpkgs
-    , flake-utils
+    , flake-parts
     , nixobolus
     , ...
-    }@inputs:
-    let
-      inherit (self) outputs;
-      forAllSystems = nixpkgs.lib.genAttrs [
+    }:
+
+    flake-parts.lib.mkFlake { inherit inputs; } {
+
+      systems = [
         "aarch64-darwin"
         "aarch64-linux"
         "x86_64-darwin"
         "x86_64-linux"
       ];
+      imports = [
+        inputs.flake-root.flakeModule
+        inputs.mission-control.flakeModule
+      ];
 
-    in
-    {
+      perSystem = { pkgs, lib, config, system, ... }: rec {
 
-      erigon = inputs.nixobolus.outputs.exports.erigon;
-
-      devShells = forAllSystems (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-
+        devShells = {
           default = pkgs.mkShell {
-            # Enable experimental features without having to specify the argument
-            NIX_CONFIG = "experimental-features = nix-command flakes";
             nativeBuildInputs = with pkgs; [
               nodejs
               just
             ];
+            inputsFrom = [
+              config.flake-root.devShell
+              config.mission-control.devShell
+            ];
           };
+        };
 
-        }
-      );
+        packages.homestakeros = pkgs.buildNpmPackage {
+          pname = "homestakeros-ui";
+          version = "0.0.1";
+
+          src = ./.;
+          npmDepsHash = "sha256-5aCtzyfSnDn+i2gmhkx9HU/BRb5ZSc3wacJgx4OF+8U=";
+
+          # The prepack script runs the build script, which we'd rather do in the build phase.
+          # npmPackFlags = [ "--ignore-scripts" ];
+          dontNpmBuild = true;
+
+        };
+
+        packages.default = packages.homestakeros;
+
+      };
+
+      flake =
+        let
+          inherit (self) outputs;
+        in
+        {
+
+          schema = nixobolus.outputs.exports;
+
+        };
+
+
     };
+
 }
