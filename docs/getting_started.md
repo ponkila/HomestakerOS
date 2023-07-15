@@ -40,7 +40,7 @@ apt-get install wireguard-tools
 wg genkey | tee clientPrivateKey | wg pubkey > clientPublicKey
 ```
 
-Now that we have the keys, we need to create a `wg-quick` configuration file (`wg0.conf`) and place it to the subvolume we created earlier, at `/var/mnt/secrets/wireguard/wg0.conf`. 
+Now that we have the keys, we need to create a `wg-quick` configuration file and place it to the subvolume we created earlier, at `/mnt/secrets/wireguard/wg0.conf`. 
 
 Your `wg-quick` configuration should look something like this:
 
@@ -68,8 +68,8 @@ openssl rand -hex 32 | tr -d "\n" > "jwt.hex"
 This same token needs to be available for both the beacon node and the execution node. Let's copy this token we generated to their corresponding subvolumes we created earlier:
 
 ```shell
-cp jwt.hex /var/mnt/erigon
-cp jwt.hex /var/mnt/lighthouse
+cp jwt.hex /mnt/erigon
+cp jwt.hex /mnt/lighthouse
 rm jwt.hex
 ```
 
