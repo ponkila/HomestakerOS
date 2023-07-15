@@ -3,7 +3,7 @@ To start, you need to have a machine running Linux already. This will serve as t
 
 
 ## Format drives
-Firstly, we need to set up the drives for the secrets and blockchain, and we will be using the [BTRFS filesystem](https://wiki.archlinux.org/title/btrfs). We prefer BTRFS for numerous reasons, primarily because of its Copy-on-Write resource management technique. When a file is modified or written to the drive, a copy of the file is created instead of replacing the original. This enables the creation of snapshots with minimal size since unmodified files do not need to be copied when creating snapshots. Snapshots can be used to restore the state of the system and the blockchain if needed. If you want to know more, here is a good [introduction to Btrfs](https://itsfoss.com/btrfs/).
+Firstly, we need to set up the drives for the secrets and blockchain, and we will be using the [BTRFS filesystem](https://wiki.archlinux.org/title/btrfs). We prefer BTRFS for numerous reasons, primarily because of its [Copy-on-Write](https://en.m.wikipedia.org/wiki/Copy-on-write) (COW) resource management technique. When a file is modified or written to the drive, a copy of the file is created instead of replacing the original. This enables the creation of snapshots with minimal size since unmodified files do not need to be copied when creating snapshots. Snapshots can be used to restore the state of the system and the blockchain if needed. If you want to know more, here is a good [introduction to Btrfs](https://itsfoss.com/btrfs/).
 
 Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes for secrets, erigon, and lighthouse. If you are unsure about whether your drive space is enough, please check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
 
@@ -11,7 +11,7 @@ Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes f
 # Check the drives and partitions
 lsblk -e7
 
-# Create a partitionless Btrfs disk with 'homestaker' label
+# Create a partitionless Btrfs disk with a 'homestaker' label
 mkfs.btrfs -l homestaker /dev/nvme0n1
 
 # To create the subvolumes, the btrfs filesystem must be mounted
@@ -23,7 +23,7 @@ btrfs subvolume create /mnt/erigon
 btrfs subvolume create /mnt/lighthouse
 ```
 
-Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. We can refer to the formatted drive by its label, which in this case is `/dev/disk/by-label/homestakeros`."
+Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media.To reference the formatted drive, we simply use its label, in this case: `/dev/disk/by-label/homestakeros`."
 
 
 ## Secrets
@@ -40,7 +40,9 @@ apt-get install wireguard-tools
 wg genkey | tee clientPrivateKey | wg pubkey > clientPublicKey
 ```
 
-Now that we have the keys, we need to create a `wg-quick` configuration file (`wg0.conf`) and place it to the subvolume we created earlier, at `/var/mnt/secrets/wireguard/wg0.conf`. Your `wg-quick` configuration should look something like this:
+Now that we have the keys, we need to create a `wg-quick` configuration file (`wg0.conf`) and place it to the subvolume we created earlier, at `/var/mnt/secrets/wireguard/wg0.conf`. 
+
+Your `wg-quick` configuration should look something like this:
 
 ```conf
 [Interface]
@@ -78,7 +80,7 @@ Our machine needs its own private SSH key. Let's create a directory for it at `/
 mkdir /mnt/secrets/ssh
 ```
 
-The key can either be manually created and placed there, but if absent, NixOS will generate this key automatically. If you choose to place it manually, please note that the key should be in Ed25519 format. Additionally, this path should be configured in the SSH settings on the frontend. In this case, the path would be `/mnt/secrets/ssh/id_ed25519`.
+The key can be manually created and placed there, but if absent, NixOS will generate this key automatically. If you choose to place it manually, please note that __the key should be in Ed25519 format__. Additionally, this path should be configured in the SSH settings on the frontend. In this case, the path would be `/mnt/secrets/ssh/id_ed25519`.
 
 You can derive the public key for automatically generated private key with the following command:
 
