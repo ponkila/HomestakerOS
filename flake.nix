@@ -28,11 +28,23 @@
 
       perSystem = { pkgs, lib, config, system, ... }: rec {
 
+        mission-control.scripts = {
+          schema = {
+            description = "Update schema using current version of nixobolus";
+            exec = ''
+              nix eval --json .#schema | jq > webui/schema.json
+            '';
+            category = "Development Tools";
+          };
+        };
+
         devShells = {
           default = pkgs.mkShell {
             nativeBuildInputs = with pkgs; [
               nodejs
-              just
+              jq
+              yarn
+              yarn2nix
             ];
             inputsFrom = [
               config.flake-root.devShell
@@ -41,17 +53,17 @@
           };
         };
 
-        packages.homestakeros = pkgs.buildNpmPackage {
+
+        packages.buidl = nixobolus.packages.${system}.buidl;
+
+        packages.homestakeros = pkgs.mkYarnPackage {
           pname = "homestakeros-ui";
           version = "0.0.1";
 
           src = ./.;
-          npmDepsHash = "sha256-5aCtzyfSnDn+i2gmhkx9HU/BRb5ZSc3wacJgx4OF+8U=";
-
-          # The prepack script runs the build script, which we'd rather do in the build phase.
-          # npmPackFlags = [ "--ignore-scripts" ];
-          dontNpmBuild = true;
-
+          packageJSON = ./package.json;
+          yarnLock = ./yarn.lock;
+          yarnNix = ./yarn.nix;
         };
 
         packages.default = packages.homestakeros;
