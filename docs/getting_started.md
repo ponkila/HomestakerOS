@@ -17,7 +17,7 @@ Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes f
     ```shell
     mkfs.btrfs -l homestaker /dev/nvme0n1
     ```
-    This command will format the `/dev/nvme0n1` disk as a partitionless Btrfs disk with the label 'homestaker', allowing us to reference it without using the UUID in the frontend.
+    This command will **format** the `/dev/nvme0n1` disk as a partitionless Btrfs disk with the label 'homestaker', allowing us to reference it without using the UUID in the frontend.
 
 3. Mount the Btrfs filesystem:
     ```shell
@@ -31,13 +31,16 @@ Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes f
     btrfs subvolume create /mnt/erigon
     btrfs subvolume create /mnt/lighthouse
     ```
-    These commands will create three subvolumes named 'secrets', 'erigon', and 'lighthouse' respectively within the mounted Btrfs filesystem.
+    These commands will create three subvolumes named 'secrets', 'erigon' and 'lighthouse' respectively within the mounted Btrfs filesystem.
 
-Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. To reference the formatted drive, we simply use the label we set, in this case: `/dev/disk/by-label/homestaker`.
+Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. 
 
 <details>
 
 <summary> Frontend: How to define systemd mounts for partitionless Btrfs disk</summary>
+&nbsp;
+
+To reference the formatted drive, we simply use the label we set. In this case, it is `/dev/disk/by-label/homestaker`. Please note that we also need to add `subvol=/path/to/subvolume` to the mount options.
 
 ```conf
 description = "Secrets";
@@ -77,7 +80,7 @@ apt-get install wireguard-tools
 wg genkey | tee clientPrivateKey | wg pubkey > clientPublicKey
 ```
 
-Now that we have the keys, we need to create a `wg-quick` configuration file to the subvolume we created earlier:
+Now that we have the keys, we need to create a `wg-quick` configuration file and a directory for it in the subvolume we created earlier:
 ```shell
 mkdir /mnt/secrets/wireguard
 touch /mnt/secrets/wireguard/wg0.conf
