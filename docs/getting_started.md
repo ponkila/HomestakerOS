@@ -7,23 +7,60 @@ Firstly, we need to set up the drives for the secrets and blockchain, and we wil
 
 Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes for secrets, erigon, and lighthouse. If you are unsure about whether your drive space is enough, please check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
 
-```shell
-# Check the drives and partitions
-lsblk -e7
+1. Check the drives and partitions:
+    ```shell
+    lsblk -e7
+    ```
+    This command will display information about available drives and partitions. Look for your target drive -- I will be using the `nvme0n1`. The option '-e7' filters out loop devices, which are virtual block devices. 
 
-# Create a partitionless Btrfs disk with a 'homestaker' label
-mkfs.btrfs -l homestaker /dev/nvme0n1
+2. Create a Btrfs disk:
+    ```shell
+    mkfs.btrfs -l homestaker /dev/nvme0n1
+    ```
+    This command will format the `/dev/nvme0n1` disk as a partitionless Btrfs disk with the label 'homestaker', allowing us to reference it without using the UUID in the frontend.
 
-# To create the subvolumes, the btrfs filesystem must be mounted
-sudo mount /dev/nvme0n1 /mnt
+3. Mount the Btrfs filesystem:
+    ```shell
+    sudo mount /dev/nvme0n1 /mnt
+    ```
+    This command will mount the Btrfs disk located at `/dev/nvme0n1` to the `/mnt` directory. This is required to enable subvolume creation.
 
-# Create the subvolumes
-btrfs subvolume create /mnt/secrets
-btrfs subvolume create /mnt/erigon
-btrfs subvolume create /mnt/lighthouse
+4. Create the subvolumes:
+    ```shell
+    btrfs subvolume create /mnt/secrets
+    btrfs subvolume create /mnt/erigon
+    btrfs subvolume create /mnt/lighthouse
+    ```
+    These commands will create three subvolumes named 'secrets', 'erigon', and 'lighthouse' respectively within the mounted Btrfs filesystem.
+
+Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. To reference the formatted drive, we simply use the label we set, in this case: `/dev/disk/by-label/homestaker`.
+
+<details>
+
+<summary> Frontend: How to define systemd mounts for partitionless Btrfs disk</summary>
+
+```conf
+description = "Secrets";
+what = "/dev/disk/by-label/homestaker";
+where = "/mnt/secrets";
+options = "noatime subvol=/mnt/secrets";
+type = "btrfs";
 ```
-
-Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media.To reference the formatted drive, we simply use its label, in this case: `/dev/disk/by-label/homestakeros`."
+```conf
+description = "Erigon";
+what = "/dev/disk/by-label/homestaker";
+where = "/mnt/erigon";
+options = "noatime subvol=/mnt/erigon";
+type = "btrfs";
+```
+```conf
+description = "Lighthouse";
+what = "/dev/disk/by-label/homestaker";
+where = "/mnt/lighthouse";
+options = "noatime subvol=/mnt/lighthouse";
+type = "btrfs";
+```
+</details>
 
 
 ## Secrets
@@ -40,23 +77,46 @@ apt-get install wireguard-tools
 wg genkey | tee clientPrivateKey | wg pubkey > clientPublicKey
 ```
 
-Now that we have the keys, we need to create a `wg-quick` configuration file and place it to the subvolume we created earlier, at `/mnt/secrets/wireguard/wg0.conf`. 
+Now that we have the keys, we need to create a `wg-quick` configuration file to the subvolume we created earlier:
+```shell
+mkdir /mnt/secrets/wireguard
+touch /mnt/secrets/wireguard/wg0.conf
+```
 
-Your `wg-quick` configuration should look something like this:
+Your configuration should look something like this:
 
 ```conf
 [Interface]
-Address = <serverIP>/32
-PrivateKey = <clientPrivateKey> 
+Address = 192.168.1.120/32
+PrivateKey = 0F3OWcop34EQOW+UpJnPkPCb3FKZbCY73U9T8ovo70s=
 
 [Peer]
-PublicKey = <serverPublicKey>
-AllowedIPs =
-Endpoint = <endpoint>:51820
+PublicKey = r4JYV53tLdbS/Yp50jgZpLQ0/snMtqBaFftN/Vcseh8=
+AllowedIPs = 192.168.1.0/24
+Endpoint = ponkila.com:51820
 PersistentKeepalive = 25
 ```
 
-TODO: Let's brake the configuration down..
+<details>
+
+<summary>Let's brake the configuration down..</summary>
+
+#### [Interface]
+
+- **Address** = `<serverIP>/32`: This is the IP address of the WireGuard server. This is the IP address assigned to the server in the VPN network.
+- **PrivateKey** = `<clientPrivateKey>`: This is the private key we just generated for the WireGuard client. This key is used to authenticate the client.
+
+#### [Peer]
+
+- **PublicKey** = `<serverPublicKey>`: This is the public key of the WireGuard tunnel. This key is used to authenticate the tunnel.
+- **AllowedIPs** = `<AllowedIPs>`: This field specifies the IP addresses or IP ranges that are allowed to be accessed through the WireGuard tunnel.
+- **Endpoint** = `<serverEndpoint>:51820`: This is the IP address or hostname of the WireGuard server endpoint. The 51820 is the default WireGuard port.
+- **PersistentKeepalive** = 25: This option ensures that the connection stays active by sending a keepalive signal every 25 seconds.
+
+For more information: https://man7.org/linux/man-pages/man8/wg.8.html
+
+</details>
+
 
 ### JWT
 The HTTP connection between your beacon node and execution node needs to be authenticated using a JSON Web Token (JWT). There are several ways to generate this token, but let's keep it simple and create it using the OpenSSL command line tool:
