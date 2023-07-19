@@ -1,29 +1,31 @@
 # Getting started
-To start, you need to have a machine running Linux already. This will serve as the underlying fallback operating system. Any flavour of Linux will do, preferably a headless, minimal one like CoreOS. We are going to need to format the drives manually and set up the necessary files before deploying the HomestakerOS. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between beacon node (aka. consensus client) and execution node (aka. execution client).
+Before deploying HomestakerOS, you need to have a machine running Linux already. This will serve as the underlying fallback operating system. Any flavour of Linux will do, preferably a headless, minimal one like CoreOS.
+
+We are going to need to format the drives manually and set up the necessary files. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between beacon node (consensus client) and execution node (execution client).
 
 
 ## Format drives
-Firstly, we need to set up the drives for the secrets and blockchain, and we will be using the [BTRFS filesystem](https://wiki.archlinux.org/title/btrfs). We prefer BTRFS for numerous reasons, primarily because of its [Copy-on-Write](https://en.m.wikipedia.org/wiki/Copy-on-write) (COW) resource management technique. When a file is modified or written to the drive, a copy of the file is created instead of replacing the original. This enables the creation of snapshots with minimal size since unmodified files do not need to be copied when creating snapshots. Snapshots can be used to restore the state of the system and the blockchain if needed. If you want to know more, here is a good [introduction to Btrfs](https://itsfoss.com/btrfs/).
+To begin, we will format the drives to store the secrets and blockchain using the [Btrfs filesystem](https://wiki.archlinux.org/title/btrfs). We prefer Btrfs due to its [Copy-on-Write](https://en.m.wikipedia.org/wiki/Copy-on-write) (COW) resource management technique, allowing efficient snapshot creation. For more information, you can check out this [introduction to Btrfs](https://itsfoss.com/btrfs/).
 
-Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes for secrets, erigon, and lighthouse. If you are unsure about whether your drive space is enough, please check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
+Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, erigon and lighthouse on a single hard drive or SSD. If you are unsure about whether your drive space is enough, you can check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
 
-1. Check the drives and partitions:
+1. Check the available drives and partitions:
     ```shell
     lsblk -e7
     ```
-    This command will display information about available drives and partitions. Look for your target drive -- I will be using the `nvme0n1`. The option '-e7' filters out loop devices, which are virtual block devices. 
+    This command displays information about the drives and partitions. Locate your target drive (e.g. `nvme0n1`). The '-e7' option filters out virtual block devices.
 
-2. Create a Btrfs disk:
+2. Format the target drive with Btrfs:
     ```shell
     mkfs.btrfs -l homestaker /dev/nvme0n1
     ```
-    This command will **format** the `/dev/nvme0n1` disk as a partitionless Btrfs disk with the label 'homestaker', allowing us to reference it without using the UUID in the frontend.
+    This command will **format** `/dev/nvme0n1` as a partitionless Btrfs disk with the label "homestaker". Using a label simplifies referencing it in the frontend.
 
 3. Mount the Btrfs filesystem:
     ```shell
-    sudo mount /dev/nvme0n1 /mnt
+    mount /dev/nvme0n1 /mnt
     ```
-    This command will mount the Btrfs disk located at `/dev/nvme0n1` to the `/mnt` directory. This is required to enable subvolume creation.
+    This command mounts the Btrfs disk located at `/dev/nvme0n1` to the `/mnt` directory, enabling subvolume creation.
 
 4. Create the subvolumes:
     ```shell
@@ -31,7 +33,26 @@ Let's create a Btrfs filesystem for a single hard drive or SSD with subvolumes f
     btrfs subvolume create /mnt/erigon
     btrfs subvolume create /mnt/lighthouse
     ```
-    These commands will create three subvolumes named 'secrets', 'erigon' and 'lighthouse' respectively within the mounted Btrfs filesystem.
+    These commands create three subvolumes named "secrets", "erigon" and "lighthouse" within the mounted Btrfs filesystem. Once the subvolumes are created, unmount the device `/dev/nvme0n1` using the following command:
+    ```shell
+    umount /mnt
+    ```
+
+5. Create mountpoints:
+    ```shell
+    mkdir /mnt/secrets
+    mkdir /mnt/erigon
+    mkdir /mnt/lighthouse
+    ```
+    These commands create mountpoints for each subvolume within the `/mnt` directory.
+
+6. Mount the subvolumes:
+    ```shell
+    mount -o subvol=secrets /dev/nvme0n1 /mnt/secrets
+    mount -o subvol=erigon /dev/nvme0n1 /mnt/erigon
+    mount -o subvol=lighthouse /dev/nvme0n1 /mnt/lighthouse
+    ```
+    These commands mount each subvolume under the corresponding subdirectory. Once mounted, you can access the contents of each subvolume in their respective directories.
 
 Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. 
 
@@ -40,27 +61,27 @@ Now that we have set up the drive as needed, we can define them as [systemd moun
 <summary> Frontend: How to define systemd mounts for partitionless Btrfs disk</summary>
 &nbsp;
 
-To reference the formatted drive, we simply use the label we set. In this case, it is `/dev/disk/by-label/homestaker`. Please note that we also need to add `subvol=/path/to/subvolume` to the mount options.
+To reference the formatted drive, we simply use the label we set. In this case, we can refer to it with `/dev/disk/by-label/homestaker`. Please note that we also need to add `subvol=<subvolumeName>` to the mount options.
 
 ```conf
 description = "Secrets";
 what = "/dev/disk/by-label/homestaker";
 where = "/mnt/secrets";
-options = "noatime subvol=/mnt/secrets";
+options = "noatime subvol=secrets";
 type = "btrfs";
 ```
 ```conf
 description = "Erigon";
 what = "/dev/disk/by-label/homestaker";
 where = "/mnt/erigon";
-options = "noatime subvol=/mnt/erigon";
+options = "noatime subvol=erigon";
 type = "btrfs";
 ```
 ```conf
 description = "Lighthouse";
 what = "/dev/disk/by-label/homestaker";
 where = "/mnt/lighthouse";
-options = "noatime subvol=/mnt/lighthouse";
+options = "noatime subvol=lighthouse";
 type = "btrfs";
 ```
 </details>
@@ -81,6 +102,7 @@ wg genkey | tee clientPrivateKey | wg pubkey > clientPublicKey
 ```
 
 Now that we have the keys, we need to create a `wg-quick` configuration file and a directory for it in the subvolume we created earlier:
+
 ```shell
 mkdir /mnt/secrets/wireguard
 touch /mnt/secrets/wireguard/wg0.conf
@@ -137,26 +159,24 @@ rm jwt.hex
 ```
 
 ### SSH
-Our machine needs its own private SSH key. Let's create a directory for it at `/mnt/secrets/ssh`. 
+Our machine needs its own SSH key pair. Let's create a directory for them at `/mnt/secrets/ssh`.
 
 ```shell
 mkdir /mnt/secrets/ssh
 ```
 
-The key can be manually created and placed there, but if absent, NixOS will generate this key automatically. If you choose to place it manually, please note that __the key should be in Ed25519 format__. Additionally, this path should be configured in the SSH settings on the frontend. In this case, the path would be `/mnt/secrets/ssh/id_ed25519`.
+The keys can be manually created and placed there, but if absent, NixOS will generate the keys automatically. If you choose to place it manually, please note that the keys should be in Ed25519 format.
 
-You can derive the public key for automatically generated private key with the following command:
-
-```shell
-ssh-keygen -f /mnt/secrets/ssh/id_ed25519 -y > /mnt/secrets/ssh/id_ed25519.pub
-```
+In addition, make sure to configure the private SSH key path in the SSH settings on the frontend. In this case, the path should be set to `/mnt/secrets/ssh/id_ed25519`.
 
 
 ## Deployment
 
-Now that we have the target machine pre-configured, we can create the NixOS boot media through our frontend and deploy it. The deployment method we are going to use is [kexec](https://wiki.archlinux.org/title/kexec), which enables us to load and boot into another kernel from the currently running kernel without a power cycle. HomestakerOS is ephemeral, meaning that it will run entirely on RAM, providing significant performance benefits by reducing I/O operations. This means that __any user generated directories and/or files are NOT persistent.__
+Now that the target machine is pre-configured, we can proceed to create the NixOS boot media using the frontend and deploy it. For deployment, we will use the [kexec](https://wiki.archlinux.org/title/kexec) method, which allows loading and booting into another kernel without a power cycle.
 
-First, we need to install `kexec-tools`. Then, we can execute the `kexec-boot` script, which will "reboot" the machine to HomestakerOS. This can be done using the following commands:
+It's important to note that HomestakerOS is running entirely on RAM. Therefore, any user-generated directories and files will not persist across reboots or power cycles.
+
+To deploy, we need to install `kexec-tools`. Then, we can execute the `kexec-boot` script, which will "reboot" the machine into HomestakerOS. This can be done using the following commands:
 
 ```shell
 apt-get install kexec-tools
