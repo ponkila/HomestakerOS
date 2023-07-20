@@ -3,42 +3,51 @@ Before deploying HomestakerOS, you need to have a machine running Linux already.
 
 We are going to need to format the drives manually and set up the necessary files. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between beacon node (consensus client) and execution node (execution client).
 
-
 ## Format drives
 To begin, we will format the drives to store the secrets and blockchain using the [Btrfs filesystem](https://wiki.archlinux.org/title/btrfs). We prefer Btrfs due to its [Copy-on-Write](https://en.m.wikipedia.org/wiki/Copy-on-write) (COW) resource management technique, allowing efficient snapshot creation. For more information, you can check out this [introduction to Btrfs](https://itsfoss.com/btrfs/).
 
 Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, erigon and lighthouse on a single hard drive or SSD. If you are unsure about whether your drive space is enough, you can check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
 
 1. Check the available drives and partitions:
+
     ```shell
     lsblk -e7
     ```
+
     This command displays information about the drives and partitions. Locate your target drive (e.g. `nvme0n1`). The '-e7' option filters out virtual block devices.
 
 2. Format the target drive with Btrfs:
+
     ```shell
     mkfs.btrfs -l homestaker /dev/nvme0n1
     ```
+
     This command will **format** `/dev/nvme0n1` as a partitionless Btrfs disk with the label "homestaker". Using a label simplifies referencing it in the frontend.
 
 3. Mount the Btrfs filesystem:
+
     ```shell
     mount /dev/nvme0n1 /mnt
     ```
+
     This command mounts the Btrfs disk located at `/dev/nvme0n1` to the `/mnt` directory, enabling subvolume creation.
 
 4. Create the subvolumes:
+
     ```shell
     btrfs subvolume create /mnt/secrets
     btrfs subvolume create /mnt/erigon
     btrfs subvolume create /mnt/lighthouse
     ```
+
     These commands create three subvolumes named "secrets", "erigon" and "lighthouse" within the mounted Btrfs filesystem. Once the subvolumes are created, unmount the device `/dev/nvme0n1` using the following command:
+
     ```shell
     umount /mnt
     ```
 
-5. Create mountpoints:
+5. Create the mountpoints:
+
     ```shell
     mkdir /mnt/secrets
     mkdir /mnt/erigon
@@ -47,6 +56,7 @@ Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, erig
     These commands create mountpoints for each subvolume within the `/mnt` directory.
 
 6. Mount the subvolumes:
+
     ```shell
     mount -o subvol=secrets /dev/nvme0n1 /mnt/secrets
     mount -o subvol=erigon /dev/nvme0n1 /mnt/erigon
@@ -86,7 +96,6 @@ type = "btrfs";
 ```
 </details>
 
-
 ## Secrets
 
 ### WireGuard 
@@ -94,7 +103,7 @@ type = "btrfs";
 
 Note: __This guide does not provide instructions on setting up the WireGuard server itself at the moment.__
 
-Let's install `wireguard-tools` and create a new private key and derive a corresponding public key for it:
+First, we need to install `wireguard-tools`. Then we can create a new private key and derive a corresponding public key for it:
 
 ```shell
 apt-get install wireguard-tools
@@ -142,7 +151,6 @@ For more information: https://man7.org/linux/man-pages/man8/wg.8.html
 
 </details>
 
-
 ### JWT
 The HTTP connection between your beacon node and execution node needs to be authenticated using a JSON Web Token (JWT). There are several ways to generate this token, but let's keep it simple and create it using the OpenSSL command line tool:
 
@@ -168,7 +176,6 @@ mkdir /mnt/secrets/ssh
 The keys can be manually created and placed there, but if absent, NixOS will generate the keys automatically. If you choose to place it manually, please note that the keys should be in Ed25519 format.
 
 In addition, make sure to configure the private SSH key path in the SSH settings on the frontend. In this case, the path should be set to `/mnt/secrets/ssh/id_ed25519`.
-
 
 ## Deployment
 
