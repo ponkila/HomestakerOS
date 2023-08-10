@@ -24,8 +24,6 @@ import {
 } from '@chakra-ui/react'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 
-
-
 const NodeQuery = () => {
   const [nodeResponse, setNodeResponse] = useState('')
 
@@ -39,17 +37,23 @@ const NodeQuery = () => {
   return (
     <>
       <Box borderWidth="1px" borderRadius="lg" p={4}>
-        <Heading as="h2" size="md" mb={4}>Node query</Heading>
+        <Heading as="h2" size="md" mb={4}>
+          Node query
+        </Heading>
         <form onSubmit={queryIp}>
           <FormControl my={4} id="nodeEndpoint">
             <FormLabel>Node Endpoint</FormLabel>
             <Input placeholder="http://127.0.0.1/" />
           </FormControl>
-          <Button w="100%" type="submit">Query</Button>
+          <Button w="100%" type="submit">
+            Query
+          </Button>
         </form>
       </Box>
       <Box borderWidth="1px" borderRadius="lg" p={4} overflow="scroll" mt={4}>
-        <Heading as="h2" size="md" mb={4}>Response</Heading>
+        <Heading as="h2" size="md" mb={4}>
+          Response
+        </Heading>
         <Text as="pre">{nodeResponse || 'No response yet...'}</Text>
       </Box>
     </>

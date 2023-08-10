@@ -25,9 +25,7 @@ function useMetaMask() {
       console.log(provider)
       setHasProvider(Boolean(provider)) // transform provider to true or false
       if (provider) {
-        const accounts = await window.ethereum.request(
-          { method: 'eth_accounts' }
-        )
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' })
         refreshAccounts(accounts)
         window.ethereum.on('accountsChanged', refreshAccounts)
       }
@@ -41,7 +39,7 @@ function useMetaMask() {
 
   const handleConnect = async () => {
     const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
+      method: 'eth_requestAccounts',
     })
     setWallet({ accounts })
   }

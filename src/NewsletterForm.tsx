@@ -17,12 +17,14 @@ const NewsletterForm = () => {
   return (
     <Box>
       <VStack>
-      <FormLabel m={0}>Newsletter sign-up</FormLabel>
+        <FormLabel m={0}>Newsletter sign-up</FormLabel>
         <Flex>
           <FormControl mr={4}>
             <Input size="xs" placeholder="home@staker.com" />
           </FormControl>
-          <Button size="xs" px={4} type="submit">Subscribe</Button>
+          <Button size="xs" px={4} type="submit">
+            Subscribe
+          </Button>
         </Flex>
       </VStack>
     </Box>

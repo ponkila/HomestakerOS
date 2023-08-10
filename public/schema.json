@@ -121,9 +121,7 @@
           "enable": true,
           "options": "noatime",
           "type": "btrfs",
-          "wantedBy": [
-            "multi-user.target"
-          ],
+          "wantedBy": ["multi-user.target"],
           "what": "/dev/disk/by-label/my-label",
           "where": "/path/to/my/mount"
         }
