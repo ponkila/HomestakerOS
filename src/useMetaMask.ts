@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import detectEthereumProvider from '@metamask/detect-provider'
 
 export type WalletState = {

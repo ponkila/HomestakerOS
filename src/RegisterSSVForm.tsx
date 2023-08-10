@@ -1,40 +1,15 @@
-import React, { useState } from 'react'
-import {
-  Text,
-  Button,
-  Box,
-  Code,
-  Checkbox,
-  CheckboxGroup,
-  Flex,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
-  Heading,
-  Input,
-  OrderedList,
-  ListItem,
-  Select,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderMark,
-  Spinner,
-  Link,
-} from '@chakra-ui/react'
+import { useState } from 'react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from './useMetaMask'
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
-  const [nodeResponse, setNodeResponse] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const registerOperator = async (e) => {
+  const registerOperator = async (e: any) => {
     e.preventDefault()
     setIsLoading(true)
     console.log(ethers)
@@ -44,17 +19,17 @@ const RegisterSSVForm = () => {
     console.log(pk, fee)
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = await provider.getSigner()
-    const abi = await (await fetch('/public/SSVNetwork.json')).json()
+    const abi = await (await fetch('/SSVNetwork.json')).json()
     //const contract = new ethers.Contract("0x8dB45282d7C4559fd093C26f677B3837a5598914", abi, provider) //views
     const contract = new ethers.Contract('0xAfdb141Dd99b5a101065f40e3D7636262dce65b3', abi, signer)
     contract
       .registerOperator(coder.encode(['string'], [pk]), fee, { gasLimit: 10000000 })
-      .then((tx) => {
+      .then((tx: any) => {
         console.log(tx)
         setIsLoading(false)
         setError('')
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         console.log(err)
         setError(err.message)
         setIsLoading(false)

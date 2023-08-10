@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react'
-import { Container, Button, Box, Link, Heading, Flex, Spacer, Text, Tag, TagLabel } from '@chakra-ui/react'
+import { Container, Box, Heading, Flex, Spacer, Text, Tag, TagLabel } from '@chakra-ui/react'
 import './App.css'
 import ConfigurationForm from './ConfigurationForm'
 import NewsletterForm from './NewsletterForm'
 import NodeQuery from './NodeQuery'
 import RegisterSSVForm from './RegisterSSVForm'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
-import useMetaMask, { WalletState } from './useMetaMask'
+import useMetaMask from './useMetaMask'
 
 const TabsView = () => {
   return (

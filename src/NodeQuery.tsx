@@ -1,33 +1,10 @@
-import React, { useState } from 'react'
-import {
-  Text,
-  Button,
-  Box,
-  Code,
-  Checkbox,
-  CheckboxGroup,
-  Flex,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
-  Heading,
-  Input,
-  OrderedList,
-  ListItem,
-  Select,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderMark,
-} from '@chakra-ui/react'
-import { ethers } from 'ethers/dist/ethers.esm.js'
+import { useState } from 'react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input } from '@chakra-ui/react'
 
 const NodeQuery = () => {
   const [nodeResponse, setNodeResponse] = useState('')
 
-  const queryIp = async (e) => {
+  const queryIp = async (e: any) => {
     e.preventDefault()
     const nodeEndpoint = e.target.nodeEndpoint.value
     const nodeResponseJson = await (await fetch(nodeEndpoint)).json()

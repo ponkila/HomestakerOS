@@ -1,27 +1,18 @@
 import React, { useState, useEffect } from 'react'
 import {
-  Text,
   Spacer,
   Collapse,
   Button,
   Box,
   Checkbox,
-  CheckboxGroup,
   Flex,
   FormControl,
   FormLabel,
-  FormErrorMessage,
   FormHelperText,
   Heading,
   Input,
   OrderedList,
   ListItem,
-  Select,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  SliderMark,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -71,17 +62,12 @@ type ListOfControlProps = {
   nodeKey: string
   description: string | null
   example: string | null
-  default: string[] | null
+  defaultValue: string[] | null
 }
 
 const ListOfControl = (props: ListOfControlProps) => {
-  const {
-    nodeKey,
-    description,
-    example,
-    default: [],
-  } = props
-  const [list, setList] = useState<string[]>([])
+  const { nodeKey, description, example, defaultValue } = props
+  const [list, setList] = useState<string[]>(defaultValue || [])
   const name = nodeKey.split('.').slice(-1)[0]
 
   return (
@@ -108,7 +94,6 @@ const ListOfControl = (props: ListOfControlProps) => {
 }
 
 const ConfigurationForm = () => {
-  const [sliderValue, setSliderValue] = useState(1)
   const [schema, setSchema] = useState<Record<string, any>>({})
 
   const isLeaf = (node: Record<string, any>) => {
@@ -135,7 +120,7 @@ const ConfigurationForm = () => {
           return (
             <FormControl id={key}>
               <DescriptionFormLabel label={keyName} description={node.description} />
-              <Input name={key} value={node.default} />
+              <Input name={key} defaultValue={node.default} />
               {node.example && <FormHelperText>Example: {node.example}</FormHelperText>}
             </FormControl>
           )
@@ -180,7 +165,12 @@ const ConfigurationForm = () => {
           break
         case 'listOf':
           return (
-            <ListOfControl nodeKey={key} description={node.description} example={node.example} default={node.default} />
+            <ListOfControl
+              nodeKey={key}
+              description={node.description}
+              example={node.example}
+              defaultValue={node.default}
+            />
           )
           break
         default:
@@ -207,7 +197,7 @@ const ConfigurationForm = () => {
   }
 
   useEffect(() => {
-    fetch('/public/schema.json')
+    fetch('/schema.json')
       .then((res) => res.json())
       .then((data) => {
         setSchema(data)
@@ -216,7 +206,7 @@ const ConfigurationForm = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.target)
+    const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
     console.log(formDataJson)
   }

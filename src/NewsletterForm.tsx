@@ -1,17 +1,4 @@
-import React, { useState } from 'react'
-import {
-  Button,
-  Box,
-  Checkbox,
-  CheckboxGroup,
-  Flex,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  FormHelperText,
-  Input,
-  VStack,
-} from '@chakra-ui/react'
+import { Button, Box, Flex, FormControl, FormLabel, Input, VStack } from '@chakra-ui/react'
 
 const NewsletterForm = () => {
   return (
