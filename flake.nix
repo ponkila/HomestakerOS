@@ -4,6 +4,7 @@
     flake-root.url = "github:srid/flake-root";
     mission-control.url = "github:Platonic-Systems/mission-control";
     nixobolus.url = "github:ponkila/nixobolus";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
   outputs =
     inputs@{ self
@@ -75,6 +76,23 @@
           inherit (self) outputs;
         in
         {
+          nixosConfigurations = {
+            homestakeros = nixpkgs.lib.nixosSystem {
+              system = "x86_64-linux";
+              specialArgs = { inherit inputs outputs; };
+              modules = [
+                nixobolus.nixosModules.kexecTree
+                nixobolus.nixosModules.homestakeros
+                ./nixosConfigurations/homestakeros
+                {
+                  system.stateVersion = "23.05";
+                  # Bootloader for x86_64-linux / aarch64-linux
+                  boot.loader.systemd-boot.enable = true;
+                  boot.loader.efi.canTouchEfiVariables = true;
+                }
+              ];
+            };
+          };
 
           schema = nixobolus.outputs.exports;
 
