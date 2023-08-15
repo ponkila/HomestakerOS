@@ -54,8 +54,15 @@
           };
         };
 
+        apps = {
+          buidl = {
+            type = "app";
+            program = nixobolus.packages.${system}.buidl;
+          };
+        };
 
-        packages.buidl = nixobolus.packages.${system}.buidl;
+        packages = {
+        };
 
         packages.homestakeros = pkgs.mkYarnPackage {
           pname = "homestakeros-ui";
