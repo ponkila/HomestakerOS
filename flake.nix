@@ -66,9 +66,27 @@
             type = "app";
             program = nixobolus.packages.${system}.buidl;
           };
+          json2nix = {
+            type = "app";
+            program = "${self.packages.${system}.json2nix}/bin/json2nix";
+          };
         };
 
         packages = {
+          "json2nix" =
+            let
+              pkgs = import nixpkgs { inherit system; };
+              name = "json2nix";
+              json2nix-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/json2nix.sh)).overrideAttrs (old: {
+                buildCommand = "${old.buildCommand}\n patchShebangs $out";
+              });
+            in
+            pkgs.symlinkJoin {
+              inherit name;
+              paths = [ json2nix-script ];
+              buildInputs = with pkgs; [ nix makeWrapper ];
+              postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
+            };
         };
 
         packages.homestakeros = pkgs.mkYarnPackage {
