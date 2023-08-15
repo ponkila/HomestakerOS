@@ -37,6 +37,13 @@
             '';
             category = "Development Tools";
           };
+          server = {
+            description = "Initialize and launch the web server";
+            exec = ''
+              mkfifo webui/pipe && nix run .#
+            '';
+            category = "Essentials";
+          };
         };
 
         devShells = {
