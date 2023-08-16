@@ -72,6 +72,10 @@
             type = "app";
             program = "${self.packages.${system}.json2nix}/bin/json2nix";
           };
+          buidl = {
+            type = "app";
+            program = "${self.packages.${system}.buidl}/bin/buidl";
+          };
         };
 
         packages = {
@@ -86,6 +90,19 @@
               inherit name;
               paths = [json2nix-script];
               buildInputs = with pkgs; [nix makeWrapper];
+              postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
+            };
+          "buidl" = let
+            pkgs = import nixpkgs {inherit system;};
+            name = "buidl";
+            buidl-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/buidl.sh)).overrideAttrs (old: {
+              buildCommand = "${old.buildCommand}\n patchShebangs $out";
+            });
+          in
+            pkgs.symlinkJoin {
+              inherit name;
+              paths = [buidl-script];
+              buildInputs = [pkgs.nix pkgs.makeWrapper self.packages.${system}.json2nix];
               postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
             };
         };
