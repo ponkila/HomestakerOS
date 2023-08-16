@@ -101,8 +101,8 @@
           in
             pkgs.symlinkJoin {
               inherit name;
-              paths = [buidl-script];
-              buildInputs = [pkgs.nix pkgs.makeWrapper self.packages.${system}.json2nix pkgs.nushell];
+              paths = [buidl-script] ++ [self.packages.${system}.json2nix pkgs.nushell];
+              buildInputs = with pkgs; [nix makeWrapper ];
               postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
             };
         };

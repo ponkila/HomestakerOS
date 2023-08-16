@@ -94,7 +94,7 @@ create_default_nix() {
   local default_nix="$2"
 
   # Convert JSON to Nix expression using json2nix
-  nix_expr=$(echo "$json_data" | nix run .#json2nix)
+  nix_expr=$(echo "$json_data" | json2nix)
 
   # Create data.nix file
   cat > "$default_nix" << EOF
