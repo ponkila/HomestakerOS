@@ -68,10 +68,6 @@
         };
 
         apps = {
-          buidl = {
-            type = "app";
-            program = nixobolus.packages.${system}.buidl;
-          };
           json2nix = {
             type = "app";
             program = "${self.packages.${system}.json2nix}/bin/json2nix";
