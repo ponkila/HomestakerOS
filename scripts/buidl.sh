@@ -173,6 +173,9 @@ main() {
 
   # Display additional output, including injected data and created symlinks
   print_output "$output_path" "$default_nix" $verbose
+
+  # Generate a JSON-formatted file containing the hostnames
+  nu -c "ls nixosConfigurations | to json" > webui/nixosConfigurations/hostnames
 }
 
 main "$@"
