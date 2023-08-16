@@ -27,7 +27,7 @@
         inputs.mission-control.flakeModule
       ];
 
-      perSystem = { pkgs, lib, config, system, ... }: rec {
+        formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         mission-control.scripts = {
           schema = {
