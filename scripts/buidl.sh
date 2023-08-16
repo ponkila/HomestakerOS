@@ -120,7 +120,7 @@ run_nix_build() {
   [[ "$verbose" = true ]] && nix_flags+=("--show-trace" "--debug")
   
   # Execute the 'nix build' command
-  nix build path:.#nixosConfigurations."$hostname".config.system.kexecTree "${nix_flags[@]}" || exit 1
+  nix build path:.#nixosConfigurations."$hostname".config.system.build.kexecTree "${nix_flags[@]}" || exit 1
 }
 
 print_output() {
