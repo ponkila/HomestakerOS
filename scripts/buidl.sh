@@ -51,7 +51,7 @@ parse_arguments() {
       -b|--base)
         module_name="$2"
         shift 2 ;;
-      --name)
+      -n|--name)
         hostname="$2"
         shift 2 ;;
       -o|--output)
@@ -64,18 +64,17 @@ parse_arguments() {
         display_usage
         exit 0 ;;
       *)
-        hostname="$1"
+        # Check if argument is JSON data
+        if [[ "$1" =~ ^\{.*\}$ ]]; then
+          json_data="$1"
+        else
+          echo "error: unknown option -- '$1'"
+          echo "try '--help' for more information."
+          exit 1
+        fi
         shift ;;
     esac
   done
-  # Check if argument is JSON data
-  if [[ ! "$2" =~ ^\{.*\}$ ]]; then
-    json_data="$2"
-  else
-    echo "error: unknown option -- '$1'"
-    echo "try '--help' for more information."
-    exit 1
-  fi
   # Check that hostname has been set
   if [[ -z $hostname ]]; then
     echo "error: hostname is required."
@@ -170,7 +169,7 @@ main() {
   [[ -n $json_data ]] && create_default_nix "$json_data" "$default_nix"
 
   # Format file -- This should be replaced with a hook
-  nix fmt "$default_nix" > /dev/null
+  nix fmt "$default_nix" > /dev/null 2>&1
 
   # Run the 'nix build' command
   run_nix_build "$hostname" "$output_path" $verbose
