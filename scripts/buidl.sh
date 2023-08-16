@@ -11,32 +11,36 @@ display_usage() {
   cat <<USAGE
 Usage: $0 [options] [json_data]
 
+Description:
+  This script compiles a NixOS system by merging module options as JSON data into a base configuration.
+
 Arguments:
   json_data
-      Specify raw JSON data to inject into the base configuration. This can also be piped into the script.
+    Specify raw JSON data to merge into the base configuration. This data can also be piped into the script.
 
-Options:
-  -b, --base <hostname>
-      Set the base configuration with the specified hostname. Available configurations: 'homestakeros'.
-  
-  --hostname <hostname>
-      Set the hostname, this will update existing host or create a new one.
+Options, required:
+  -b, --base <module_name>
+      Select the base configuration with the specified module name. Available: 'homestakeros'.
 
+  -n, --name <hostname>
+      Define the hostname, either for updating an existing host configuration or creating a new one.
+
+Options, optional:
   -o, --output <output_path>
-      Set the output path for the build result symlinks. Default: './result'.
+      Specify the output path for the resulting build symlinks. Default: './result'.
 
   -v, --verbose
-      Enable verbose output, which displays the contents of the injected data and the trace for debugging purposes.
+      Activate verbose output mode, which displays comprehensive information for debugging purposes.
 
   -h, --help
       Display this help message.
 
 Examples:
-  Local, using pipe:
-      echo '{"execution":{"erigon":{"enable":true}}}' | nix run .#buidl -- --base homestakeros
+  Local, using piped input:
+      echo '{"execution":{"erigon":{"enable":true}}}' | nix run .#buidl -- --name foobar --base homestakeros
 
-  Remote, using positional argument:
-      nix run github:ponkila/nixobolus#buidl -- -b homestakeros '{"execution":{"erigon":{"enable":true}}}'
+  Remote, using a positional argument:
+      nix run github:ponkila/homestakeros#buidl -- -n foobar -b homestakeros '{"execution":{"erigon":{"enable":true}}}'
 
 USAGE
 }
@@ -47,7 +51,7 @@ parse_arguments() {
       -b|--base)
         module_name="$2"
         shift 2 ;;
-      --hostname)
+      --name)
         hostname="$2"
         shift 2 ;;
       -o|--output)
