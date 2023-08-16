@@ -11,9 +11,6 @@ else
   exit 1
 fi
 
-# Validate JSON data, has better errors than builtins.fromJSON
-echo "$json_data" | json_pp > /dev/null || exit 1
-
 # Escape double quotes
 esc_json_data="${json_data//\"/\\\"}"
 
