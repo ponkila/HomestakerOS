@@ -6,16 +6,15 @@
     nixobolus.url = "github:ponkila/nixobolus";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
-  outputs =
-    inputs@{ self
-    , nixpkgs
-    , flake-parts
-    , nixobolus
-    , ...
-    }:
 
-    flake-parts.lib.mkFlake { inherit inputs; } {
-
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    flake-parts,
+    nixobolus,
+    ...
+  }:
+    flake-parts.lib.mkFlake {inherit inputs;} {
       systems = [
         "aarch64-darwin"
         "aarch64-linux"
@@ -27,6 +26,13 @@
         inputs.mission-control.flakeModule
       ];
 
+      perSystem = {
+        pkgs,
+        lib,
+        config,
+        system,
+        ...
+      }: rec {
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         mission-control.scripts = {
@@ -73,18 +79,17 @@
         };
 
         packages = {
-          "json2nix" =
-            let
-              pkgs = import nixpkgs { inherit system; };
-              name = "json2nix";
-              json2nix-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/json2nix.sh)).overrideAttrs (old: {
-                buildCommand = "${old.buildCommand}\n patchShebangs $out";
-              });
-            in
+          "json2nix" = let
+            pkgs = import nixpkgs {inherit system;};
+            name = "json2nix";
+            json2nix-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/json2nix.sh)).overrideAttrs (old: {
+              buildCommand = "${old.buildCommand}\n patchShebangs $out";
+            });
+          in
             pkgs.symlinkJoin {
               inherit name;
-              paths = [ json2nix-script ];
-              buildInputs = with pkgs; [ nix makeWrapper ];
+              paths = [json2nix-script];
+              buildInputs = with pkgs; [nix makeWrapper];
               postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
             };
         };
@@ -100,37 +105,30 @@
         };
 
         packages.default = packages.homestakeros;
-
       };
 
-      flake =
-        let
-          inherit (self) outputs;
-        in
-        {
-          nixosConfigurations = {
-            homestakeros = nixpkgs.lib.nixosSystem {
-              system = "x86_64-linux";
-              specialArgs = { inherit inputs outputs; };
-              modules = [
-                nixobolus.nixosModules.kexecTree
-                nixobolus.nixosModules.homestakeros
-                ./nixosConfigurations/homestakeros
-                {
-                  system.stateVersion = "23.05";
-                  # Bootloader for x86_64-linux / aarch64-linux
-                  boot.loader.systemd-boot.enable = true;
-                  boot.loader.efi.canTouchEfiVariables = true;
-                }
-              ];
-            };
+      flake = let
+        inherit (self) outputs;
+      in {
+        nixosConfigurations = {
+          homestakeros = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = {inherit inputs outputs;};
+            modules = [
+              nixobolus.nixosModules.kexecTree
+              nixobolus.nixosModules.homestakeros
+              ./nixosConfigurations/homestakeros
+              {
+                system.stateVersion = "23.05";
+                # Bootloader for x86_64-linux / aarch64-linux
+                boot.loader.systemd-boot.enable = true;
+                boot.loader.efi.canTouchEfiVariables = true;
+              }
+            ];
           };
-
-          schema = nixobolus.outputs.exports;
-
         };
 
-
+        schema = nixobolus.outputs.exports;
+      };
     };
-
 }
