@@ -122,15 +122,24 @@
 
       flake = let
         inherit (self) outputs;
+        system = "x86_64-linux";
       in {
-        nixosConfigurations = {
-          homestakeros = nixpkgs.lib.nixosSystem {
-            system = "x86_64-linux";
+        nixosConfigurations = let
+          ls = builtins.readDir ./nixosConfigurations;
+          hostnames =
+            builtins.filter
+            (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
+            (builtins.attrNames ls);
+        in
+          builtins.listToAttrs (map (hostname: {
+              name = hostname;
+              value = nixpkgs.lib.nixosSystem {
+                inherit system;
             specialArgs = {inherit inputs outputs;};
             modules = [
               nixobolus.nixosModules.kexecTree
               nixobolus.nixosModules.homestakeros
-              ./nixosConfigurations/homestakeros
+                  ./nixosConfigurations/${hostname}
               {
                 system.stateVersion = "23.05";
                 # Bootloader for x86_64-linux / aarch64-linux
@@ -139,7 +148,8 @@
               }
             ];
           };
-        };
+            })
+            hostnames);
 
         schema = nixobolus.outputs.exports;
       };
