@@ -37,7 +37,7 @@
         # https://www.ertt.ca/nix/shell-scripts/#org6f67de6
         mkScriptPackage = {
           name,
-          deps
+          deps,
         }: let
           pkgs = import nixpkgs {inherit system;};
           scriptPath = ./scripts/${name}.sh;
@@ -132,25 +132,30 @@
             (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
             (builtins.attrNames ls);
         in
-          builtins.listToAttrs (map (hostname: {
-              name = hostname;
-              value = nixpkgs.lib.nixosSystem {
-                inherit system;
-                specialArgs = {inherit inputs outputs;};
-                modules = [
-                  nixobolus.nixosModules.kexecTree
-                  nixobolus.nixosModules.homestakeros
-                  ./nixosConfigurations/${hostname}
-                  {
-                    system.stateVersion = "23.05";
-                    # Bootloader for x86_64-linux / aarch64-linux
-                    boot.loader.systemd-boot.enable = true;
-                    boot.loader.efi.canTouchEfiVariables = true;
-                  }
-                ];
-              };
-            })
-            hostnames);
+          nixpkgs.lib.mkIf (
+            builtins.pathExists ./nixosConfigurations
+          ) (
+            builtins.listToAttrs (map (hostname: {
+                name = hostname;
+                value = nixpkgs.lib.nixosSystem {
+                  inherit system;
+                  specialArgs = {inherit inputs outputs;};
+                  modules =
+                    [
+                      nixobolus.nixosModules.kexecTree
+                      nixobolus.nixosModules.homestakeros
+                      {
+                        system.stateVersion = "23.05";
+                        # Bootloader for x86_64-linux / aarch64-linux
+                        boot.loader.systemd-boot.enable = true;
+                        boot.loader.efi.canTouchEfiVariables = true;
+                      }
+                    ]
+                    ++ nixpkgs.lib.optional (builtins.pathExists ./nixosConfigurations/${hostname}) ./nixosConfigurations/${hostname};
+                };
+              })
+              hostnames)
+          );
 
         schema = nixobolus.outputs.exports.homestakeros;
       };
