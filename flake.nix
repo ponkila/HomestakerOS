@@ -98,7 +98,7 @@
           "buidl" = let
             pkgs = import nixpkgs {inherit system;};
             name = "buidl";
-            my-buildInputs = with pkgs; [ nix jq ] ++ [self.packages.${system}.json2nix];
+            my-buildInputs = with pkgs; [nix jq] ++ [self.packages.${system}.json2nix];
             buidl-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/buidl.sh)).overrideAttrs (old: {
               buildCommand = "${old.buildCommand}\n patchShebangs $out";
             });
@@ -106,7 +106,7 @@
             pkgs.symlinkJoin {
               inherit name;
               paths = [buidl-script] ++ my-buildInputs;
-              buildInputs = [ pkgs.makeWrapper ];
+              buildInputs = [pkgs.makeWrapper];
               postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
             };
         };
@@ -139,19 +139,19 @@
               name = hostname;
               value = nixpkgs.lib.nixosSystem {
                 inherit system;
-            specialArgs = {inherit inputs outputs;};
-            modules = [
-              nixobolus.nixosModules.kexecTree
-              nixobolus.nixosModules.homestakeros
+                specialArgs = {inherit inputs outputs;};
+                modules = [
+                  nixobolus.nixosModules.kexecTree
+                  nixobolus.nixosModules.homestakeros
                   ./nixosConfigurations/${hostname}
-              {
-                system.stateVersion = "23.05";
-                # Bootloader for x86_64-linux / aarch64-linux
-                boot.loader.systemd-boot.enable = true;
-                boot.loader.efi.canTouchEfiVariables = true;
-              }
-            ];
-          };
+                  {
+                    system.stateVersion = "23.05";
+                    # Bootloader for x86_64-linux / aarch64-linux
+                    boot.loader.systemd-boot.enable = true;
+                    boot.loader.efi.canTouchEfiVariables = true;
+                  }
+                ];
+              };
             })
             hostnames);
 
