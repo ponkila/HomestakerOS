@@ -162,14 +162,14 @@ create_webui_files() {
 
   default_json="webui/nixosConfigurations/$hostname/default.json"
 
-  # Generate a JSON-formatted file containing the hostnames
-  hostnames=$(find nixosConfigurations -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-  echo "$hostnames" | jq -R . | jq -s . > webui/nixosConfigurations/hostnames.json
-
   # Create the host directory if it doesn't exist
   if [ ! -d "$(dirname "$default_json")" ]; then
     mkdir -p "$(dirname "$default_json")"
   fi
+
+  # Generate a JSON-formatted file containing the hostnames
+  hostnames=$(find nixosConfigurations -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+  echo "$hostnames" | jq -R . | jq -s . > webui/nixosConfigurations/hostnames.json
 
   # Save the JSON data
   echo "$json_data" | jq -r "." > "$default_json"
