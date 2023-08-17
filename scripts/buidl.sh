@@ -5,7 +5,6 @@ set -o pipefail
 
 # Default argument values
 verbose=false
-output_path="./result"
 
 display_usage() {
   cat <<USAGE
@@ -81,12 +80,16 @@ parse_arguments() {
     echo "try '--help' for more information."
     exit 1
   fi
+
   # Check that base configuration has been set
   if [[ -z $module_name ]]; then
     echo "error: base configuration is required."
     echo "try '--help' for more information."
     exit 1
   fi
+
+  # Set output path if not set by argument
+  [[ -z $output_path ]] && output_path="webui/nixosConfigurations/${hostname}/result"
 }
 
 create_default_nix() {
