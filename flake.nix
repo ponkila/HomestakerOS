@@ -144,14 +144,14 @@
                     [
                       nixobolus.nixosModules.kexecTree
                       nixobolus.nixosModules.homestakeros
+                      ./nixosConfigurations/${hostname}
                       {
                         system.stateVersion = "23.05";
                         # Bootloader for x86_64-linux / aarch64-linux
                         boot.loader.systemd-boot.enable = true;
                         boot.loader.efi.canTouchEfiVariables = true;
                       }
-                    ]
-                    ++ nixpkgs.lib.optional (builtins.pathExists ./nixosConfigurations/${hostname}) ./nixosConfigurations/${hostname};
+                    ];
                 };
               })
               hostnames)
