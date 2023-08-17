@@ -110,7 +110,7 @@
         };
 
         packages.homestakeros = pkgs.mkYarnPackage {
-          pname = "homestakeros-ui";
+          pname = "homestakeros";
           version = "0.0.1";
 
           src = ./.;
@@ -153,7 +153,7 @@
             })
             hostnames);
 
-        schema = nixobolus.outputs.exports;
+        schema = nixobolus.outputs.exports.homestakeros;
       };
     };
 }
