@@ -107,9 +107,7 @@ create_default_nix() {
   nix_expr=$(echo "$json_data" | json2nix)
 
   # Create the host directory if it doesn't exist
-  if [ ! -d "$(dirname "$default_nix")" ]; then
-    mkdir -p "$(dirname "$default_nix")"
-  fi
+  mkdir -p "$(dirname "$default_nix")"
 
   # Create default.nix file
   cat > "$default_nix" << EOF
@@ -175,9 +173,7 @@ create_webui_files() {
   default_json="webui/nixosConfigurations/$hostname/default.json"
 
   # Create the host directory if it doesn't exist
-  if [ ! -d "$(dirname "$default_json")" ]; then
-    mkdir -p "$(dirname "$default_json")"
-  fi
+  mkdir -p "$(dirname "$default_json")"
 
   # Generate a JSON-formatted file containing the hostnames
   hostnames=$(find nixosConfigurations -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
