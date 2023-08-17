@@ -148,6 +148,38 @@ print_output() {
   done
 }
 
+create_webui_files() {
+  local hostname="$1"
+  local json_data="$2"
+
+  default_json="webui/nixosConfigurations/$hostname/default.json"
+
+  # Generate a JSON-formatted file containing the hostnames
+  hostnames=$(find nixosConfigurations -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+  echo "$hostnames" | jq -R . | jq -s . > webui/nixosConfigurations/hostnames.json
+
+  # Create the host directory if it doesn't exist
+  if [ ! -d "$(dirname "$default_json")" ]; then
+    mkdir -p "$(dirname "$default_json")"
+  fi
+
+  # Save the JSON data
+  echo "$json_data" | jq -r "." > "$default_json"
+
+  # Combine the individual JSON files
+  combined_json={}
+
+  for hostname in $hostnames; do
+    if [[ -f "$default_json" ]]; then
+      json_data=$(jq -c '.' "$default_json")
+      # Merge the JSON data under the current hostname into the combined JSON object
+      combined_json=$(jq --argjson data "$json_data" ". + {\"$hostname\": \$data}" <<< "$combined_json")
+    fi
+  done
+
+  echo "$combined_json" > webui/nixosConfigurations/default.json
+};
+
 main() {
   # Parse and validate command line arguments
   parse_arguments "$@"
@@ -172,14 +204,13 @@ main() {
   nix fmt "$default_nix" > /dev/null 2>&1
 
   # Run the 'nix build' command
-  run_nix_build "$hostname" "$output_path" $verbose
+  #run_nix_build "$hostname" "$output_path" $verbose
 
   # Display additional output, including injected data and created symlinks
   print_output "$output_path" "$default_nix" $verbose
 
-  # Generate a JSON-formatted file containing the hostnames
-  find nixosConfigurations -mindepth 1 -maxdepth 1 -type d \
-      -exec basename {} \; | jq -R . | jq -s . > webui/nixosConfigurations/hostnames
+  # Create files for the webui directory
+  create_webui_files "$hostname" "$json_data"
 }
 
 main "$@"
