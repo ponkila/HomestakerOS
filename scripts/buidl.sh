@@ -61,7 +61,7 @@ parse_arguments() {
         output_path="$2"
         shift 2 ;;
       -d|--dry-run)
-        dry_run=true;
+        dry_run=true
         shift ;;
       -v|--verbose)
         verbose=true
