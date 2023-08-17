@@ -32,7 +32,26 @@
         config,
         system,
         ...
-      }: rec {
+      }: let
+        # Function to create a basic shell script package
+        # https://www.ertt.ca/nix/shell-scripts/#org6f67de6
+        mkScriptPackage = {
+          name,
+          deps
+        }: let
+          pkgs = import nixpkgs {inherit system;};
+          scriptPath = ./scripts/${name}.sh;
+          script = (pkgs.writeScriptBin name (builtins.readFile scriptPath)).overrideAttrs (old: {
+            buildCommand = "${old.buildCommand}\n patchShebangs $out";
+          });
+        in
+          pkgs.symlinkJoin {
+            inherit name;
+            paths = [script] ++ deps;
+            buildInputs = [pkgs.makeWrapper];
+            postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
+          };
+      in rec {
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         mission-control.scripts = {
@@ -80,48 +99,26 @@
           };
         };
 
-        # https://www.ertt.ca/nix/shell-scripts/#org6f67de6
         packages = {
-          "json2nix" = let
-            pkgs = import nixpkgs {inherit system;};
+          "json2nix" = mkScriptPackage {
             name = "json2nix";
-            json2nix-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/json2nix.sh)).overrideAttrs (old: {
-              buildCommand = "${old.buildCommand}\n patchShebangs $out";
-            });
-          in
-            pkgs.symlinkJoin {
-              inherit name;
-              paths = [json2nix-script];
-              buildInputs = with pkgs; [nix makeWrapper];
-              postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
-            };
-          "buidl" = let
-            pkgs = import nixpkgs {inherit system;};
+            deps = [pkgs.nix];
+          };
+          "buidl" = mkScriptPackage {
             name = "buidl";
-            my-buildInputs = with pkgs; [nix jq] ++ [self.packages.${system}.json2nix];
-            buidl-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/buidl.sh)).overrideAttrs (old: {
-              buildCommand = "${old.buildCommand}\n patchShebangs $out";
-            });
-          in
-            pkgs.symlinkJoin {
-              inherit name;
-              paths = [buidl-script] ++ my-buildInputs;
-              buildInputs = [pkgs.makeWrapper];
-              postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
-            };
+            deps = [pkgs.nix pkgs.jq self.packages.${system}.json2nix];
+          };
+          homestakeros = pkgs.mkYarnPackage {
+            pname = "homestakeros";
+            version = "0.0.1";
+
+            src = ./.;
+            packageJSON = ./package.json;
+            yarnLock = ./yarn.lock;
+            yarnNix = ./yarn.nix;
+          };
+          default = packages.homestakeros;
         };
-
-        packages.homestakeros = pkgs.mkYarnPackage {
-          pname = "homestakeros";
-          version = "0.0.1";
-
-          src = ./.;
-          packageJSON = ./package.json;
-          yarnLock = ./yarn.lock;
-          yarnNix = ./yarn.nix;
-        };
-
-        packages.default = packages.homestakeros;
       };
 
       flake = let
