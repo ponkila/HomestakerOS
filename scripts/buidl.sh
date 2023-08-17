@@ -173,19 +173,6 @@ create_webui_files() {
 
   # Save the JSON data
   echo "$json_data" | jq -r "." > "$default_json"
-
-  # Combine the individual JSON files
-  combined_json={}
-
-  for hostname in $hostnames; do
-    if [[ -f "$default_json" ]]; then
-      json_data=$(jq -c '.' "$default_json")
-      # Merge the JSON data under the current hostname into the combined JSON object
-      combined_json=$(jq --argjson data "$json_data" ". + {\"$hostname\": \$data}" <<< "$combined_json")
-    fi
-  done
-
-  echo "$combined_json" > webui/nixosConfigurations/default.json
 };
 
 main() {
