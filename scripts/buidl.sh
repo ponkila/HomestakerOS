@@ -26,7 +26,7 @@ Options, required:
 
 Options, optional:
   -o, --output <output_path>
-      Specify the output path for the resulting build symlinks. Default: './result'.
+      Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
 
   -v, --verbose
       Activate verbose output mode, which displays comprehensive information for debugging purposes.
