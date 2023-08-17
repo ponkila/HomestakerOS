@@ -46,7 +46,9 @@
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              mkfifo webui/pipe && nix run .#
+              nix eval --json .#schema | jq > webui/schema.json \
+              && if [ ! -p "webui/pipe" ]; then mkfifo webui/pipe; fi \
+              && nix run .#
             '';
             category = "Essentials";
           };
