@@ -5,6 +5,7 @@ set -o pipefail
 
 # Default argument values
 verbose=false
+dry_run=false
 
 display_usage() {
   cat <<USAGE
@@ -27,6 +28,9 @@ Options, required:
 Options, optional:
   -o, --output <output_path>
       Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
+
+  -d, --dry-run
+      Do not run the 'nix build' command.
 
   -v, --verbose
       Activate verbose output mode, which displays comprehensive information for debugging purposes.
@@ -56,6 +60,9 @@ parse_arguments() {
       -o|--output)
         output_path="$2"
         shift 2 ;;
+      -d|--dry-run)
+        dry_run=true;
+        shift ;;
       -v|--verbose)
         verbose=true
         shift ;;
@@ -149,14 +156,16 @@ print_output() {
   fi
 
   # Print the real paths of the symlinks
-  for symlink in "$output_path"/*; do
-    real_path=$(readlink -f "$symlink")
-    if [ "$verbose" = true ]; then 
-      echo created symlink: \'"$symlink > $real_path"\'
-    else
-      echo "$real_path"
-    fi
-  done
+  if [ $dry_run = false ]; then
+    for symlink in "$output_path"/*; do
+      real_path=$(readlink -f "$symlink")
+      if [ "$verbose" = true ]; then 
+        echo created symlink: \'"$symlink > $real_path"\'
+      else
+        echo "$real_path"
+      fi
+    done
+  fi
 }
 
 create_webui_files() {
@@ -206,7 +215,7 @@ main() {
   create_default_nix "$json_data" "$default_nix"
 
   # Run the 'nix build' command
-  run_nix_build "$hostname" "$output_path" $verbose
+  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $verbose
 
   # Display additional output, including injected data and created symlinks
   print_output "$output_path" "$default_nix" $verbose
