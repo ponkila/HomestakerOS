@@ -96,13 +96,21 @@ create_default_nix() {
   # Convert JSON to Nix expression using json2nix
   nix_expr=$(echo "$json_data" | json2nix)
 
-  # Create data.nix file
+  # Create the host directory if it doesn't exist
+  if [ ! -d "$(dirname "$default_nix")" ]; then
+    mkdir -p "$(dirname "$default_nix")"
+  fi
+
+  # Create default.nix file
   cat > "$default_nix" << EOF
 { pkgs, config, inputs, lib, ... }:
 {
   $module_name = $nix_expr;
 }
 EOF
+
+  # Run Nix formatter against the created file
+  nix fmt "$default_nix" > /dev/null 2>&1
 }
 
 run_nix_build() {
@@ -192,19 +200,23 @@ main() {
     json_data=$(</dev/stdin)
   fi
 
-  # Create the host directory if it doesn't exist
-  if [ ! -d "$(dirname "$default_nix")" ]; then
-    mkdir -p "$(dirname "$default_nix")"
+  # Check if JSON data exists
+  if [ -z "$json_data" ]; then
+    echo "error: JSON data not provided."
+    exit 1
+  fi
+
+  # Validate JSON data using jq
+  if ! echo "$json_data" | jq . >/dev/null 2>&1; then
+    echo "error: Invalid JSON data."
+    exit 1
   fi
 
   # If JSON data is provided, create 'default.nix' from it
-  [[ -n $json_data ]] && create_default_nix "$json_data" "$default_nix"
-
-  # Format file -- This should be replaced with a hook
-  nix fmt "$default_nix" > /dev/null 2>&1
+  create_default_nix "$json_data" "$default_nix"
 
   # Run the 'nix build' command
-  #run_nix_build "$hostname" "$output_path" $verbose
+  run_nix_build "$hostname" "$output_path" $verbose
 
   # Display additional output, including injected data and created symlinks
   print_output "$output_path" "$default_nix" $verbose
