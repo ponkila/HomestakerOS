@@ -78,6 +78,7 @@
           };
         };
 
+        # https://www.ertt.ca/nix/shell-scripts/#org6f67de6
         packages = {
           "json2nix" = let
             pkgs = import nixpkgs {inherit system;};
@@ -95,14 +96,15 @@
           "buidl" = let
             pkgs = import nixpkgs {inherit system;};
             name = "buidl";
+            my-buildInputs = with pkgs; [ nix jq ] ++ [self.packages.${system}.json2nix];
             buidl-script = (pkgs.writeScriptBin name (builtins.readFile ./scripts/buidl.sh)).overrideAttrs (old: {
               buildCommand = "${old.buildCommand}\n patchShebangs $out";
             });
           in
             pkgs.symlinkJoin {
               inherit name;
-              paths = [buidl-script] ++ [self.packages.${system}.json2nix pkgs.nushell];
-              buildInputs = with pkgs; [nix makeWrapper ];
+              paths = [buidl-script] ++ my-buildInputs;
+              buildInputs = [ pkgs.makeWrapper ];
               postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
             };
         };

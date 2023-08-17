@@ -178,7 +178,8 @@ main() {
   print_output "$output_path" "$default_nix" $verbose
 
   # Generate a JSON-formatted file containing the hostnames
-  nu -c "ls nixosConfigurations | to json" > webui/nixosConfigurations/hostnames
+  find nixosConfigurations -mindepth 1 -maxdepth 1 -type d \
+      -exec basename {} \; | jq -R . | jq -s . > webui/nixosConfigurations/hostnames
 }
 
 main "$@"
