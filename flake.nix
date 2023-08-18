@@ -1,5 +1,7 @@
 {
   inputs = {
+    ethereum-nix.inputs.nixpkgs.follows = "nixpkgs";
+    ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
     mission-control.url = "github:Platonic-Systems/mission-control";
@@ -10,6 +12,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    ethereum-nix,
     flake-parts,
     nixobolus,
     ...
@@ -30,6 +33,7 @@
         pkgs,
         lib,
         config,
+        inputs',
         system,
         ...
       }: let
@@ -97,6 +101,10 @@
             type = "app";
             program = "${self.packages.${system}.buidl}/bin/buidl";
           };
+          init-ssv = {
+            type = "app";
+            program = "${self.packages.${system}.init-ssv}/bin/init-ssv";
+          };
         };
 
         packages = {
@@ -108,6 +116,11 @@
             name = "buidl";
             deps = [pkgs.nix pkgs.jq self.packages.${system}.json2nix];
           };
+          "init-ssv" = mkScriptPackage {
+            name = "init-ssv";
+            deps = [inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
+          };
+
           homestakeros = pkgs.mkYarnPackage {
             pname = "homestakeros";
             version = "0.0.1";
