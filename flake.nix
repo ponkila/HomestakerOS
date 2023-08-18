@@ -1,7 +1,5 @@
 {
   inputs = {
-    ethereum-nix.inputs.nixpkgs.follows = "nixpkgs";
-    ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
     mission-control.url = "github:Platonic-Systems/mission-control";
@@ -12,7 +10,6 @@
   outputs = inputs @ {
     self,
     nixpkgs,
-    ethereum-nix,
     flake-parts,
     nixobolus,
     ...
@@ -118,7 +115,7 @@
           };
           "init-ssv" = mkScriptPackage {
             name = "init-ssv";
-            deps = [inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
+            deps = [nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
           };
 
           homestakeros = pkgs.mkYarnPackage {
