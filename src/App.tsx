@@ -34,7 +34,7 @@ const App = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
 
   return (
-    <Container maxW="container.md">
+    <Container maxW="container.lg">
       <Box position="fixed" top={4} right={4}>
         {wallet.accounts.length > 0 ? (
           <Tag size="lg" colorScheme="green" borderRadius="full" variant="solid" cursor="pointer">
