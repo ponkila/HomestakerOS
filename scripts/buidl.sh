@@ -194,9 +194,8 @@ get_result() {
     mkdir -p "$output_path"
 
     for symlink in "$result"/*; do
-      real_path=$(readlink -f "$symlink")
-      new_real_path="$output_path/$(basename "$symlink")"
-      cp -f "$symlink" "$new_real_path"
+      real_path="$output_path/$(basename "$symlink")"
+      cp -f "$symlink" "$real_path"
     done
 }
 
