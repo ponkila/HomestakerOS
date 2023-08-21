@@ -206,7 +206,7 @@ get_result() {
     for symlink in "$kexec_tree"/*; do
       real_path=$(readlink -f "$symlink")
       new_real_path="$output_path/$(basename "$symlink")"
-      cp "$symlink" "$new_real_path"
+      cp -f "$symlink" "$new_real_path"
     done
 }
 
