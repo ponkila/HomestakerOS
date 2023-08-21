@@ -65,7 +65,7 @@ parse_arguments() {
         output_path="$2"
         shift 2 ;;
       -r|--realize)
-        realize=true;
+        realize=true
         shift ;;
       -d|--dry-run)
         dry_run=true
@@ -213,7 +213,7 @@ create_webui_files() {
 
   # Save the JSON data
   echo "$json_data" | jq -r "." > "$default_json"
-};
+}
 
 main() {
   # Parse and validate command line arguments
