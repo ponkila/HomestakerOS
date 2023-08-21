@@ -196,13 +196,12 @@ get_result() {
       --no-warn-dirty
     )
 
-    # Get /nix/store path
+    # Get the path to the Nix store
     kexec_tree=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build.kexecTree "${nix_flags[@]}")
 
-    # Create result dir
+    # Copy the files to the output path
     mkdir -p "$output_path"
 
-    # Copy the files
     for symlink in "$kexec_tree"/*; do
       real_path=$(readlink -f "$symlink")
       new_real_path="$output_path/$(basename "$symlink")"
