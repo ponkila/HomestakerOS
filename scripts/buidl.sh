@@ -132,18 +132,14 @@ run_nix_build() {
   local hostname="$1"
   local output_path="$2"
   local realize="$3"
+  local -a nix_flags=("${@:4}")
 
-  # Default flags for the 'nix build' command
-  declare -a nix_flags=(
-    --accept-flake-config
-    --extra-experimental-features 'nix-command flakes'
-    --impure
-    --no-warn-dirty
-    --out-link "$output_path"
-  )
-
-  # Append '--no-link' if realize flag is true, overrides '--out-link' flag
-  [[ "$realize" = true ]] && nix_flags+=("--no-link")
+  # Append '--no-link' if realize flag is true, else '--out-link'
+  if [[ "$realize" = true ]]; then
+    nix_flags+=("--no-link")
+  else
+    nix_flags+=(--out-link "$output_path")
+  fi
 
   # Append '--show-trace' and '--debug' if verbose flag is true
   [[ "$verbose" = true ]] && nix_flags+=("--show-trace" "--debug")
@@ -187,14 +183,7 @@ print_output() {
 get_result() {
     local hostname="$1"
     local output_path="$2"
-
-    # Default flags for the 'nix eval' command
-    declare -a nix_flags=(
-      --accept-flake-config
-      --extra-experimental-features 'nix-command flakes'
-      --impure
-      --no-warn-dirty
-    )
+    local -a nix_flags=("${@:3}")
 
     # Get the path to the Nix store
     kexec_tree=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build.kexecTree "${nix_flags[@]}")
@@ -230,6 +219,14 @@ main() {
   # Parse and validate command line arguments
   parse_arguments "$@"
 
+  # Default flags for the nix-command
+  declare -a nix_flags=(
+    --accept-flake-config
+    --extra-experimental-features 'nix-command flakes'
+    --impure
+    --no-warn-dirty
+  )
+
   # Do not change, this path is also hard-coded in flake.nix
   default_nix="nixosConfigurations/$hostname/default.nix"
 
@@ -257,13 +254,13 @@ main() {
   git add "$default_nix"
 
   # Run the 'nix build' command
-  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize
+  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "${nix_flags[@]}"
 
   # Create files for the webui directory
   create_webui_files "$hostname" "$json_data"
 
   # Copy resulting files from '/nix/store' if realize is true
-  [[ $realize = true ]] && get_result "$hostname" "$output_path"
+  [[ $realize = true ]] && get_result "$hostname" "$output_path" "${nix_flags[@]}"
 
   # Display additional output, including injected data and result
   print_output "$output_path" "$default_nix" $verbose
