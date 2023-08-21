@@ -210,6 +210,9 @@ main() {
   # If JSON data is provided, create 'default.nix' from it
   create_default_nix "$json_data" "$default_nix"
 
+  # Stage the changes in 'default.nix'
+  git add "$default_nix"
+
   # Run the 'nix build' command
   [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $verbose
 
