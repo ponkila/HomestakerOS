@@ -1,13 +1,22 @@
-import { useState } from 'react'
-import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link } from '@chakra-ui/react'
+import { useState, useCallback } from 'react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from './useMetaMask'
+import { useNodeInfo, fetchNodeSSVKey } from './NodeInfoContext'
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [ssvKey, setSSVKey] = useState<string | null>(null)
+  const nodeInfo = useNodeInfo()
+
+  const fetchKey = useCallback((hostname: string) => {
+    fetchNodeSSVKey(hostname).then((key) => {
+      setSSVKey(key)
+    })
+  }, [])
 
   const registerOperator = async (e: any) => {
     e.preventDefault()
@@ -34,6 +43,14 @@ const RegisterSSVForm = () => {
         setError(err.message)
         setIsLoading(false)
       })
+  }
+
+  const onHostnameChange = (e: any) => {
+    if (e.target.value) {
+      fetchKey(e.target.value)
+    } else {
+      setSSVKey(null)
+    }
   }
 
   return (
@@ -66,15 +83,23 @@ const RegisterSSVForm = () => {
                 <FormLabel>Owner</FormLabel>
                 <Input disabled value={wallet.accounts[0] || ''} />
               </FormControl>
+              <FormControl my={4}>
+                <FormLabel>Hostname</FormLabel>
+                <Select placeholder="Select hostname" onChange={onHostnameChange}>
+                  {nodeInfo.map((hostname: string) => (
+                    <option value={hostname}>{hostname}</option>
+                  ))}
+                </Select>
+              </FormControl>
               <FormControl my={4} id="publicKey">
                 <FormLabel>Public key</FormLabel>
-                <Input placeholder="Public key" />
+                <Input disabled value={ssvKey || 'No public key available'} />
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
                 <Input placeholder="1.0" />
               </FormControl>
-              <Button w="100%" type="submit">
+              <Button w="100%" type="submit" isDisabled={!ssvKey}>
                 Register
               </Button>
             </form>

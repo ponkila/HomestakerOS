@@ -1740,6 +1740,11 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.12.tgz#d70faba7039d5fca54c83c7dbab41051d2b6f6cb"
   integrity sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==
 
+"@types/jsonpath@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@types/jsonpath/-/jsonpath-0.2.0.tgz#13c62db22a34d9c411364fac79fd374d63445aa1"
+  integrity sha512-v7qlPA0VpKUlEdhghbDqRoKMxFB3h3Ch688TApBJ6v+XLDdvWCGLJIYiPKGZnS6MAOie+IorCfNYVHOPIHSWwQ==
+
 "@types/lodash.mergewith@4.6.7":
   version "4.6.7"
   resolved "https://registry.yarnpkg.com/@types/lodash.mergewith/-/lodash.mergewith-4.6.7.tgz#eaa65aa5872abdd282f271eae447b115b2757212"

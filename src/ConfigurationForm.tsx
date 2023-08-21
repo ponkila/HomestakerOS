@@ -24,15 +24,17 @@ import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import * as jp from 'jsonpath'
 
-const FormSection = (props: { name: string; children: React.ReactNode }) => {
+const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
   const { name, children } = props
   const [show, setShow] = useState(true)
   return (
     <Box mb={4} borderWidth="1px" borderRadius="lg" p={4} pb={1}>
       <Flex onClick={() => setShow(!show)} cursor="pointer">
-        <Heading as="h3" size="sm" mb={4}>
-          {name}
-        </Heading>
+        {name && (
+          <Heading as="h3" size="sm" mb={4}>
+            {name}
+          </Heading>
+        )}
         <Spacer />
         <Button size="xs" onClick={() => setShow(!show)}>
           {show ? 'Hide' : 'Show'}
@@ -45,13 +47,13 @@ const FormSection = (props: { name: string; children: React.ReactNode }) => {
   )
 }
 
-const DescriptionFormLabel = (props: { label: string; description: string | null }) => {
+const DescriptionFormLabel = (props: { label: string | undefined; description: string | null }) => {
   const { label, description } = props
   if (description == null) return <FormLabel>{label}</FormLabel>
   else
     return (
       <FormLabel>
-        {label}
+        {label && <>{label}</>}
         <Tooltip label={description} aria-label="A tooltip">
           <QuestionOutlineIcon ml={2} />
         </Tooltip>
@@ -94,13 +96,13 @@ const ListOfControl = (props: ListOfControlProps) => {
   )
 }
 
-const CustomCheckbox = (props: { name: string; checked: boolean; children: React.ReactNode }) => {
-  const { name, checked, children } = props
+const CustomCheckbox = (props: { name: string; checked: boolean; children?: React.ReactNode }) => {
+  const { name, children } = props
   return (
     <>
       <Input name={name} type="hidden" value="0" />
-      <Checkbox name={name} checked={checked} value="1" {...props}>
-        {children}
+      <Checkbox value="1" {...props}>
+        {children && <>{children}</>}
       </Checkbox>
     </>
   )
@@ -109,13 +111,14 @@ const CustomCheckbox = (props: { name: string; checked: boolean; children: React
 type AttrsOfControlProps = {
   keys: string[]
   description: string | null
-  example: string | null
+  example: Record<string, string | boolean> | null
   defaultValue: Record<string, any> | null
 }
 
 const AttrsOfControl = (props: AttrsOfControlProps) => {
   const { keys, description, example, defaultValue } = props
-  const [list, setList] = useState<string[]>(Object.keys(defaultValue) || [])
+  const [list, setList] = useState<string[]>(Object.keys(defaultValue || {}))
+  if (!example) return <></>
   const name = keys.slice(-1)[0]
   const fields = Object.values(example)[0]
 
@@ -272,9 +275,9 @@ const ConfigurationForm = () => {
     Object.entries(formDataJson).forEach(([key, value]) => {
       const schemaEntry = jp.query(schema, key)
       if (schemaEntry.length > 0 && schemaEntry[0]['type'] == 'int') {
-        jp.apply(result, key, (v) => parseInt(value))
+        jp.apply(result, key, () => parseInt(value as string))
       } else if (schemaEntry.length > 0 && schemaEntry[0]['type'] == 'bool') {
-        jp.apply(result, key, (v) => value === '1')
+        jp.apply(result, key, () => value === '1')
       } else if (schemaEntry.length == 0) {
         let parent = null
         let parentPath = ''
@@ -283,7 +286,7 @@ const ConfigurationForm = () => {
             jp
               .parse(key)
               .slice(0, -i)
-              .map((v) => v['expression']['value'])
+              .map((v: any) => v['expression']['value'])
           )
           parent = jp.query(schema, parentPath)
           if (parent.length > 0) {
@@ -292,23 +295,23 @@ const ConfigurationForm = () => {
           }
         }
         if (parent['type'] == 'listOf') {
-          jp.apply(result, parentPath, (v) => [...v, value])
+          jp.apply(result, parentPath, (v: any) => [...v, value])
         } else if (parent['type'] == 'attrsOf') {
           const path = jp.parse(key).at(-2)['expression']['value']
-          const objPath = jp.stringify([...jp.parse(parentPath).map((v) => v['expression']['value']), path])
+          const objPath = jp.stringify([...jp.parse(parentPath).map((v: any) => v['expression']['value']), path])
           const obj = jp.query(result, objPath)
           if (obj.length == 0) {
-            jp.apply(result, parentPath, (v) => ({ ...v, [path]: {} }))
+            jp.apply(result, parentPath, (v: any) => ({ ...v, [path]: {} }))
           }
           const key2 = jp.parse(key).at(-1)['expression']['value']
           if (key2 == 'enable') {
-            jp.apply(result, objPath, (v) => ({ ...v, [key2]: value === '1' }))
+            jp.apply(result, objPath, (v: any) => ({ ...v, [key2]: value === '1' }))
           } else {
-            jp.apply(result, objPath, (v) => ({ ...v, [key2]: value }))
+            jp.apply(result, objPath, (v: any) => ({ ...v, [key2]: value }))
           }
         }
       } else {
-        jp.apply(result, key, (v) => value)
+        jp.apply(result, key, () => value)
       }
     })
     console.log(JSON.stringify(result, null, 2))
