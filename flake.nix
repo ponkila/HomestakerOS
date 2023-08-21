@@ -106,7 +106,12 @@
           };
           "buidl" = mkScriptPackage {
             name = "buidl";
-            deps = [pkgs.nix pkgs.jq self.packages.${system}.json2nix];
+            deps = [
+              pkgs.nix
+              pkgs.jq
+              pkgs.git
+              self.packages.${system}.json2nix
+            ];
           };
           homestakeros = pkgs.mkYarnPackage {
             pname = "homestakeros";
