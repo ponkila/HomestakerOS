@@ -132,7 +132,8 @@ run_nix_build() {
   local hostname="$1"
   local output_path="$2"
   local realize="$3"
-  local -a nix_flags=("${@:4}")
+  local format="$4"
+  local -a nix_flags=("${@:5}")
 
   # Append '--no-link' if realize flag is true, else '--out-link'
   if [[ "$realize" = true ]]; then
@@ -145,7 +146,7 @@ run_nix_build() {
   [[ "$verbose" = true ]] && nix_flags+=("--show-trace" "--debug")
   
   # Execute the 'nix build' command
-  nix build .#nixosConfigurations."$hostname".config.system.build.kexecTree "${nix_flags[@]}" || exit 1
+  nix build .#nixosConfigurations."$hostname".config.system.build."$format" "${nix_flags[@]}" || exit 1
 }
 
 print_output() {
@@ -183,15 +184,16 @@ print_output() {
 get_result() {
     local hostname="$1"
     local output_path="$2"
-    local -a nix_flags=("${@:3}")
+    local format="$3"
+    local -a nix_flags=("${@:4}")
 
     # Get the path to the Nix store
-    kexec_tree=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build.kexecTree "${nix_flags[@]}")
+    result=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build."$format" "${nix_flags[@]}")
 
     # Copy the files to the output path
     mkdir -p "$output_path"
 
-    for symlink in "$kexec_tree"/*; do
+    for symlink in "$result"/*; do
       real_path=$(readlink -f "$symlink")
       new_real_path="$output_path/$(basename "$symlink")"
       cp -f "$symlink" "$new_real_path"
@@ -201,7 +203,7 @@ get_result() {
 create_webui_files() {
   local hostname="$1"
   local json_data="$2"
-
+  
   default_json="webui/nixosConfigurations/$hostname/default.json"
 
   # Create the host directory if it doesn't exist
@@ -213,6 +215,22 @@ create_webui_files() {
 
   # Save the JSON data
   echo "$json_data" | jq -r "." > "$default_json"
+}
+
+detect_format() {
+  local hostname="$1"
+  local -a nix_flags=("${@:2}")
+  
+  supported_formats=("kexecTree" "isoImage")
+
+  for format in "${supported_formats[@]}"; do
+    if [[ "$(nix eval .#nixosConfigurations."$hostname".config.system.build."$format" --apply builtins.isAttrs "${nix_flags[@]}")" == true ]]; then
+      echo "$format"
+      return 0
+    fi
+  done
+
+  echo "error: $hostname has an unsupported format." && return 1 
 }
 
 main() {
@@ -253,14 +271,17 @@ main() {
   # Stage the changes in 'default.nix'
   git add "$default_nix"
 
+  # Detect format, returns either 'kexecTree' or 'isoImage'
+  format=$(detect_format "$hostname" "${nix_flags[@]}" || exit 1)
+
   # Run the 'nix build' command
-  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "${nix_flags[@]}"
+  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
 
   # Create files for the webui directory
   create_webui_files "$hostname" "$json_data"
 
   # Copy resulting files from '/nix/store' if realize is true
-  [[ $realize = true ]] && get_result "$hostname" "$output_path" "${nix_flags[@]}"
+  [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"
 
   # Display additional output, including injected data and result
   print_output "$output_path" "$default_nix" $verbose
