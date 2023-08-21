@@ -315,7 +315,7 @@ const ConfigurationForm = () => {
       }
     })
     console.log(JSON.stringify(result, null, 2))
-    fetch('http://localhost:8081/api/hello', {
+    fetch('http://localhost:8081/api/nixosConfig', {
       method: 'POST',
       headers: {
         'Access-Control-Allow-Origin': '*',
