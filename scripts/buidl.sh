@@ -6,6 +6,7 @@ set -o pipefail
 # Default argument values
 verbose=false
 dry_run=false
+realize=false
 
 display_usage() {
   cat <<USAGE
@@ -28,6 +29,9 @@ Options, required:
 Options, optional:
   -o, --output <output_path>
       Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
+  
+  -r, --realize
+      Output files instead of symlinks, aka. realize the resulting build symlinks.
 
   -d, --dry-run
       Do not run the 'nix build' command.
@@ -60,6 +64,9 @@ parse_arguments() {
       -o|--output)
         output_path="$2"
         shift 2 ;;
+      -r|--realize)
+        realize=true;
+        shift ;;
       -d|--dry-run)
         dry_run=true
         shift ;;
@@ -124,7 +131,7 @@ EOF
 run_nix_build() {
   local hostname="$1"
   local output_path="$2"
-  local verbose="$3"
+  local realize="$3"
 
   # Default flags for the 'nix build' command
   declare -a nix_flags=(
@@ -134,6 +141,9 @@ run_nix_build() {
     --no-warn-dirty
     --out-link "$output_path"
   )
+
+  # Append '--no-link' if realize flag is true, overrides '--out-link' flag
+  [[ "$realize" = true ]] && nix_flags+=("--no-link")
 
   # Append '--show-trace' and '--debug' if verbose flag is true
   [[ "$verbose" = true ]] && nix_flags+=("--show-trace" "--debug")
@@ -153,17 +163,51 @@ print_output() {
     echo "injected data: '$(< "$default_nix" tr '\n' ' ' | tr -s ' ' | sed 's/ $//')'"
   fi
 
-  # Print the real paths of the symlinks
-  if [ $dry_run = false ]; then
-    for symlink in "$output_path"/*; do
-      real_path=$(readlink -f "$symlink")
-      if [ "$verbose" = true ]; then 
-        echo created symlink: \'"$symlink > $real_path"\'
+  # Print the paths of the results
+  if [ "$dry_run" = false ]; then
+    for file_path in "$output_path"/*; do
+      if [ -h "$file_path" ]; then
+        real_path=$(readlink -f "$file_path")
+        if [ "$verbose" = true ]; then 
+          echo "created symlink: '$file_path > $real_path'"
+        else
+          echo "$real_path"
+        fi
       else
-        echo "$real_path"
+        if [ "$verbose" = true ]; then
+          echo "created file: '$file_path'"
+        else
+          echo "$file_path"
+        fi
       fi
     done
   fi
+}
+
+get_result() {
+    local hostname="$1"
+    local output_path="$2"
+
+    # Default flags for the 'nix eval' command
+    declare -a nix_flags=(
+      --accept-flake-config
+      --extra-experimental-features 'nix-command flakes'
+      --impure
+      --no-warn-dirty
+    )
+
+    # Get /nix/store path
+    kexec_tree=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build.kexecTree "${nix_flags[@]}")
+
+    # Create result dir
+    mkdir -p "$output_path"
+
+    # Copy the files
+    for symlink in "$kexec_tree"/*; do
+      real_path=$(readlink -f "$symlink")
+      new_real_path="$output_path/$(basename "$symlink")"
+      cp "$symlink" "$new_real_path"
+    done
 }
 
 create_webui_files() {
@@ -214,13 +258,16 @@ main() {
   git add "$default_nix"
 
   # Run the 'nix build' command
-  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $verbose
-
-  # Display additional output, including injected data and created symlinks
-  print_output "$output_path" "$default_nix" $verbose
+  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize
 
   # Create files for the webui directory
   create_webui_files "$hostname" "$json_data"
+
+  # Copy resulting files from '/nix/store' if realize is true
+  [[ $realize = true ]] && get_result "$hostname" "$output_path"
+
+  # Display additional output, including injected data and result
+  print_output "$output_path" "$default_nix" $verbose
 }
 
 main "$@"
