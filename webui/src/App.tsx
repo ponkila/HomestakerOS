@@ -1,12 +1,12 @@
 import { Container, Box, Heading, Flex, Spacer, Text, Tag, TagLabel } from '@chakra-ui/react'
 import './App.css'
-import ConfigurationForm from './ConfigurationForm'
-import NewsletterForm from './NewsletterForm'
-import NodeQuery from './NodeQuery'
-import RegisterSSVForm from './RegisterSSVForm'
+import ConfigurationForm from './Components/ConfigurationForm'
+import NewsletterForm from './Components/NewsletterForm'
+import NodeQuery from './Components/NodeQuery'
+import RegisterSSVForm from './Components/RegisterSSVForm'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
-import useMetaMask from './useMetaMask'
-import { NodeInfoProvider } from './NodeInfoContext'
+import useMetaMask from './Hooks/useMetaMask'
+import { NodeInfoProvider } from './Context/NodeInfoContext'
 
 const TabsView = () => {
   return (

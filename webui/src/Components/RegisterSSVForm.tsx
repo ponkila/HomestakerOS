@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react'
 import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
-import useMetaMask from './useMetaMask'
-import { useNodeInfo, fetchNodeSSVKey } from './NodeInfoContext'
+import useMetaMask from '../Hooks/useMetaMask'
+import { useNodeInfo, fetchNodeSSVKey } from '../Context/NodeInfoContext'
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
