@@ -22,7 +22,6 @@ function useMetaMask() {
   useEffect(() => {
     const getProvider = async () => {
       const provider = await detectEthereumProvider({ silent: true })
-      console.log(provider)
       setHasProvider(Boolean(provider)) // transform provider to true or false
       if (provider) {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' })

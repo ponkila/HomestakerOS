@@ -1,27 +1,19 @@
-#!/usr/bin/env node
-const express = require('express')
-const exec = require('node:child_process');
+import express from 'express'
+import cors from 'cors'
+import { exec } from 'node:child_process'
+
 const app = express()
-const port = 3000
-
 app.use(express.json())
-app.use(express.urlencoded({
-    extended: true
-}))
+app.use(cors())
 
-app.post('/', (req, res) => {
-    console.log(req.body)
-    exec("echo '" + JSON.stringify(config) + "' | ./nixobolus/build.sh -o webui/test", (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error}`);
-            return;
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-        res.send('<a href="/test/' + host.name + '/initrd">initrd</a> </br> <a href="test/' + host.name + '/bzImage">bzImage</a> </br> <a href="test/' + host.name + '/kexec-boot">kexec-boot</a>');
-    });
+app.post('/api/hello', (req, res) => {
+  console.log(req.body)
+  const homestakerConfig = req.body.homestakeros
+  const hostname = homestakerConfig.localization.hostname
+  console.log(`echo '${JSON.stringify(homestakerConfig)}' | nix run .#buidl -- -n '${hostname}' -b homestakeros`)
+  res.json({ hello: 'world' })
 })
 
-app.use(express.static('webui'))
-
-app.listen(port)
+app.listen(8081, () => {
+  console.log('API server is listening on port 8080')
+})
