@@ -30,6 +30,7 @@
         pkgs,
         lib,
         config,
+        inputs',
         system,
         ...
       }: let
@@ -97,6 +98,10 @@
             type = "app";
             program = "${self.packages.${system}.buidl}/bin/buidl";
           };
+          init-ssv = {
+            type = "app";
+            program = "${self.packages.${system}.init-ssv}/bin/init-ssv";
+          };
         };
 
         packages = {
@@ -108,6 +113,11 @@
             name = "buidl";
             deps = [pkgs.nix pkgs.jq self.packages.${system}.json2nix];
           };
+          "init-ssv" = mkScriptPackage {
+            name = "init-ssv";
+            deps = [nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
+          };
+
           homestakeros = pkgs.mkYarnPackage {
             pname = "homestakeros";
             version = "0.0.1";
