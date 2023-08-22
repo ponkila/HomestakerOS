@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import express from 'express'
 import apiRouter from './webui/api.js'
 import cors from 'cors'
