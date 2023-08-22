@@ -1,0 +1,168 @@
+{
+  "homestakeros": {
+    "addons": {
+      "mev-boost": {
+        "enable": {
+          "default": false,
+          "description": "Whether to enable MEV-Boost.",
+          "example": null,
+          "type": "bool"
+        },
+        "endpoint": {
+          "default": "http://127.0.0.1:18550",
+          "description": "Listening interface for the MEV-Boost server.",
+          "example": null,
+          "type": "str"
+        }
+      }
+    },
+    "consensus": {
+      "lighthouse": {
+        "dataDir": {
+          "default": "/var/mnt/lighthouse",
+          "description": "Data directory for the blockchain.",
+          "example": null,
+          "type": "path"
+        },
+        "enable": {
+          "default": false,
+          "description": "Whether to enable Lighthouse.",
+          "example": null,
+          "type": "bool"
+        },
+        "endpoint": {
+          "default": "http://127.0.0.1:5052",
+          "description": "HTTP server listening interface.",
+          "example": null,
+          "type": "str"
+        },
+        "execEndpoint": {
+          "default": null,
+          "description": "Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection.",
+          "example": "http://127.0.0.1:8551",
+          "type": "nullOr"
+        },
+        "jwtSecretFile": {
+          "default": null,
+          "description": "Path to the token that ensures safe connection between CL and EL.",
+          "example": "/var/mnt/lighthouse/jwt.hex",
+          "type": "nullOr"
+        },
+        "slasher": {
+          "enable": {
+            "default": false,
+            "description": "Whether to enable slasher.",
+            "example": null,
+            "type": "bool"
+          },
+          "historyLength": {
+            "default": 4096,
+            "description": "Number of epochs to store.",
+            "example": null,
+            "type": "int"
+          },
+          "maxDatabaseSize": {
+            "default": 256,
+            "description": "Maximum size of the slasher database in gigabytes.",
+            "example": null,
+            "type": "int"
+          }
+        }
+      }
+    },
+    "execution": {
+      "erigon": {
+        "dataDir": {
+          "default": "/var/mnt/erigon",
+          "description": "Data directory for the blockchain.",
+          "example": null,
+          "type": "path"
+        },
+        "enable": {
+          "default": false,
+          "description": "Whether to enable Erigon.",
+          "example": null,
+          "type": "bool"
+        },
+        "endpoint": {
+          "default": "http://127.0.0.1:8551",
+          "description": "HTTP-RPC server listening interface of engine API.",
+          "example": null,
+          "type": "str"
+        },
+        "jwtSecretFile": {
+          "default": null,
+          "description": "Path to the token that ensures safe connection between CL and EL.",
+          "example": "/var/mnt/erigon/jwt.hex",
+          "type": "nullOr"
+        }
+      }
+    },
+    "localization": {
+      "hostname": {
+        "default": "homestaker",
+        "description": "The name of the machine.",
+        "example": null,
+        "type": "strMatching \"^\\$|^[[:alnum:]]([[:alnum:]_-]{0,61}[[:alnum:]])?\\$\""
+      },
+      "timezone": {
+        "default": null,
+        "description": "The time zone used when displaying times and dates.",
+        "example": "America/New_York",
+        "type": "nullOr"
+      }
+    },
+    "mounts": {
+      "default": {},
+      "description": "Definition of systemd mount units. Click [here](https://www.freedesktop.org/software/systemd/man/systemd.mount.html#Options) for more information.",
+      "example": {
+        "my-mount": {
+          "description": "A storage device",
+          "enable": true,
+          "options": "noatime",
+          "type": "btrfs",
+          "wantedBy": ["multi-user.target"],
+          "what": "/dev/disk/by-label/my-label",
+          "where": "/path/to/my/mount"
+        }
+      },
+      "type": "attrsOf"
+    },
+    "ssh": {
+      "authorizedKeys": {
+        "default": [],
+        "description": "A list of public SSH keys to be added to the user's authorized keys.",
+        "example": null,
+        "type": "listOf"
+      },
+      "privateKeyFile": {
+        "default": null,
+        "description": "Path to the Ed25519 SSH host key. If absent, the key will be generated automatically.",
+        "example": "/var/mnt/secrets/ssh/id_ed25519",
+        "type": "nullOr"
+      }
+    },
+    "vpn": {
+      "wireguard": {
+        "configFile": {
+          "default": null,
+          "description": "A file path for the wg-quick configuration.",
+          "example": "/var/mnt/secrets/wg0.conf",
+          "type": "nullOr"
+        },
+        "enable": {
+          "default": false,
+          "description": "Whether to enable WireGuard.",
+          "example": null,
+          "type": "bool"
+        },
+        "interfaceName": {
+          "default": "wg0",
+          "description": "The name assigned to the WireGuard network interface.",
+          "example": null,
+          "type": "str"
+        }
+      }
+    }
+  }
+}

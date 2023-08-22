@@ -1,13 +1,13 @@
 {
     "name": "homestakeros",
     "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
+    "type": "module",
     "bin": "app.js",
     "scripts": {
-        "prestart": "just schemas",
-        "start": "node app",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "dev": "concurrently 'vite serve webui' 'nodemon app.js'",
+        "build": "tsc -p webui/tsconfig.json && vite build webui",
+        "lint": "eslint ./webui --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+        "preview": "node app.js"
     },
     "repository": {
         "type": "git",
@@ -20,6 +20,34 @@
     },
     "homepage": "https://github.com/ponkila/HomestakerOS#readme",
     "dependencies": {
-        "express": "^4.18.2"
+        "@chakra-ui/icons": "^2.1.0",
+        "@chakra-ui/react": "^2.8.0",
+        "@emotion/react": "^11.11.1",
+        "@emotion/styled": "^11.11.0",
+        "@metamask/detect-provider": "^2.0.0",
+        "ethers": "<6",
+        "express": "^4.18.2",
+        "framer-motion": "^10.15.1",
+        "jsonpath": "^1.1.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@types/jsonpath": "^0.2.0",
+        "@types/react": "^18.2.15",
+        "@types/react-dom": "^18.2.7",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
+        "@vitejs/plugin-react": "^4.0.3",
+        "concurrently": "^8.2.0",
+        "cors": "^2.8.5",
+        "eslint": "^8.45.0",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "eslint-plugin-react-refresh": "^0.4.3",
+        "express": "^4.18.2",
+        "nodemon": "^3.0.1",
+        "prettier": "3.0.1",
+        "typescript": "^5.0.2",
+        "vite": "^4.4.5"
     }
 }

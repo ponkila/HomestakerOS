@@ -1,27 +1,14 @@
 #!/usr/bin/env node
-const express = require('express')
-const exec = require('node:child_process');
+import express from 'express'
+import apiRouter from './webui/api.js'
+import cors from 'cors'
+
 const app = express()
-const port = 3000
-
 app.use(express.json())
-app.use(express.urlencoded({
-    extended: true
-}))
+app.use(cors())
 
-app.post('/', (req, res) => {
-    console.log(req.body)
-    exec("echo '" + JSON.stringify(config) + "' | ./nixobolus/build.sh -o webui/test", (error, stdout, stderr) => {
-        if (error) {
-            console.error(`exec error: ${error}`);
-            return;
-        }
-        console.log(`stdout: ${stdout}`);
-        console.error(`stderr: ${stderr}`);
-        res.send('<a href="/test/' + host.name + '/initrd">initrd</a> </br> <a href="test/' + host.name + '/bzImage">bzImage</a> </br> <a href="test/' + host.name + '/kexec-boot">kexec-boot</a>');
-    });
-})
+app.use(express.static('webui/dist'))
+app.use('/api', apiRouter)
+app.use('/nixosConfigurations', express.static('./nixosConfigurations'))
 
-app.use(express.static('webui'))
-
-app.listen(port)
+app.listen(8081)
