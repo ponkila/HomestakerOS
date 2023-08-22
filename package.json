@@ -6,7 +6,7 @@
     "dev": "concurrently 'vite serve webui' 'nodemon app.js'",
     "build": "tsc -p webui/tsconfig.json && vite build webui",
     "lint": "eslint ./webui --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "concurrently 'vite preview webui' 'nodemon app.js'"
+    "preview": "node app.js"
   },
   "repository": {
     "type": "git",

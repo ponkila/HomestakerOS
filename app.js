@@ -1,18 +1,13 @@
 import express from 'express'
+import apiRouter from './webui/api.js'
 import cors from 'cors'
 
 const app = express()
 app.use(express.json())
 app.use(cors())
 
-app.post('/api/nixosConfig', (req, res) => {
-  console.log(req.body)
-  const homestakerConfig = req.body.homestakeros
-  const hostname = homestakerConfig.localization.hostname
-  console.log(`echo '${JSON.stringify(homestakerConfig)}' | nix run .#buidl -- -n '${hostname}' -b homestakeros`)
-  res.json({ hello: 'world' })
-})
+app.use(express.static('webui/dist'))
+app.use('/api', apiRouter)
+app.use('/nixosConfigurations', express.static('./nixosConfigurations'))
 
-app.listen(8081, () => {
-  console.log('API server is listening on port 8081')
-})
+app.listen(8081)
