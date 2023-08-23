@@ -66,7 +66,7 @@
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              && nix run .#update-json \
+              nix run --no-warn-dirty .#update-json \
               && nix run .#
             '';
             category = "Essentials";
