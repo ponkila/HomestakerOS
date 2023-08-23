@@ -104,7 +104,7 @@
           };
           update-json = {
             type = "app";
-            program = "${self.packages.${system}.init-ssv}/bin/update-json";
+            program = "${self.packages.${system}.update-json}/bin/update-json";
           };
         };
 
