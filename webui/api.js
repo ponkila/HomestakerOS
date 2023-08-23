@@ -5,7 +5,7 @@ const router = express.Router()
 var writable = fs.createWriteStream('pipe')
 
 router.post('/nixosConfig', (req, res) => {
-  const homestakerConfig = req.body.homestakeros
+  const homestakerConfig = req.body
   const hostname = homestakerConfig.localization.hostname
   writable.write(`echo '${JSON.stringify(homestakerConfig)}' | nix run .#buidl -- -n '${hostname}' -b homestakeros\n`)
   res.json({ status: 'ok' })
