@@ -67,6 +67,7 @@
             description = "Initialize and launch the web server";
             exec = ''
               nix eval --json .#schema | jq > webui/public/schema.json \
+              && nix run .#update-json \
               && nix run .#
             '';
             category = "Essentials";
