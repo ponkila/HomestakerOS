@@ -68,21 +68,21 @@ To reference the formatted drive, we simply use the label we set. In this case, 
 description = "Secrets";
 what = "/dev/disk/by-label/homestaker";
 where = "/mnt/secrets";
-options = "noatime subvol=secrets";
+options = "subvol=secrets";
 type = "btrfs";
 ```
 ```conf
 description = "Erigon";
 what = "/dev/disk/by-label/homestaker";
 where = "/mnt/erigon";
-options = "noatime subvol=erigon";
+options = "subvol=erigon";
 type = "btrfs";
 ```
 ```conf
 description = "Lighthouse";
 what = "/dev/disk/by-label/homestaker";
 where = "/mnt/lighthouse";
-options = "noatime subvol=lighthouse";
+options = "subvol=lighthouse";
 type = "btrfs";
 ```
 </details>
@@ -180,7 +180,7 @@ The keys can be manually created and placed there, but if absent, NixOS will gen
 You can generate the keys manually by running the following command:
 
 ```shell
-ssh-keygen -t ed25519 -f /var/mnt/secrets/ssh/id_ed25519 -N ""
+ssh-keygen -t ed25519 -f /mnt/secrets/ssh/id_ed25519 -N ""
 ```
 
 Either way, make sure to configure the private SSH key path in the SSH settings on the frontend. In this case, the path should be set to `/mnt/secrets/ssh/id_ed25519`.
