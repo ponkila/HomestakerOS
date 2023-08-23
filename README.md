@@ -8,8 +8,9 @@ Web frontend source code of [HomestakerOS.com](https://homestakeros.com).
 
 ## Building
 
-1. Install [Nix](https://nixos.org). This project uses [direnv](https://direnv.net) integration in Nix to build pre-requisite tooling.
+1. Install [Nix](https://nixos.org/download.html)
 2. `git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS`
-3. `direnv allow`
-4. Install WebUI dependencies: `yarn`
-5. Build and run WebUI: `yarn build && yarn preview`
+3. Enter the development environment by `nix develop` or `direnv allow`
+4. Install yarn and build: `yarn install && yarn build`
+5. Run WebUI: `, server`
+6. Check it out at `http://localhost:8081/`
