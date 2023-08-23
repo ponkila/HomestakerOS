@@ -59,14 +59,15 @@
           schema = {
             description = "Update schema using current version of nixobolus";
             exec = ''
-              nix eval --json .#schema | jq > webui/schema.json
+              nix eval --json .#schema | jq > webui/public/schema.json
             '';
             category = "Development Tools";
           };
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              nix eval --json .#schema | jq > webui/schema.json \
+              nix eval --json .#schema | jq > webui/public/schema.json \
+              && nix run .#update-json \
               && nix run .#
             '';
             category = "Essentials";
@@ -101,6 +102,10 @@
             type = "app";
             program = "${self.packages.${system}.init-ssv}/bin/init-ssv";
           };
+          update-json = {
+            type = "app";
+            program = "${self.packages.${system}.init-ssv}/bin/update-json";
+          };
         };
 
         packages = {
@@ -115,11 +120,19 @@
               pkgs.jq
               pkgs.git
               self.packages.${system}.json2nix
+              self.packages.${system}.update-json
             ];
           };
           "init-ssv" = mkScriptPackage {
             name = "init-ssv";
             deps = [nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
+          };
+          "update-json" = mkScriptPackage {
+            name = "update-json";
+            deps = [
+              pkgs.nix
+              pkgs.jq
+            ];
           };
 
           homestakeros = pkgs.mkYarnPackage {

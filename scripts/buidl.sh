@@ -199,23 +199,6 @@ get_result() {
     done
 }
 
-create_webui_files() {
-  local hostname="$1"
-  local json_data="$2"
-  
-  default_json="webui/nixosConfigurations/$hostname/default.json"
-
-  # Create the host directory if it doesn't exist
-  mkdir -p "$(dirname "$default_json")"
-
-  # Generate a JSON-formatted file containing the hostnames
-  hostnames=$(find nixosConfigurations -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-  echo "$hostnames" | jq -R . | jq -s . > webui/nixosConfigurations/hostnames.json
-
-  # Save the JSON data
-  echo "$json_data" | jq -r "." > "$default_json"
-}
-
 detect_format() {
   local hostname="$1"
   local -a nix_flags=("${@:2}")
@@ -276,8 +259,8 @@ main() {
   # Run the 'nix build' command
   [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
 
-  # Create files for the webui directory
-  create_webui_files "$hostname" "$json_data"
+  # Create the JSON files for the webui directory
+  mkdir -p "webui/nixosConfigurations/$hostname" && update-json
 
   # Copy resulting files from '/nix/store' if realize is true
   [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"
