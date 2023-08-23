@@ -11,13 +11,21 @@ declare -a nix_flags=(
   --no-warn-dirty
 )
 
-# Generate a JSON-formatted file containing the hostnames
-hostnames=$(find nixosConfigurations -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-echo "$hostnames" | jq -R . | jq -s . > $config_dir/hostnames.json
+# Make config directory if doesn't exist
+mkdir -p $config_dir
 
-# Get and save the JSON data
-for hostname in $hostnames; do
-  default_json="$config_dir/$hostname/default.json"
-  json_data=$(nix eval --json .#nixosConfigurations."$hostname".config.homestakeros "${nix_flags[@]}")
-  echo "$json_data" | jq -r "." > "$default_json"
-done
+# Fetch hostnames from 'flake.nix'
+mapfile -t hostnames < <(nix eval --json .#nixosConfigurations --apply builtins.attrNames | jq -r '.[]')
+
+if [ ${#hostnames[@]} -gt 0 ]; then
+    printf '%s\n' "${hostnames[@]}" | jq -R . | jq -s . > $config_dir/hostnames.json
+
+    # Get and save the JSON data
+    for hostname in "${hostnames[@]}"; do
+      default_json="$config_dir/$hostname/default.json"
+      json_data=$(nix eval --json .#nixosConfigurations."$hostname".config.homestakeros "${nix_flags[@]}")
+      echo "$json_data" | jq -r "." > "$default_json"
+    done
+else
+    echo "[]" > $config_dir/hostnames.json
+fi
