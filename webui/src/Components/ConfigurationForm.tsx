@@ -274,10 +274,16 @@ const ConfigurationForm = () => {
     const formDataJson = Object.fromEntries(formData.entries())
     Object.entries(formDataJson).forEach(([key, value]) => {
       const schemaEntry = jp.query(schema, key)
-      if (schemaEntry.length > 0 && schemaEntry[0]['type'] == 'int') {
+      const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
+      if (value === '' && fieldType !== 'nullOr') {
+        return
+      }
+      if (fieldType === 'int') {
         jp.apply(result, key, () => parseInt(value as string))
-      } else if (schemaEntry.length > 0 && schemaEntry[0]['type'] == 'bool') {
+      } else if (fieldType === 'bool') {
         jp.apply(result, key, () => value === '1')
+      } else if (fieldType === 'nullOr') {
+        jp.apply(result, key, () => (value === '' ? null : value))
       } else if (schemaEntry.length == 0) {
         let parent = null
         let parentPath = ''
