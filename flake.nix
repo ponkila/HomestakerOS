@@ -183,7 +183,7 @@
               hostnames)
           );
 
-        schema = nixobolus.outputs.exports;
+        schema = nixobolus.outputs.exports.homestakeros;
       };
     };
 }
