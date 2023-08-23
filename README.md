@@ -1,15 +1,36 @@
 # HomestakerOS
 
-Web frontend source code of [HomestakerOS.com](https://homestakeros.com).
+HomestakerOS is a web UI which creates custom Linux OS for Ethereum homestaking. It aims to democratize homestaking by simplifying the process of creating and maintaining servers in home environments.
 
-## Abstract
+The wizard produces Linux disk images based on NixOS. NixOS allows configurations to be public, deterministic, and self-upgrading. Further, by loading the whole operating system into the RAM, we can eliminate the works on my machine tantrum, while also making it possible to be booted by double-clicking a kernel execution script -- and if you want to return to your previous distribution, just restart your computer.
 
-[Nixobolus](https://github.com/ponkila/nixobolus) is first used to generate HTML frontend from Nix `nixosModules` flakes interface. E.g., to generate JSON schema for [erigon](https://github.com/ledgerwatch/erigon) run `nix eval --json .#erigon`. See the `justfile` for more. Next, the schemas are used on the frontend to generate a HTML form. On form submission, the form payload is passed to Nixobolus, which then starts a NixOS build process. On completion, the links to build artifacts (either an ISO file, or a [kexec](https://en.wikipedia.org/wiki/Kexec) script is given to user for download.
+## How to Run (alpha)
 
-## Building
+1. **Install Nix:** [nixos.org](https://nixos.org/download.html)
 
-1. Install [Nix](https://nixos.org). This project uses [direnv](https://direnv.net) integration in Nix to build pre-requisite tooling.
-2. `git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS`
-3. `direnv allow`
-4. Install WebUI dependencies: `yarn`
-5. Build and run WebUI: `yarn build && yarn preview`
+2. **Clone this Repository**
+  ```
+  git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS
+  ```
+
+3. **Set Up a Development Environment**
+- With Nix: `nix develop`
+- With [direnv](https://direnv.net/): `direnv allow`
+
+4. **Install Dependencies and Build**
+  ```
+  yarn install && yarn build
+  ```
+
+5. **Start the Web UI**
+  ```
+  , server
+  ```
+
+6. **Open a Command Runner** (optional)
+  ```
+  tail -f pipe | sh
+  ```
+  The front end runs its commands through this; leave it open for functionality.
+
+7. **Check it out:** [http://localhost:8081](http://localhost:8081)
