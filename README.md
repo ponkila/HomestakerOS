@@ -17,20 +17,25 @@ The wizard produces Linux disk images based on NixOS. NixOS allows configuration
 - With Nix: `nix develop`
 - With [direnv](https://direnv.net/): `direnv allow`
 
-4. **Install Dependencies and Build**
+4. **Fetch Module Options**
+  ```
+  , schema
+  ```
+
+5. **Install Dependencies and Build**
   ```
   yarn install && yarn build
   ```
 
-5. **Start the Web UI**
+6. **Start the Web UI**
   ```
   , server
   ```
 
-6. **Open a Command Runner** (optional)
+7. **Open a Command Runner** (optional)
   ```
   tail -f pipe | sh
   ```
   The front end runs its commands through this; leave it open for functionality.
 
-7. **Check it out:** [http://localhost:8081](http://localhost:8081)
+8. **Check it out:** [http://localhost:8081](http://localhost:8081)

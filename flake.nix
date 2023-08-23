@@ -66,8 +66,7 @@
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              nix eval --json .#schema | jq > webui/public/schema.json \
-              && nix run .#update-json \
+              nix run --no-warn-dirty .#update-json \
               && nix run .#
             '';
             category = "Essentials";
@@ -104,7 +103,7 @@
           };
           update-json = {
             type = "app";
-            program = "${self.packages.${system}.init-ssv}/bin/update-json";
+            program = "${self.packages.${system}.update-json}/bin/update-json";
           };
         };
 
@@ -184,7 +183,7 @@
               hostnames)
           );
 
-        schema = nixobolus.outputs.exports.homestakeros;
+        schema = nixobolus.outputs.exports;
       };
     };
 }
