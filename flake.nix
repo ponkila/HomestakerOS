@@ -68,6 +68,7 @@
             exec = ''
               export NIX_CONFIG='warn-dirty = false' \
               && nix eval --json .#schema | jq > webui/public/schema.json \
+              && git add webui/public/schema.json \
               && nix run .#update-json \
               && nix build .#webui \
               && nix run .#homestakeros 
