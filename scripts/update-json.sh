@@ -11,6 +11,13 @@ declare -a nix_flags=(
   --no-warn-dirty
 )
 
+# Catch Ctrl+C signal to run cleanup
+cleanup() {
+    rm -r "$config_dir"
+    exit 1
+}
+trap cleanup SIGINT
+
 # Make config directory if doesn't exist
 mkdir -p $config_dir
 
