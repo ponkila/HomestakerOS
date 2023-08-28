@@ -66,8 +66,11 @@
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              nix run --no-warn-dirty .#update-json \
-              && nix run .#
+              export NIX_CONFIG='warn-dirty = false' \
+              && nix eval --json .#schema | jq > webui/public/schema.json \
+              && nix run .#update-json \
+              && nix build .#webui \
+              && nix run .#homestakeros 
             '';
             category = "Essentials";
           };
@@ -134,6 +137,7 @@
             ];
           };
 
+          webui = pkgs.callPackage ./webui { };
           homestakeros = pkgs.mkYarnPackage {
             pname = "homestakeros";
             version = "0.0.1";

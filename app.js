@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use(express.static("webui/dist"));
+app.use(express.static("result/dist"));
 app.use("/api", apiRouter);
 app.use("/nixosConfigurations", express.static("./webui/nixosConfigurations"));
 
