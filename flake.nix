@@ -141,7 +141,6 @@
             src = ./.;
             packageJSON = ./package.json;
             yarnLock = ./yarn.lock;
-            yarnNix = ./yarn.nix;
           };
           default = packages.homestakeros;
         };
