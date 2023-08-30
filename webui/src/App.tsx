@@ -4,6 +4,7 @@ import ConfigurationForm from './Components/ConfigurationForm'
 import NewsletterForm from './Components/NewsletterForm'
 import NodeQuery from './Components/NodeQuery'
 import RegisterSSVForm from './Components/RegisterSSVForm'
+import NodeList from './Components/NodeList'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 import useMetaMask from './Hooks/useMetaMask'
 import { NodeInfoProvider } from './Context/NodeInfoContext'
@@ -14,6 +15,7 @@ const TabsView = () => {
       <TabList>
         <Tab>NixOS config</Tab>
         <Tab>Query node</Tab>
+        <Tab>Nodes</Tab>
         <Tab>Register SSV operator</Tab>
       </TabList>
       <TabPanels>
@@ -22,6 +24,9 @@ const TabsView = () => {
         </TabPanel>
         <TabPanel>
           <NodeQuery />
+        </TabPanel>
+        <TabPanel>
+          <NodeList />
         </TabPanel>
         <TabPanel>
           <RegisterSSVForm />
