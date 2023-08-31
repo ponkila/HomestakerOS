@@ -39,7 +39,7 @@
           name = "homestakeros-webui";
 
           yarnOfflineCache = pkgs.fetchYarnDeps {
-            yarnLock = "./yarn.lock";
+            yarnLock = "${src}/yarn.lock";
             hash = "sha256-mkcsTfcCFa+KBct3Btu0S10Pt+QgkZ5vrI0ets8GAxg=";
           };
         in
