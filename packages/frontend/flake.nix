@@ -39,17 +39,17 @@
           name = "homestakeros-webui";
 
           yarnOfflineCache = pkgs.fetchYarnDeps {
-            yarnLock = "${src}/packages/frontend/yarn.lock";
+            yarnLock = "./yarn.lock";
             hash = "sha256-mkcsTfcCFa+KBct3Btu0S10Pt+QgkZ5vrI0ets8GAxg=";
           };
         in
           pkgs.stdenv.mkDerivation {
             inherit src version name yarnOfflineCache;
 
-            buildInputs = [
-              pkgs.nodejs_18
-              pkgs.yarn
-              pkgs.yarn2nix-moretea.fixup_yarn_lock
+            buildInputs = with pkgs; [
+              nodejs_18
+              yarn
+              yarn2nix-moretea.fixup_yarn_lock
             ];
 
             configurePhase = ''
