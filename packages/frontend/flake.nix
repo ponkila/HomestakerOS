@@ -58,7 +58,7 @@
 
             buildPhase = ''
               yarn config --offline set yarn-offline-mirror ${yarnOfflineCache}
-              fixup_yarn_lock yarn.lock
+              fixup_yarn_lock ${src}/yarn.lock
 
               yarn install --offline
               patchShebangs .
