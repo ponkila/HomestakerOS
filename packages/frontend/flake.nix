@@ -34,12 +34,12 @@
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         packages.webui = let
-          src = ./..;
+          src = ./../..;
           version = "0.0.1";
           name = "homestakeros-webui";
 
           yarnOfflineCache = pkgs.fetchYarnDeps {
-            yarnLock = "${src}/yarn.lock";
+            yarnLock = "${src}/packages/frontend/yarn.lock";
             hash = "sha256-mkcsTfcCFa+KBct3Btu0S10Pt+QgkZ5vrI0ets8GAxg=";
           };
         in
