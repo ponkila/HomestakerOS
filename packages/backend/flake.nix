@@ -35,8 +35,8 @@
       }: {
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
-        packages.homestakeros = let
-          pname = "homestakeros";
+        packages.backend = let
+          pname = "homestakeros-backend";
           version = "0.0.1";
           src = ./.;
         in
@@ -52,7 +52,7 @@
             '';
           };
 
-        packages.default = self'.packages.homestakeros;
+        packages.default = self'.packages.backend;
       };
     };
 }

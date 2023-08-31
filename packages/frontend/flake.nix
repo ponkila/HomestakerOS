@@ -33,10 +33,10 @@
       }: {
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
-        packages.webui = let
+        packages.frontend = let
           src = ./../..;
           version = "0.0.1";
-          name = "homestakeros-webui";
+          name = "homestakeros-frontend";
 
           yarnOfflineCache = pkgs.fetchYarnDeps {
             yarnLock = "${src}/yarn.lock";
@@ -72,7 +72,7 @@
             '';
           };
 
-        packages.default = self'.packages.webui;
+        packages.default = self'.packages.frontend;
       };
     };
 }

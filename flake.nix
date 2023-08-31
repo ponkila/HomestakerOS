@@ -144,9 +144,9 @@
             ];
           };
 
-          webui = inputs'.frontend.packages.default;
-          homestakeros = inputs'.backend.packages.default;
-          default = packages.homestakeros;
+          frontend = inputs'.frontend.packages.default;
+          backend = inputs'.backend.packages.default;
+          default = packages.backend;
         };
       };
 
