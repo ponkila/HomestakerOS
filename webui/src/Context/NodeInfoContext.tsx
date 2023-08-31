@@ -15,7 +15,6 @@ const fetchHostnames = async (): Promise<string[]> => {
   return hostnames
 }
 
-/*
 const fetchNodeConfig = async (hostname: string) => {
   const config = await fetch(`/nixosConfigurations/${hostname}/default.json`)
     .then(async (res) => {
@@ -30,7 +29,6 @@ const fetchNodeConfig = async (hostname: string) => {
     })
   return config
 }
-*/
 
 const fetchNodeInitrdStatus = async (hostname: string) => {
   const initrdStatus = await fetch(`/nixosConfigurations/${hostname}/initrd.zst`, { method: 'HEAD' })
@@ -69,6 +67,7 @@ export type NodeInfo = {
   hasBzImage: boolean
   hasKexec: boolean
   ssvKey: string | null
+  config: Record<string, any> | null
 }
 
 export const NodeInfoContext = createContext<NodeInfo[]>([])
@@ -82,7 +81,14 @@ export function NodeInfoProvider({ children }: { children: any }) {
       ...nodes.filter((node) => hostnames.includes(node.hostname)),
       ...hostnames
         .filter((hostname) => !nodes.map((node) => node.hostname).includes(hostname))
-        .map((hostname) => ({ hostname, hasInitrd: false, hasBzImage: false, hasKexec: false, ssvKey: null })),
+        .map((hostname) => ({
+          hostname,
+          hasInitrd: false,
+          hasBzImage: false,
+          hasKexec: false,
+          ssvKey: null,
+          config: null,
+        })),
     ]
     for (const node of newNodes) {
       if (!node.hasInitrd) {
@@ -95,6 +101,7 @@ export function NodeInfoProvider({ children }: { children: any }) {
         node.hasKexec = await fetchNodeKexecStatus(node.hostname)
       }
       node.ssvKey = await fetchNodeSSVKey(node.hostname)
+      node.config = await fetchNodeConfig(node.hostname)
     }
     setNodes(newNodes)
   }

@@ -96,7 +96,7 @@ const ListOfControl = (props: ListOfControlProps) => {
   )
 }
 
-const CustomCheckbox = (props: { name: string; checked: boolean; children?: React.ReactNode }) => {
+const CustomCheckbox = (props: { name: string; isChecked: boolean; children?: React.ReactNode }) => {
   const { name, children } = props
   return (
     <>
@@ -132,6 +132,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 <FormLabel>name</FormLabel>
                 <Input
                   placeholder="Name"
+                  defaultValue={item}
                   onChange={(e) => {
                     setList(list.map((v, j) => (j == i ? e.target.value : v)))
                   }}
@@ -141,9 +142,13 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 <FormControl mr={4} mb={4}>
                   <FormLabel>{key}</FormLabel>
                   {typeof value == 'boolean' ? (
-                    <CustomCheckbox name={jp.stringify([...keys, item, key])} checked={value} />
+                    <CustomCheckbox name={jp.stringify([...keys, item, key])} isChecked={value || false} />
                   ) : (
-                    <Input placeholder={value} name={jp.stringify([...keys, item, key])} />
+                    <Input
+                      placeholder={value}
+                      defaultValue={defaultValue && item in defaultValue ? defaultValue[item][key] || '' : ''}
+                      name={jp.stringify([...keys, item, key])}
+                    />
                   )}
                 </FormControl>
               ))}
@@ -158,7 +163,11 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
   )
 }
 
-const ConfigurationForm = () => {
+type ConfigurationFormProps = {
+  schema?: Record<string, any> | null
+}
+
+const ConfigurationForm = (props: ConfigurationFormProps) => {
   const [schema, setSchema] = useState<Record<string, any>>({})
 
   const isLeaf = (node: Record<string, any>) => {
@@ -169,12 +178,16 @@ const ConfigurationForm = () => {
     const keyName = keys.at(-1)
     const jsonPath = jp.stringify(keys)
     if (isLeaf(node)) {
+      if (props.schema) {
+        const defaultValue = jp.value(props.schema, jsonPath)
+        node.default = defaultValue
+      }
       switch (node.type) {
         case 'bool':
           return (
             <FormControl id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
-              <CustomCheckbox name={jsonPath} checked={node.default}>
+              <CustomCheckbox name={jsonPath} isChecked={node.default}>
                 {keyName}
               </CustomCheckbox>
             </FormControl>
@@ -232,8 +245,9 @@ const ConfigurationForm = () => {
       if (node.type.startsWith('strMatching')) {
         return (
           <FormControl>
-            <FormLabel>{keyName}</FormLabel>
-            <Input name={jsonPath} placeholder={node.default} />
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <Input name={jsonPath} defaultValue={node.default} />
+            {node.example && <FormHelperText>Example: {node.example}</FormHelperText>}
             <FormHelperText>{node.description}</FormHelperText>
           </FormControl>
         )
