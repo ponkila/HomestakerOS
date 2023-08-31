@@ -3,14 +3,12 @@
     nixpkgs.url = "github:nixos/nixpkgs";
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
-    backend.url = "github:ponkila/HomestakerOS/feat/pkgs-webui?dir=packages/backend";
   };
 
   outputs = inputs @ {
     self,
     nixpkgs,
     flake-parts,
-    backend,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -52,7 +50,6 @@
               pkgs.nodejs_18
               pkgs.yarn
               pkgs.yarn2nix-moretea.fixup_yarn_lock
-              inputs'.backend.packages.default
             ];
 
             configurePhase = ''
