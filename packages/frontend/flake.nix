@@ -36,7 +36,7 @@
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         packages.webui = let
-          src = ./.;
+          src = ./..;
           version = "0.0.1";
           name = "homestakeros-webui";
 
