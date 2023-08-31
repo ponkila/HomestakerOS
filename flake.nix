@@ -5,6 +5,10 @@
     mission-control.url = "github:Platonic-Systems/mission-control";
     nixobolus.url = "github:ponkila/nixobolus";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # Web UI
+    frontend.url = "github:ponkila/HomestakerOS/feat/pkgs-webui?dir=packages/frontend";
+    backend.url = "github:ponkila/HomestakerOS/feat/pkgs-webui?dir=packages/backend";
   };
 
   outputs = inputs @ {
@@ -12,6 +16,8 @@
     nixpkgs,
     flake-parts,
     nixobolus,
+    backend,
+    frontend,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -138,15 +144,8 @@
             ];
           };
 
-          webui = pkgs.callPackage ./webui { };
-          homestakeros = pkgs.mkYarnPackage {
-            pname = "homestakeros";
-            version = "0.0.1";
-
-            src = ./.;
-            packageJSON = ./package.json;
-            yarnLock = ./yarn.lock;
-          };
+          webui = inputs'.frontend.packages.default;
+          homestakeros = inputs'.backend.packages.default;
           default = packages.homestakeros;
         };
       };
