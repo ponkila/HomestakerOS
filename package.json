@@ -4,10 +4,10 @@
     "type": "module",
     "bin": "app.js",
     "scripts": {
-        "dev": "concurrently 'vite serve webui' 'nodemon ../packages/backend/app.js'",
+        "dev": "concurrently 'vite serve webui' 'nodemon ./packages/backend/app.js'",
         "build": "tsc -p webui/tsconfig.json && vite build webui",
         "lint": "eslint ./webui --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "preview": "node ../packages/backend/app.js"
+        "preview": "node ./packages/backend/app.js"
     },
     "repository": {
         "type": "git",
