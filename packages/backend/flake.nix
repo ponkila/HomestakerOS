@@ -33,7 +33,7 @@
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         packages.backend = let
-          pname = "homestakeros-backend";
+          pname = "homestakeros";
           version = "0.0.1";
           src = ./.;
         in
