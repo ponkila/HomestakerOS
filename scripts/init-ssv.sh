@@ -7,10 +7,10 @@ if [ "$#" -ne 1 ]; then
 fi
 
 hostname="$1"
-config_dir="webui/nixosConfigurations"
+output_dir="packages/frontend/webui/nixosConfigurations"
 
 # Validate hostname
-if [ ! -d "$config_dir/$hostname" ]; then
+if [ ! -d "$output_dir/$hostname" ]; then
     echo "error: host '$hostname' does not exist."
     exit 1
 fi
@@ -23,7 +23,7 @@ public_key=$(echo "$keys" | grep -o '{"pk":.*}' | jq -r '.pk')
 private_key=$(echo "$keys" | grep -o '{"sk":.*}' | jq -r '.sk')
 
 # Save the public key
-echo "$public_key" > "$config_dir/$hostname/ssv_operator_key.pub"
+echo "$public_key" > "$output_dir/$hostname/ssv_operator_key.pub"
 
 # Print the private key
 echo "Private Key: $private_key"

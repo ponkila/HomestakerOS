@@ -3,6 +3,9 @@
 
 set -o pipefail
 
+config_dir="packages/frontend/nixosConfigurations"
+output_dir="packages/frontend/webui/nixosConfigurations"
+
 # Default argument values
 verbose=false
 dry_run=false
@@ -28,7 +31,7 @@ Options, required:
 
 Options, optional:
   -o, --output <output_path>
-      Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
+      Specify the output path for the resulting build symlinks. Default: '$output_dir/<hostname>/result'.
   
   -r, --realize
       Output files instead of symlinks, aka. realize the resulting build symlinks.
@@ -103,7 +106,7 @@ parse_arguments() {
   fi
 
   # Set output path if not set by argument
-  [[ -z $output_path ]] && output_path="webui/nixosConfigurations/${hostname}/result"
+  [[ -z $output_path ]] && output_path="$output_dir/${hostname}/result"
 }
 
 create_default_nix() {
@@ -228,7 +231,7 @@ main() {
   )
 
   # Do not change, this path is also hard-coded in flake.nix
-  default_nix="nixosConfigurations/$hostname/default.nix"
+  default_nix="$config_dir/$hostname/default.nix"
 
   # Read JSON data from stdin if it exists and is not provided as an argument
   if [ -z "$json_data" ] && ! tty -s && [ -p /dev/stdin ]; then
@@ -260,7 +263,7 @@ main() {
   [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
 
   # Create the JSON files for the webui directory
-  mkdir -p "webui/nixosConfigurations/$hostname" && update-json
+  mkdir -p "$output_dir/$hostname" && update-json
 
   # Copy resulting files from '/nix/store' if realize is true
   [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"
