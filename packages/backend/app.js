@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import express from "express";
-import apiRouter from "api.js";
+import apiRouter from "./api.js";
 import cors from "cors";
 
 const app = express();

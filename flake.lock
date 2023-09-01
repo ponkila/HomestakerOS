@@ -9,11 +9,11 @@
       },
       "locked": {
         "dir": "packages/backend",
-        "lastModified": 1693527812,
-        "narHash": "sha256-dQokLRp3nD6PCiY2HpAeemIVFi3hyrqzQUlmJSAVBck=",
+        "lastModified": 1693528706,
+        "narHash": "sha256-RV55Yz+abRufvgUajhvsKX3JXv9Izcx7RgfZLujeF5g=",
         "owner": "ponkila",
         "repo": "HomestakerOS",
-        "rev": "a24747b651b153de1753f9f2a943a98b1f74ea92",
+        "rev": "6f694034849d1e370c16281bc70c5a2a20c46b74",
         "type": "github"
       },
       "original": {
@@ -419,11 +419,11 @@
       },
       "locked": {
         "dir": "packages/frontend",
-        "lastModified": 1693527812,
-        "narHash": "sha256-dQokLRp3nD6PCiY2HpAeemIVFi3hyrqzQUlmJSAVBck=",
+        "lastModified": 1693528706,
+        "narHash": "sha256-RV55Yz+abRufvgUajhvsKX3JXv9Izcx7RgfZLujeF5g=",
         "owner": "ponkila",
         "repo": "HomestakerOS",
-        "rev": "a24747b651b153de1753f9f2a943a98b1f74ea92",
+        "rev": "6f694034849d1e370c16281bc70c5a2a20c46b74",
         "type": "github"
       },
       "original": {
