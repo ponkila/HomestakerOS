@@ -73,11 +73,10 @@
             description = "Initialize and launch the web server";
             exec = ''
               export NIX_CONFIG='warn-dirty = false' \
-              && nix eval --json .#schema | jq > webui/public/schema.json \
-              && git add webui/public/schema.json \
+              && nix eval --json .#schema | jq > packages/backend/frontend/webui/public/schema.json \
+              && git add packages/backend/frontend/webui/public/schema.json \
               && nix run .#update-json \
-              && nix build .#webui \
-              && nix run .#homestakeros 
+              && nix run .#backend 
             '';
             category = "Essentials";
           };
