@@ -31,7 +31,7 @@
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         packages.frontend = let
-          src = ./../..;
+          src = ./.;
           version = "0.0.1";
           name = "homestakeros-frontend";
 
@@ -55,7 +55,7 @@
 
             buildPhase = ''
               yarn config --offline set yarn-offline-mirror ${yarnOfflineCache}
-              fixup_yarn_lock ${src}/yarn.lock
+              fixup_yarn_lock yarn.lock
 
               yarn install --offline
               patchShebangs .
@@ -65,7 +65,7 @@
 
             installPhase = ''
               mkdir -p $out
-              cp -R webui/dist $out
+              cp -R . $out
             '';
           };
 
