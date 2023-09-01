@@ -46,7 +46,6 @@
             prePatch = ''
               substituteInPlace ./app.js \
                 --replace webui/dist ${inputs'.frontend.packages.default}/webui/dist \
-                --replace webui/api.js ${inputs'.frontend.packages.default}/webui/api.js \
                 --replace webui/nixosConfigurations ${inputs'.frontend.packages.default}/webui/nixosConfigurations
             '';
           };
