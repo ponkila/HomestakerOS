@@ -154,14 +154,15 @@
         system = "x86_64-linux";
       in {
         nixosConfigurations = let
-          ls = builtins.readDir ./nixosConfigurations;
+          configDir = "${self}/packages/frontend/nixosConfigurations";
+          ls = builtins.readDir configDir;
           hostnames =
             builtins.filter
             (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
             (builtins.attrNames ls);
         in
           nixpkgs.lib.mkIf (
-            builtins.pathExists ./nixosConfigurations
+            builtins.pathExists configDir
           ) (
             builtins.listToAttrs (map (hostname: {
                 name = hostname;
@@ -172,7 +173,7 @@
                     [
                       nixobolus.nixosModules.kexecTree
                       nixobolus.nixosModules.homestakeros
-                      ./nixosConfigurations/${hostname}
+                      configDir/${hostname}
                       {
                         system.stateVersion = "23.05";
                         # Bootloader for x86_64-linux / aarch64-linux
