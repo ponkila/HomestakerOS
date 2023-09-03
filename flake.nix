@@ -16,9 +16,9 @@
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
       systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-darwin"
+        # "aarch64-darwin"
+        # "aarch64-linux"
+        # "x86_64-darwin"
         "x86_64-linux"
       ];
       imports = [
@@ -146,9 +146,9 @@
       flake = let
         inherit (self) outputs;
         system = "x86_64-linux";
+        configDir = "${self}/packages/frontend/nixosConfigurations";
       in {
         nixosConfigurations = let
-          configDir = "${self}/packages/frontend/nixosConfigurations";
           ls = builtins.readDir configDir;
           hostnames =
             builtins.filter
