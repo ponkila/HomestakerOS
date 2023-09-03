@@ -15,6 +15,7 @@
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
+      # Listed platforms must be available to the current machine for evaluating the Web UI packages
       systems = [
         # "aarch64-darwin"
         # "aarch64-linux"
@@ -148,6 +149,8 @@
         system = "x86_64-linux";
         configDir = "${self}/packages/frontend/nixosConfigurations";
       in {
+        # Creates entry points dynamically by reading the hostnames from configDir
+        # This currently only works for 'x86_64-linux' and produces 'kexecTree' format
         nixosConfigurations = let
           ls = builtins.readDir configDir;
           hostnames =
