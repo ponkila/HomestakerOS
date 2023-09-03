@@ -133,6 +133,7 @@
           "update-json" = mkScriptPackage {
             name = "update-json";
             deps = [
+              pkgs.git
               pkgs.nix
               pkgs.jq
             ];
