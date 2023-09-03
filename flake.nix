@@ -167,7 +167,7 @@
                     [
                       nixobolus.nixosModules.kexecTree
                       nixobolus.nixosModules.homestakeros
-                      configDir/${hostname}
+                      "${configDir}/${hostname}"
                       {
                         system.stateVersion = "23.05";
                         # Bootloader for x86_64-linux / aarch64-linux
