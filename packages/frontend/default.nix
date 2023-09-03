@@ -40,6 +40,5 @@ in
     meta = with lib; {
       description = "Frontend source code for HomestakerOS";
       license = licenses.mit;
-      platforms = [ "x86_64-linux" ];
     };
   }
