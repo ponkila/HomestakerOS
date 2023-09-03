@@ -5,10 +5,6 @@
     mission-control.url = "github:Platonic-Systems/mission-control";
     nixobolus.url = "github:ponkila/nixobolus";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-
-    # Web UI
-    frontend.url = "github:ponkila/HomestakerOS/feat/pkgs-webui?dir=packages/frontend";
-    backend.url = "github:ponkila/HomestakerOS/feat/pkgs-webui?dir=packages/backend";
   };
 
   outputs = inputs @ {
@@ -16,8 +12,6 @@
     nixpkgs,
     flake-parts,
     nixobolus,
-    backend,
-    frontend,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -143,8 +137,8 @@
             ];
           };
 
-          frontend = inputs'.frontend.packages.default;
-          backend = inputs'.backend.packages.default;
+          frontend = pkgs.callPackage ./packages/frontend { };
+          backend = pkgs.callPackage ./packages/backend { };
           default = packages.backend;
         };
       };
