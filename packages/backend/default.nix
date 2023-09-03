@@ -16,4 +16,10 @@ in
         --replace webui/dist ${frontend}/webui/dist \
         --replace webui/nixosConfigurations ${frontend}/webui/nixosConfigurations
     '';
+
+    meta = with lib; {
+      description = "Backend source code for HomestakerOS";
+      license = licenses.mit;
+      platforms = [ "x86_64-linux" ];
+    };
   }
