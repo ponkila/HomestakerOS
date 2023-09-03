@@ -1,6 +1,9 @@
-{ pkgs, lib, ... }:
-let
-  frontend = pkgs.callPackage ../frontend { };
+{
+  pkgs,
+  lib,
+  ...
+}: let
+  frontend = pkgs.callPackage ../frontend {};
   pname = "homestakeros";
   version = "0.0.1";
   src = ./.;

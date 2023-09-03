@@ -1,5 +1,8 @@
-{ pkgs, lib, ... }:
-let
+{
+  pkgs,
+  lib,
+  ...
+}: let
   src = ./.;
   version = "0.0.1";
   name = "homestakeros-frontend";

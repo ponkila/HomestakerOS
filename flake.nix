@@ -71,7 +71,7 @@
               && nix eval --json .#schema | jq > packages/frontend/webui/public/schema.json \
               && git add packages/frontend/webui/public/schema.json \
               && nix run .#update-json \
-              && nix run .#backend 
+              && nix run .#backend
             '';
             category = "Essentials";
           };
@@ -139,8 +139,8 @@
             ];
           };
 
-          frontend = pkgs.callPackage ./packages/frontend { };
-          backend = pkgs.callPackage ./packages/backend { };
+          frontend = pkgs.callPackage ./packages/frontend {};
+          backend = pkgs.callPackage ./packages/backend {};
           default = packages.backend;
         };
       };
@@ -167,18 +167,17 @@
                 value = nixpkgs.lib.nixosSystem {
                   inherit system;
                   specialArgs = {inherit inputs outputs;};
-                  modules =
-                    [
-                      nixobolus.nixosModules.kexecTree
-                      nixobolus.nixosModules.homestakeros
-                      "${configDir}/${hostname}"
-                      {
-                        system.stateVersion = "23.05";
-                        # Bootloader for x86_64-linux / aarch64-linux
-                        boot.loader.systemd-boot.enable = true;
-                        boot.loader.efi.canTouchEfiVariables = true;
-                      }
-                    ];
+                  modules = [
+                    nixobolus.nixosModules.kexecTree
+                    nixobolus.nixosModules.homestakeros
+                    "${configDir}/${hostname}"
+                    {
+                      system.stateVersion = "23.05";
+                      # Bootloader for x86_64-linux / aarch64-linux
+                      boot.loader.systemd-boot.enable = true;
+                      boot.loader.efi.canTouchEfiVariables = true;
+                    }
+                  ];
                 };
               })
               hostnames)
