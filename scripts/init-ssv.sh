@@ -8,16 +8,16 @@ if [ "$#" -ne 1 ]; then
 fi
 
 hostname="$1"
-config_dir="webui/nixosConfigurations"
+config_dir="webui/nixosConfigurations/$hostname"
 
 # Validate hostname
-if [ ! -d "$config_dir/$hostname" ]; then
+if [ ! -d "$config_dir" ]; then
     echo "error: host '$hostname' does not exist, build it first."
     exit 1
 fi
 
 # Check if JSON data exists
-default_json="$config_dir/$hostname/default.json"
+default_json="$config_dir/default.json"
 if [ ! -f "$default_json" ]; then
     echo "error: 'default.json' does not exist for host '$hostname'."
     exit 1
@@ -31,15 +31,15 @@ public_key=$(echo "$keys" | grep -o '{"pk":.*}' | jq -r '.pk')
 private_key=$(echo "$keys" | grep -o '{"sk":.*}' | jq -r '.sk')
 
 # Save the public key
-echo "$public_key" > "$config_dir/$hostname/ssv_operator_key.pub"
+echo "$public_key" > "$config_dir/ssv_operator_key.pub"
 
 # Fetch the configured path from the JSON data
-private_key_target=$(jq -r '.addons."ssv-node".privateKeyFile' "$config_dir/$hostname/default.json")
+target=$(jq -r '.addons."ssv-node".privateKeyFile' "$config_dir/default.json")
 
-# Store the private key to a users home directory
-private_key_source="$HOME/ssv_operator_key"
-echo "$private_key" > "$private_key_source"
+# Save the private key
+source="$HOME/ssv_operator_key"
+echo "$private_key" > "$source"
 
 # Print instructions for the user
-scp_cmd="scp $private_key_source core@$hostname:$private_key_target"
-echo -e "The private key has been generated. Transfer it securely to the target machine:\n\`$scp_cmd\`"
+cmd="scp $source core@$hostname:$target"
+echo -e "The private key has been generated. Transfer it securely to the target machine:\n\`$cmd\`"
