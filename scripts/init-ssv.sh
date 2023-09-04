@@ -16,7 +16,7 @@ if [ ! -d "$config_dir/$hostname" ]; then
 fi
 
 # Generate SSV node operator keys
-keys=$(ssvnode generate-operator-keys)
+keys=$(ssvnode generate-operator-keys 2>/dev/null)
 
 # Extract the keys
 public_key=$(echo "$keys" | grep -o '{"pk":.*}' | jq -r '.pk')
@@ -25,5 +25,14 @@ private_key=$(echo "$keys" | grep -o '{"sk":.*}' | jq -r '.sk')
 # Save the public key
 echo "$public_key" > "$config_dir/$hostname/ssv_operator_key.pub"
 
-# Print the private key
-echo "Private Key: $private_key"
+# Fetch the configured path from the JSON data
+private_key_target=$(jq -r '.addons."ssv-node".privateKeyFile' "$config_dir/$hostname/default.json")
+
+# Store the private key to a temporary directory
+temp_dir=$(mktemp -d)
+private_key_source="$temp_dir/ssv_operator_key"
+echo "$private_key" > "$private_key_source"
+
+# Print instructions for the user
+scp_cmd="scp $private_key_source core@$hostname:$private_key_target"
+echo -e "The private key has been generated. Transfer it securely to the target machine:\n\`$scp_cmd\`"
