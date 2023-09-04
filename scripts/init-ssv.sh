@@ -36,9 +36,8 @@ echo "$public_key" > "$config_dir/$hostname/ssv_operator_key.pub"
 # Fetch the configured path from the JSON data
 private_key_target=$(jq -r '.addons."ssv-node".privateKeyFile' "$config_dir/$hostname/default.json")
 
-# Store the private key to a temporary directory
-temp_dir=$(mktemp -d)
-private_key_source="$temp_dir/ssv_operator_key"
+# Store the private key to a users home directory
+private_key_source="$HOME/ssv_operator_key"
 echo "$private_key" > "$private_key_source"
 
 # Print instructions for the user
