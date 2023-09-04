@@ -31,17 +31,17 @@ const fetchNodeConfig = async (hostname: string) => {
 }
 
 const fetchNodeInitrdStatus = async (hostname: string) => {
-  const initrdStatus = await fetch(`/nixosConfigurations/${hostname}/initrd.zst`, { method: 'HEAD' })
+  const initrdStatus = await fetch(`/nixosConfigurations/${hostname}/result/initrd.zst`, { method: 'HEAD' })
   return initrdStatus.ok && initrdStatus.status === 200
 }
 
 const fetchNodeBzImageStatus = async (hostname: string) => {
-  const bzImageStatus = await fetch(`/nixosConfigurations/${hostname}/bzImage`, { method: 'HEAD' })
+  const bzImageStatus = await fetch(`/nixosConfigurations/${hostname}/result/bzImage`, { method: 'HEAD' })
   return bzImageStatus.ok && bzImageStatus.status === 200
 }
 
 const fetchNodeKexecStatus = async (hostname: string) => {
-  const kexecStatus = await fetch(`/nixosConfigurations/${hostname}/kexec-boot`, { method: 'HEAD' })
+  const kexecStatus = await fetch(`/nixosConfigurations/${hostname}/result/kexec-boot`, { method: 'HEAD' })
   return kexecStatus.ok && kexecStatus.status === 200
 }
 
