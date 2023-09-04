@@ -12,6 +12,9 @@ config_dir="webui/nixosConfigurations"
 
 # Validate hostname
 if [ ! -d "$config_dir/$hostname" ]; then
+    echo "error: host '$hostname' does not exist, build it first."
+    exit 1
+fi
 
 # Check if JSON data exists
 default_json="$config_dir/$hostname/default.json"
