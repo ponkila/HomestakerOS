@@ -3,7 +3,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-root.url = "github:srid/flake-root";
     mission-control.url = "github:Platonic-Systems/mission-control";
-    nixobolus.url = "github:ponkila/nixobolus";
+    nixobolus.url = "github:ponkila/nixobolus/feat/ssv";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
@@ -124,7 +124,10 @@
           };
           "init-ssv" = mkScriptPackage {
             name = "init-ssv";
-            deps = [nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
+            deps = [
+              pkgs.jq
+              nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode
+            ];
           };
           "update-json" = mkScriptPackage {
             name = "update-json";
