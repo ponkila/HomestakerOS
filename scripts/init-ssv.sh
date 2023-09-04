@@ -12,7 +12,11 @@ config_dir="webui/nixosConfigurations"
 
 # Validate hostname
 if [ ! -d "$config_dir/$hostname" ]; then
-    echo "error: host '$hostname' does not exist."
+
+# Check if JSON data exists
+default_json="$config_dir/$hostname/default.json"
+if [ ! -f "$default_json" ]; then
+    echo "error: 'default.json' does not exist for host '$hostname'."
     exit 1
 fi
 
