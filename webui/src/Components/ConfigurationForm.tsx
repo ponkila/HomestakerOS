@@ -96,7 +96,7 @@ const ListOfControl = (props: ListOfControlProps) => {
   )
 }
 
-const CustomCheckbox = (props: { name: string; isChecked: boolean; children?: React.ReactNode }) => {
+const CustomCheckbox = (props: { name: string; defaultChecked: boolean; children?: React.ReactNode }) => {
   const { name, children } = props
   return (
     <>
@@ -142,7 +142,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 <FormControl mr={4} mb={4}>
                   <FormLabel>{key}</FormLabel>
                   {typeof value == 'boolean' ? (
-                    <CustomCheckbox name={jp.stringify([...keys, item, key])} isChecked={value || false} />
+                    <CustomCheckbox name={jp.stringify([...keys, item, key])} defaultChecked={value || false} />
                   ) : (
                     <Input
                       placeholder={value}
@@ -187,7 +187,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
           return (
             <FormControl id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
-              <CustomCheckbox name={jsonPath} isChecked={node.default}>
+              <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
                 {keyName}
               </CustomCheckbox>
             </FormControl>
