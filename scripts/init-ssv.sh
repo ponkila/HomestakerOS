@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Script for generating operator key pair for the SSV node
 
 # Check arguments
 if [ "$#" -ne 1 ]; then
