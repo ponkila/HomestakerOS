@@ -33,13 +33,7 @@ if [ ${#hostnames[@]} -gt 0 ]; then
       json_data=$(nix eval --json .#nixosConfigurations."$hostname".config.homestakeros "${nix_flags[@]}")
       mkdir -p "$output_dir/$hostname"
       echo "$json_data" | jq -r "." > "$default_json"
-
-      # Stage the changes in 'default.nix'
-      git add "$default_json"
     done
 else
     echo "[]" > $output_dir/hostnames.json
 fi
-
-# Stage the changes in 'hostnames.json'
-git add $output_dir/hostnames.json
