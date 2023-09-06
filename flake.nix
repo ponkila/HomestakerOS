@@ -15,10 +15,11 @@
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
+      # Listed platforms must be available to the current machine for evaluating the Web UI packages
       systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-darwin"
+        # "aarch64-darwin"
+        # "aarch64-linux"
+        # "x86_64-darwin"
         "x86_64-linux"
       ];
       imports = [
@@ -66,8 +67,11 @@
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              nix run --no-warn-dirty .#update-json \
-              && nix run .#
+              export NIX_CONFIG='warn-dirty = false' \
+              && nix eval --json .#schema | jq > packages/frontend/webui/public/schema.json \
+              && git add packages/frontend/webui/public/schema.json \
+              && nix run .#update-json \
+              && nix run .#backend
             '';
             category = "Essentials";
           };
@@ -134,50 +138,45 @@
             ];
           };
 
-          homestakeros = pkgs.mkYarnPackage {
-            pname = "homestakeros";
-            version = "0.0.1";
-
-            src = ./.;
-            packageJSON = ./package.json;
-            yarnLock = ./yarn.lock;
-            yarnNix = ./yarn.nix;
-          };
-          default = packages.homestakeros;
+          frontend = pkgs.callPackage ./packages/frontend {};
+          backend = pkgs.callPackage ./packages/backend {};
+          default = packages.backend;
         };
       };
 
       flake = let
         inherit (self) outputs;
         system = "x86_64-linux";
+        configDir = "${self}/packages/frontend/nixosConfigurations";
       in {
+        # Creates entry points dynamically by reading the hostnames from configDir
+        # This currently only works for 'x86_64-linux' and produces 'kexecTree' format
         nixosConfigurations = let
-          ls = builtins.readDir ./nixosConfigurations;
+          ls = builtins.readDir configDir;
           hostnames =
             builtins.filter
             (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
             (builtins.attrNames ls);
         in
           nixpkgs.lib.mkIf (
-            builtins.pathExists ./nixosConfigurations
+            builtins.pathExists configDir
           ) (
             builtins.listToAttrs (map (hostname: {
                 name = hostname;
                 value = nixpkgs.lib.nixosSystem {
                   inherit system;
                   specialArgs = {inherit inputs outputs;};
-                  modules =
-                    [
-                      nixobolus.nixosModules.kexecTree
-                      nixobolus.nixosModules.homestakeros
-                      ./nixosConfigurations/${hostname}
-                      {
-                        system.stateVersion = "23.05";
-                        # Bootloader for x86_64-linux / aarch64-linux
-                        boot.loader.systemd-boot.enable = true;
-                        boot.loader.efi.canTouchEfiVariables = true;
-                      }
-                    ];
+                  modules = [
+                    nixobolus.nixosModules.kexecTree
+                    nixobolus.nixosModules.homestakeros
+                    "${configDir}/${hostname}"
+                    {
+                      system.stateVersion = "23.05";
+                      # Bootloader for x86_64-linux / aarch64-linux
+                      boot.loader.systemd-boot.enable = true;
+                      boot.loader.efi.canTouchEfiVariables = true;
+                    }
+                  ];
                 };
               })
               hostnames)
