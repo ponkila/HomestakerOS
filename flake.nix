@@ -124,7 +124,10 @@
           };
           "init-ssv" = mkScriptPackage {
             name = "init-ssv";
-            deps = [nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode];
+            deps = [
+              pkgs.jq
+              nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode
+            ];
           };
           "update-json" = mkScriptPackage {
             name = "update-json";
