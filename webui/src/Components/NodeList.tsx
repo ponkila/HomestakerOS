@@ -76,7 +76,7 @@ export default function NodeList() {
                 </Button>
                 <Text ml={2}>Initrd:</Text>
                 {node.hasInitrd ? (
-                  <Link href={`/nixosConfigurations/${node.hostname}/initrd.zst`}>
+                  <Link href={`/nixosConfigurations/${node.hostname}/result/initrd.zst`}>
                     <Button size="xs">Download</Button>
                   </Link>
                 ) : (
@@ -84,7 +84,7 @@ export default function NodeList() {
                 )}
                 <Text ml={2}>BzImage:</Text>
                 {node.hasBzImage ? (
-                  <Link href={`/nixosConfigurations/${node.hostname}/bzImage`}>
+                  <Link href={`/nixosConfigurations/${node.hostname}/result/bzImage`}>
                     <Button size="xs">Download</Button>
                   </Link>
                 ) : (
@@ -92,7 +92,7 @@ export default function NodeList() {
                 )}
                 <Text ml={2}>Kexec:</Text>
                 {node.hasKexec ? (
-                  <Link href={`/nixosConfigurations/${node.hostname}/kexec-boot`}>
+                  <Link href={`/nixosConfigurations/${node.hostname}/result/kexec-boot`}>
                     <Button size="xs">Download</Button>
                   </Link>
                 ) : (
