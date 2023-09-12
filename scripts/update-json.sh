@@ -24,6 +24,7 @@ if [ ${#hostnames[@]} -gt 0 ]; then
     for hostname in "${hostnames[@]}"; do
       default_json="$config_dir/$hostname/default.json"
       json_data=$(nix eval --json .#nixosConfigurations."$hostname".config.homestakeros "${nix_flags[@]}")
+      mkdir -p "$config_dir/$hostname"
       echo "$json_data" | jq -r "." > "$default_json"
     done
 else
