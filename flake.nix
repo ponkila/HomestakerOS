@@ -56,13 +56,6 @@
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
         mission-control.scripts = {
-          schema = {
-            description = "Update schema using current version of nixobolus";
-            exec = ''
-              nix eval --json .#schema | jq > webui/public/schema.json
-            '';
-            category = "Development Tools";
-          };
           server = {
             description = "Initialize and launch the web server";
             exec = ''
