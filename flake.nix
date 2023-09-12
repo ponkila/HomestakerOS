@@ -66,8 +66,10 @@
           server = {
             description = "Initialize and launch the web server";
             exec = ''
-              nix run --no-warn-dirty .#update-json \
-              && nix run .#
+              nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
+              && yarn install && yarn build \
+              && nix run --no-warn-dirty .#update-json \
+              && nix run --no-warn-dirty .#
             '';
             category = "Essentials";
           };
