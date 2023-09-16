@@ -214,7 +214,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              <Input name={jsonPath} placeholder={node.example} type="number" defaultValue={node.default} />
             </FormControl>
           )
           break
