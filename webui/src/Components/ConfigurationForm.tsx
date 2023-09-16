@@ -192,7 +192,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
               </CustomCheckbox>
             </FormControl>
           )
-          break
         case 'str':
         case 'path':
         case 'nullOr':
@@ -202,7 +201,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
               <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
             </FormControl>
           )
-          break
         case 'int':
           return (
             <FormControl id={jsonPath}>
@@ -216,7 +214,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
               </NumberInput>
             </FormControl>
           )
-          break
         case 'attrsOf':
           return (
             <AttrsOfControl
@@ -226,7 +223,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
               defaultValue={node.default}
             />
           )
-          break
         case 'listOf':
           return (
             <ListOfControl
@@ -236,7 +232,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
               defaultValue={node.default}
             />
           )
-          break
         default:
           break
       }
