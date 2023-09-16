@@ -23,6 +23,7 @@ import {
 import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import * as jp from 'jsonpath'
+let uuid = () => self.crypto.randomUUID();
 
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
   const { name, children } = props
@@ -185,7 +186,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
       switch (node.type) {
         case 'bool':
           return (
-            <FormControl id={jsonPath}>
+            <FormControl key={uuid()} id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
               <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
                 {keyName}
@@ -196,14 +197,14 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
         case 'path':
         case 'nullOr':
           return (
-            <FormControl id={jsonPath}>
+            <FormControl key={uuid()} id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
               <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
             </FormControl>
           )
         case 'int':
           return (
-            <FormControl id={jsonPath}>
+            <FormControl key={uuid()} id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
               <NumberInput name={jsonPath} defaultValue={node.default}>
                 <NumberInputField />
@@ -217,6 +218,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
         case 'attrsOf':
           return (
             <AttrsOfControl
+              key={uuid()}
               keys={keys}
               description={node.description}
               example={node.example}
@@ -226,6 +228,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
         case 'listOf':
           return (
             <ListOfControl
+              key={uuid()}
               nodeKey={jsonPath}
               description={node.description}
               example={node.example}
@@ -237,7 +240,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
       }
       if (node.type.startsWith('strMatching')) {
         return (
-          <FormControl>
+          <FormControl key={uuid()}>
             <DescriptionFormLabel label={keyName} description={node.description} />
             <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
             <FormHelperText>{node.description}</FormHelperText>
@@ -246,7 +249,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
       }
     } else {
       return (
-        <FormSection name={keyName}>
+        <FormSection key={uuid()} name={keyName}>
           {Object.entries(node).map(([newKey, value]) => {
             return processNode([...keys, newKey], value)
           })}
