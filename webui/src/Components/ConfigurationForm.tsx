@@ -199,8 +199,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
           return (
             <FormControl id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
-              <Input name={jsonPath} defaultValue={node.default} />
-              {node.example && <FormHelperText>Example: {node.example}</FormHelperText>}
+              <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
             </FormControl>
           )
           break
@@ -215,7 +214,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
                   <NumberDecrementStepper />
                 </NumberInputStepper>
               </NumberInput>
-              {node.example && <FormHelperText>Example: {node.example}</FormHelperText>}
+              <Input name={jsonPath} placeholder={node.example} type="number" defaultValue={node.default} />
             </FormControl>
           )
           break
@@ -246,8 +245,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
         return (
           <FormControl>
             <DescriptionFormLabel label={keyName} description={node.description} />
-            <Input name={jsonPath} defaultValue={node.default} />
-            {node.example && <FormHelperText>Example: {node.example}</FormHelperText>}
+            <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
             <FormHelperText>{node.description}</FormHelperText>
           </FormControl>
         )
