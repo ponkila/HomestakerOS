@@ -157,7 +157,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
           </FormSection>
         ))}
         <Button as={AddIcon} onClick={() => setList([...list, ''])} />
-        <FormHelperText>{description}</FormHelperText>
+        <FormHelperText style={{ overflowWrap: "anywhere" }}>{description}</FormHelperText>
       </FormControl>
     </FormSection>
   )
