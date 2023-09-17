@@ -164,18 +164,17 @@
                 value = nixpkgs.lib.nixosSystem {
                   inherit system;
                   specialArgs = {inherit inputs outputs;};
-                  modules =
-                    [
-                      nixobolus.nixosModules.kexecTree
-                      nixobolus.nixosModules.homestakeros
-                      ./nixosConfigurations/${hostname}
-                      {
-                        system.stateVersion = "23.05";
-                        # Bootloader for x86_64-linux / aarch64-linux
-                        boot.loader.systemd-boot.enable = true;
-                        boot.loader.efi.canTouchEfiVariables = true;
-                      }
-                    ];
+                  modules = [
+                    nixobolus.nixosModules.kexecTree
+                    nixobolus.nixosModules.homestakeros
+                    ./nixosConfigurations/${hostname}
+                    {
+                      system.stateVersion = "23.05";
+                      # Bootloader for x86_64-linux / aarch64-linux
+                      boot.loader.systemd-boot.enable = true;
+                      boot.loader.efi.canTouchEfiVariables = true;
+                    }
+                  ];
                 };
               })
               hostnames)
