@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   Spacer,
   Collapse,
@@ -164,12 +164,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
   )
 }
 
-type ConfigurationFormProps = {
-  schema?: Record<string, any> | null
-}
-
-const ConfigurationForm = (props: ConfigurationFormProps) => {
-  const [schema, setSchema] = useState<Record<string, any>>({})
+const ConfigurationForm = (props: any) => {
 
   const isLeaf = (node: Record<string, any>) => {
     return node != null && node.constructor == Object && 'type' in node
@@ -258,14 +253,6 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
     }
   }
 
-  useEffect(() => {
-    fetch('/schema.json')
-      .then((res) => res.json())
-      .then((data) => {
-        setSchema(data)
-      })
-  }, [])
-
   const recursiveReplace = (obj: any) => {
     if ('default' in obj) {
       return obj['default']
@@ -278,11 +265,11 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const result = recursiveReplace(structuredClone(schema))
+    const result = recursiveReplace(structuredClone(props))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
     Object.entries(formDataJson).forEach(([key, value]) => {
-      const schemaEntry = jp.query(schema, key)
+      const schemaEntry = jp.query(props, key)
       const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
       if (value === '' && fieldType !== 'nullOr') {
         return
@@ -303,7 +290,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
               .slice(0, -i)
               .map((v: any) => v['expression']['value'])
           )
-          parent = jp.query(schema, parentPath)
+          parent = jp.query(props, parentPath)
           if (parent.length > 0) {
             parent = parent[0]
             break
@@ -358,7 +345,7 @@ const ConfigurationForm = (props: ConfigurationFormProps) => {
           </ListItem>
         </OrderedList>
       </Box>
-      {processNode(['$'], structuredClone(schema))}
+      {processNode(['$'], structuredClone(props))}
       <Button w="100%" type="submit">
         #BUIDL
       </Button>

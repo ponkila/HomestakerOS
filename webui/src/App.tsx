@@ -1,4 +1,5 @@
 import { Container, Box, Heading, Flex, Spacer, Text, Tag, TagLabel } from '@chakra-ui/react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import ConfigurationForm from './Components/ConfigurationForm'
 import NewsletterForm from './Components/NewsletterForm'
@@ -8,19 +9,74 @@ import NodeList from './Components/NodeList'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 import useMetaMask from './Hooks/useMetaMask'
 import { NodeInfoProvider } from './Context/NodeInfoContext'
+import { StatusPage } from './Components/StatusPage'
+import * as O from 'fp-ts/Option'
+import { pipe } from 'fp-ts/function'
+
+const Schema = () => {
+  const [schema, setSchema] = useState<O.Option<Record<string, any>>>(O.none)
+
+  useEffect(() => {
+    fetch('/schema.json')
+      .then((res) => res.json())
+      .then((data) => setSchema(O.some(data)))
+  }, [])
+
+  return schema
+}
+
+const Backend = () => {
+  const [status, setStatus] = useState<boolean>(false)
+
+  useEffect(() => {
+    fetch('http://localhost:8081/api', {
+      method: 'GET',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }).then((res) => setStatus(res.ok))
+  }, [])
+
+  return status
+}
 
 const TabsView = () => {
+
+  const schema = Schema()
+
+  const configTab = pipe(
+    schema,
+    O.match(
+      () => <Tab isDisabled>NixOS config</Tab>,
+      (_) => <Tab>NixOS config</Tab>
+    )
+  )
+
+  const configPage = pipe(
+    schema,
+    O.match(
+      () => <></>,
+      (head) => <ConfigurationForm {...head} />
+    )
+  )
+
   return (
     <Tabs variant="enclosed">
       <TabList>
-        <Tab>NixOS config</Tab>
+        <Tab>Status</Tab>
+        {configTab}
         <Tab>Query node</Tab>
         <Tab>Nodes</Tab>
         <Tab>Register SSV operator</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
-          <ConfigurationForm />
+          <StatusPage count={schema} backend={Backend()} />
+        </TabPanel>
+        <TabPanel>
+          {configPage}
         </TabPanel>
         <TabPanel>
           <NodeQuery />
