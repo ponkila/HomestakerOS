@@ -1,6 +1,6 @@
 # What is Ethereum?
 
-<img align="right" src="assets/eth.png" width="150px">
+<img align="right" src="assets/eth_dark.png" width="150px">
 
 The Ethereum network is a decentralized peer-to-peer network that processes Ethereum blocks and transactions. Ethereum's primary purpose is not just as a digital currency. It serves as a global, open-source computer that allows developers to build decentralized applications, which range from games to financial services. Powered by Ethereum's native cryptocurrency, Ether (ETH).
 
@@ -20,7 +20,7 @@ Every Ethereum network is divided into two layers:
 
 The Ethereum network consists of Ethereum nodes. An Ethereum node is a running instance of Ethereum software that consists of two components: an **execution client** and a **consensus client**. These clients are a part of their respective layers within the Ethereum network.
 
-<img src="assets/network.png"><br/>
+<img src="assets/network_dark.png"><br/>
 
 The consensus clients can also function as **validator clients**, which are also a part of the Ethereum's consensus mechanism. Validators, as the name suggests, are responsible of validating new blocks of transactions. The validator client connects to the Ethereum network's CL trough the **consensus client**, and it is possible for a these clients to perform the roles of both a consensus client and a validator client simultaneously.
 
