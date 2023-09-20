@@ -58,6 +58,8 @@ Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, Erig
     ```
     These commands mount each subvolume under the corresponding subdirectory. Once mounted, you can access the contents of each subvolume in their respective directories.
 
+---
+
 Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. 
 
 <details>
@@ -106,6 +108,7 @@ Note: __This guide does not provide instructions on setting up the WireGuard ser
     ```
     These commands will create a directory and the configuration file in the subvolume we created earlier.
 
+---
 Now that we have the keys and an empty configuration file, it is time to set the WireGuard configuration. Your configuration should look something like this:
 
 ```conf
@@ -193,11 +196,50 @@ The [ssv.network](https://ssv.network/overview/) is a fully decentralized, open-
 
 4. Kernel execute to activate
 
-## Deployment
+## Web UI
+Now that the target machine is pre-configured, we can proceed to create the NixOS boot media using the Web UI frontend. For running the Web UI, prefer a machine within the same network as your nodes, since the frontend has capability to interact with your nodes.
 
-Now that the target machine is pre-configured, we can proceed to create the NixOS boot media using the frontend and deploy it. For deployment, we will use the [kexec](https://wiki.archlinux.org/title/kexec) (kernel execute) method, which allows loading and booting into another kernel without a power cycle.
+1. Install Nix: [nixos.org](https://nixos.org/download.html)
+
+2. Create a template out of [HomestakerOS](https://github.com/ponkila/HomestakerOS) repository
+
+3. Clone your new repository
+
+    ```
+    git clone git@github.com:<username>/HomestakerOS.git && cd HomestakerOS
+    ```
+
+4. Enter in a development environment
+
+    - With Nix: `nix develop`
+    - With [direnv](https://direnv.net/): `direnv allow`
+
+5. Start the Web UI
+
+    ```
+    , server
+    ```
+
+6. Open a command runner in a new terminal
+
+    ```
+    tail -f pipe | sh
+    ```
+    The frontend runs its commands through this, leave it open for functionality.
+
+7. Check it out
+    
+    Go to [http://localhost:8081](http://localhost:8081) to start using the Web UI.
+
+---
+After you have configured your target machine, hit the `#BUIDL` button to build the host. Your host will appear under "Nodes" tab where you can edit and download the boot files. Please upstream the Nix files to your GitHub repository after you are done with creating and editing your nodes, the Web UI will automatically stage them for you.
+
+## Deployment
+For deployment, we will use the [kexec](https://wiki.archlinux.org/title/kexec) (kernel execute) method, which allows loading and booting into another kernel without a power cycle.
 
 It's important to note that HomestakerOS is running entirely on RAM. Therefore, any user-generated directories and files will not persist across reboots or power cycles.
+
+Obtain the boot files for the target machine created via the Web UI and then proceed with the following steps:
 
 1. Install the `kexec-tools`
 
@@ -208,8 +250,9 @@ It's important to note that HomestakerOS is running entirely on RAM. Therefore, 
 2. Kernel execute
 
     ```shell
-    sudo ./result/kexec-boot
+    sudo ./kexec-boot
     ```
     This command will execute the `kexec-boot` script, which will "reboot" the machine into HomestakerOS.
 
+---
 At this point, we should not need to access the underlying operating system again unless serious problems occur. To update the system, obtain the boot media files to the HomestakerOS and execute the `kexec-boot` script again to kexec the machine into a up-to-date version.
