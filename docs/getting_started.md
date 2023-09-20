@@ -1,9 +1,10 @@
-# Getting started
+# Getting Started
+
 Before deploying HomestakerOS, you need to have a machine running Linux already. This will serve as the underlying fallback operating system. Any flavour of Linux will do, preferably a headless, minimal one like CoreOS.
 
 We are going to need to format the drives manually and set up the necessary files. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between beacon node (consensus client) and execution node (execution client).
 
-## Format drives
+## Format Drives
 To begin, we will format the drives to store the secrets and blockchain using the [Btrfs filesystem](https://wiki.archlinux.org/title/btrfs). We prefer Btrfs due to its [Copy-on-Write](https://en.m.wikipedia.org/wiki/Copy-on-write) (COW) resource management technique, allowing efficient snapshot creation. For more information, you can check out this [introduction to Btrfs](https://itsfoss.com/btrfs/).
 
 Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, Erigon and Lighthouse on a single hard drive or SSD. If you are unsure about whether your drive space is enough, you can check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
@@ -30,11 +31,12 @@ Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, Erig
     This command mounts the Btrfs filesystem located at `/dev/nvme0n1` to the `/mnt` directory, enabling subvolume creation.
 
     ```shell
+    btrfs subvolume create /mnt/addons
     btrfs subvolume create /mnt/secrets
     btrfs subvolume create /mnt/erigon
     btrfs subvolume create /mnt/lighthouse
     ```
-    These commands create three subvolumes named "secrets", "erigon" and "lighthouse" within the mounted Btrfs filesystem.
+    These commands create three subvolumes named "addons", "secrets", "erigon" and "lighthouse" within the mounted Btrfs filesystem.
 
     ```shell
     umount /mnt
@@ -44,12 +46,13 @@ Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, Erig
 4. Mount the subvolumes
 
     ```shell
-    mkdir /mnt/secrets /mnt/erigon /mnt/lighthouse
+    mkdir /mnt/addons /mnt/secrets /mnt/erigon /mnt/lighthouse
     ```
     This command create mountpoints for each subvolume within the `/mnt` directory.
 
     ```shell
-    mount -o subvol=secrets /dev/nvme0n1 /mnt/secrets
+	mount -o subvol=addons /dev/nvme0n1 /mnt/addons
+	mount -o subvol=secrets /dev/nvme0n1 /mnt/secrets
     mount -o subvol=erigon /dev/nvme0n1 /mnt/erigon
     mount -o subvol=lighthouse /dev/nvme0n1 /mnt/lighthouse
     ```
@@ -62,29 +65,17 @@ Now that we have set up the drive as needed, we can define them as [systemd moun
 <summary> Frontend: How to define systemd mounts for partitionless Btrfs disk</summary>
 &nbsp;
 
-To reference the formatted drive, we simply use the label we set. In this case, we can refer to it with `/dev/disk/by-label/homestaker`. Please note that we also need to add `subvol=<subvolumeName>` to the mount options.
+To reference the formatted drive, we simply use the label we set. In this case, we can refer to it with `/dev/disk/by-label/homestaker`. Please note that we also need to add `subvol` options to the mount entries.
 
+
+Create mount entries for each subvolume:
 ```conf
-description = "Secrets";
-what = "/dev/disk/by-label/homestaker";
-where = "/mnt/secrets";
-options = "subvol=secrets";
-type = "btrfs";
+options -> subvol=<subvolumeName>
+type    -> btrfs
+what    -> /dev/disk/by-label/homestaker
+where   -> /mnt/<subvolumeName>
 ```
-```conf
-description = "Erigon";
-what = "/dev/disk/by-label/homestaker";
-where = "/mnt/erigon";
-options = "subvol=erigon";
-type = "btrfs";
-```
-```conf
-description = "Lighthouse";
-what = "/dev/disk/by-label/homestaker";
-where = "/mnt/lighthouse";
-options = "subvol=lighthouse";
-type = "btrfs";
-```
+
 </details>
 
 ## Secrets
@@ -184,6 +175,23 @@ ssh-keygen -t ed25519 -f /mnt/secrets/ssh/id_ed25519 -N ""
 ```
 
 Either way, make sure to configure the private SSH key path in the SSH settings on the frontend. In this case, the path should be set to `/mnt/secrets/ssh/id_ed25519`.
+
+## Addons
+
+### SSV-node
+The [ssv.network](https://ssv.network/overview/) is a fully decentralized, open-source, and trustless DVT Network that provides a reusable infrastructure solution for decentralizing Ethereum validators.
+
+1. Generate a key pair
+
+    ```shell
+    nix run .#init-ssv -- <hostname>
+    ```
+
+2. Transfer the private key securely to the target machine to the path you have configured at the frontend
+
+3. Register an operator following [these instructions](https://ssv-network.gitbook.io/guides/operator/registering-an-operator) by ssv.network
+
+4. Kernel execute to activate
 
 ## Deployment
 
