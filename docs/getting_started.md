@@ -192,7 +192,9 @@ The [ssv.network](https://ssv.network/overview/) is a fully decentralized, open-
 
 2. Transfer the private key securely to the target machine to the path you have configured at the frontend
 
-3. Register an operator following [these instructions](https://ssv-network.gitbook.io/guides/operator/registering-an-operator) by ssv.network
+3. Register an SSV operator
+
+    You can register an operator on the Web UI. For more information, see [these instructions](https://ssv-network.gitbook.io/guides/operator/registering-an-operator) by ssv.network.
 
 4. Kernel execute to activate
 
