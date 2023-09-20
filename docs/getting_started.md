@@ -232,14 +232,14 @@ Now that the target machine is pre-configured, we can proceed to create the NixO
     Go to [http://localhost:8081](http://localhost:8081) to start using the Web UI.
 
 ---
-After you have configured your target machine, hit the `#BUIDL` button to build the host. Your host will appear under "Nodes" tab where you can edit and download the boot files. Please upstream the Nix files to your GitHub repository after you are done with creating and editing your nodes, the Web UI will automatically stage them for you.
+After you have configured your target machine, hit the `#BUIDL` button to build the host. Your host will appear under "Nodes" tab where you can edit and download the boot media files. Please upstream the Nix files to your GitHub repository after you are done with creating and editing your nodes, the Web UI will automatically stage them for you.
 
 ## Deployment
 For deployment, we will use the [kexec](https://wiki.archlinux.org/title/kexec) (kernel execute) method, which allows loading and booting into another kernel without a power cycle.
 
 It's important to note that HomestakerOS is running entirely on RAM. Therefore, any user-generated directories and files will not persist across reboots or power cycles.
 
-Obtain the boot files for the target machine created via the Web UI and then proceed with the following steps:
+Obtain the boot media files for the target machine created via the Web UI and then proceed with the following steps:
 
 1. Install the `kexec-tools`
 

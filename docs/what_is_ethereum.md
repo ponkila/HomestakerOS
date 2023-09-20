@@ -36,7 +36,7 @@ Profit mainly comes from:
 
 Syncing with a network refers to the process of downloading or updating the blockchain data from the network. Once the node is fully synced, it can participate in the network and interact with other nodes, smart contracts and decentralized applications on the network. There are multiple types of sync modes that represent different approaches to this process, each with various trade-offs.
 
-As of September 18, 2023, the Ethereum blockchain's **full sync** data size is **1221.43 GB**. It is important to note that the size depends on several factors, such as the client and filesystem you are using. The full sync data size can potentially be reduced by using a [CoW](https://en.wikipedia.org/wiki/Copy-on-write) filesystem and a compression method.
+As of September 18, 2023, the Ethereum blockchain's **full sync** data size is **1221.43 GB**. It is important to note that the size depends on several factors, such as the client and filesystem you are using. The full sync data size can potentially be reduced by using a [COW](https://en.wikipedia.org/wiki/Copy-on-write) filesystem and a compression method.
 
 ### Want to know more?
 

@@ -36,7 +36,7 @@ In order for a software application, users and other clients to interact with th
 Here's a simple example of how you can use the JSON-RPC API to make a request to a locally running Ethereum client using a tool called `curl` to retrieve the client's version:
 
 ```
-curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":67}'   127.0.0.1:8545
+curl -H "Content-Type: application/json" -X POST --data '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":67}' 127.0.0.1:8545
 ```
 
 This request will fetch information about the Ethereum client's version using the "web3_clientVersion" method via the HTTP protocol. The Ethereum client can be configured to have multiple interfaces to achieve communication, each serving its specific purpose:
