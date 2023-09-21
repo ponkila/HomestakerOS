@@ -9,7 +9,7 @@ fi
 
 hostname="$1"
 config_dir="webui/nixosConfigurations/$hostname"
-private_key_path="gitignore/$hostname/ssv_operator_key"
+private_key_path="private/$hostname/ssv_operator_key"
 
 # Validate hostname
 if [ ! -d "$config_dir" ]; then
