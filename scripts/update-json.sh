@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Script for updating the JSON files in the webui directory
 
-config_dir="webui/nixosConfigurations"
+config_dir="webui/public/nixosConfigurations"
 
 # Default flags for the nix-command
 declare -a nix_flags=(

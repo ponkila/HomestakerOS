@@ -28,7 +28,7 @@ Options, required:
 
 Options, optional:
   -o, --output <output_path>
-      Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
+      Specify the output path for the resulting build symlinks. Default: 'webui/public/nixosConfigurations/<hostname>/result'.
   
   -r, --realize
       Output files instead of symlinks, aka. realize the resulting build symlinks.
@@ -103,7 +103,7 @@ parse_arguments() {
   fi
 
   # Set output path if not set by argument
-  [[ -z $output_path ]] && output_path="webui/nixosConfigurations/${hostname}/result"
+  [[ -z $output_path ]] && output_path="webui/public/nixosConfigurations/${hostname}/result"
 }
 
 create_default_nix() {
