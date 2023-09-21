@@ -9,6 +9,7 @@ fi
 
 hostname="$1"
 config_dir="webui/nixosConfigurations/$hostname"
+private_key_path="private/$hostname/ssv_operator_key"
 
 # Validate hostname
 if [ ! -d "$config_dir" ]; then
@@ -37,9 +38,9 @@ echo "$public_key" > "$config_dir/ssv_operator_key.pub"
 target=$(jq -r '.addons."ssv-node".privateKeyFile' "$config_dir/default.json")
 
 # Save the private key
-source="$HOME/ssv_operator_key"
-echo "$private_key" > "$source"
+mkdir -p "$(dirname "$private_key_path")"
+echo "$private_key" > "$private_key_path"
 
 # Print instructions for the user
-cmd="scp $source core@$hostname:$target"
+cmd="scp $private_key_path core@$hostname:$target"
 echo -e "The private key has been generated. Transfer it securely to the target machine:\n\`$cmd\`"
