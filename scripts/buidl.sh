@@ -260,7 +260,7 @@ main() {
   [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
 
   # Create the JSON files for the webui directory
-  mkdir -p "webui/nixosConfigurations/$hostname" && update-json
+  update-json
 
   # Copy resulting files from '/nix/store' if realize is true
   [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"
