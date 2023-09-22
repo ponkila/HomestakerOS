@@ -125,13 +125,17 @@ This file is then saved at `nixosConfigurations/"$hostname"/default.nix`.
 
 ### 3. Nix build
 
-Finally, the host is built as the script runs the following command:
+Then, the host is built as the script runs the following command:
 
 ```shell
 nix build .#nixosConfigurations."$hostname".config.system.build."$format"
 ```
 
 The media boot files are generated in a result folder under the host directory, which will be located at `webui/public/nixosConfigurations/"$hostname"/result`.
+
+### 4. Update JSON Files
+
+Finally, the `update-json` script is run to conclude the process, which is the exact same procedure as in the web server initialization process.
 
 ## Thats it
 
