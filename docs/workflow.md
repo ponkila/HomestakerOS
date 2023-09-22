@@ -31,25 +31,25 @@ let
   parseOpts = options:
     nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: !  nixpkgs.lib.options.isOption v)
       (k: v: {
-		type = v.type.name;
-		default = v.default;
-		description = if v ? description then v.description else null;
-		example = if v ? example then v.example else null;
-	  })
-	  options;
+        type = v.type.name;
+		    default = v.default;
+		    description = if v ? description then v.description else null;
+		    example = if v ? example then v.example else null;
+	    })
+	    options;
 
   # Function to get options from module(s)
   getOpts = modules:
-	builtins.removeAttrs (nixpkgs.lib.evalModules {
-	  inherit modules;
-	  specialArgs = { inherit nixpkgs; };
-	}).options [ "_module" ];
+	  builtins.removeAttrs (nixpkgs.lib.evalModules {
+	    inherit modules;
+	    specialArgs = { inherit nixpkgs; };
+	  }).options [ "_module" ];
 in
 {
   # Module option exports for the frontend
   # Accessible through 'nix eval --json .#exports'
   exports = parseOpts (getOpts [
-	./modules/homestakeros/options.nix
+	  ./modules/homestakeros/options.nix
   ]);
 }
 ```
@@ -62,11 +62,11 @@ So, the initial step is fetching those module options and it is done like this:
 nix eval --json github:ponkila/nixobolus#exports.homestakeros | jq -r '.[]'
 ```
 
-The resulting data is saved as `schema.json`.
+The resulting data is saved at `webui/public/schema.json`.
 
 ### 2. Update JSON Files
 
-Next, the `update-json.sh` script will be executed. If there are already configured hosts before initializing the web server, this script retrieves the hostnames of those hosts and obtains a JSON-formatted version of the configurations for each of them. All of this data is saved under the `webui/public/nixosConfigurations` directory.
+Next, the `update-json` script will be executed. If there are already configured hosts before initializing the web server, this script retrieves the hostnames of those hosts and obtains a JSON-formatted version of the configurations for each of them. All of this data is saved under the `webui/public/nixosConfigurations` directory.
 
 Here is how the script retrieves the hostnames using the `attrNames` built-in function:
 
@@ -82,15 +82,25 @@ nix eval --json .#nixosConfigurations."$hostname".config.homestakeros | jq -r '.
 
 ### 3. Frontend
 
-I'm not gonna lie, I don't know much about what's happening with the frontend. However, essentially, the web server is built and launched, making it accessible at [http://localhost:8081](http://localhost:8081). Additionally, a "First In, First Out" (FIFO) file named "pipe" is created, which I will explain shortly.
+I'm not gonna lie, I don't know much about what's happening with the frontend. However, the following commands are going to be executed and essentially, the web server is built and launched, making it accessible at http://localhost:8081.
 
-The web UI displays a configuration option form that is dynamically generated based on the schema retrieved earlier. And that's it — we have the HomestakerOS web UI up and running.
+```shell
+yarn install && yarn build
+```
 
-## Build process
+```shell
+nix run .#homestakeros
+```
 
-Here is where things get interesting. In this section, I'll explain what happens after the user has configured their host, or as you might say, a "Node", and then hits the `#BUIDL` button.
+Additionally, a "First In, First Out" (FIFO) file named "pipe" is created, which I will explain shortly. 
 
-### 1. Execution via "Pipe"
+And that's it — we have the HomestakerOS web UI up and running. The web UI should display a configuration option form that is dynamically generated based on the schema retrieved earlier.
+
+## Build Process
+
+Here is where things get interesting. In this section, I'll explain what happens in the background when the user submits the form payload containing the host configuration by clicking the `#BUIDL` button to build the host.
+
+### 1. Execution via "pipe"
 
 The frontend appends a string that represents a command to the FIFO file:
 
@@ -121,7 +131,7 @@ Finally, the host is built as the script runs the following command:
 nix build .#nixosConfigurations."$hostname".config.system.build."$format"
 ```
 
-The media boot files are generated in a result folder under the host directory, which will be located at `webui/public/nixosConfigurations/"$hostname"/results`.
+The media boot files are generated in a result folder under the host directory, which will be located at `webui/public/nixosConfigurations/"$hostname"/result`.
 
 ## Thats it
 
