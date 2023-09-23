@@ -119,9 +119,13 @@ tail -f pipe | sh
 
 ### 2. JSON to Nix Conversion
 
-Now that the frontend has initialized the build process, the `buidl` script takes the provided JSON data and converts it into a Nix expression file using `json2nix`.
+Now that the frontend has initialized the build process, the `buidl` script takes the provided JSON data and converts it into a Nix expression file using the `json2nix` script. The script will escape the double quotes in the JSON data and convert it to a Nix expression like this:
 
-This file is then saved at `nixosConfigurations/"$hostname"/default.nix`.
+```
+nix-instantiate --eval --expr "builtins.fromJSON \"$esc_json_data\""
+```
+
+The output of this is saved to `nixosConfigurations/"$hostname"/default.nix`.
 
 ### 3. Nix build
 
