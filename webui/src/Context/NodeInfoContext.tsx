@@ -1,33 +1,20 @@
 import { useContext, createContext, useState, useEffect } from 'react'
+import * as O from 'fp-ts/Option'
 
-const fetchHostnames = async (): Promise<string[]> => {
+export const fetchHostnames = async (): Promise<O.Option<string[]>> => {
   const hostnames = await fetch('/nixosConfigurations/hostnames.json')
-    .then(async (res) => {
-      if (!res.ok || res.status !== 200) {
-        return []
-      }
-      return await res.json()
-    })
-    .catch((err) => {
-      console.log(err)
-      return []
-    })
+    .then((res) => res.json())
+    .then((data) => O.some(data))
+    .catch((_) => O.none)
   return hostnames
 }
 
-const fetchNodeConfig = async (hostname: string) => {
-  const config = await fetch(`/nixosConfigurations/${hostname}/default.json`)
-    .then(async (res) => {
-      if (!res.ok || res.status !== 200) {
-        return null
-      }
-      return await res.json()
-    })
-    .catch((err) => {
-      console.log(err)
-      return null
-    })
-  return config
+export const fetchNodeConfig = async (hostname: string): Promise<O.Option<Record<string, any>>> => {
+  const res = await fetch(`/nixosConfigurations/${hostname}/default.json`)
+    .then((res) => res.json())
+    .then((data) => O.some(data))
+    .catch((_) => O.none)
+  return res
 }
 
 const fetchNodeInitrdStatus = async (hostname: string) => {
@@ -76,7 +63,8 @@ export function NodeInfoProvider({ children }: { children: any }) {
   const [nodes, setNodes] = useState<NodeInfo[]>([])
 
   const refresh = async () => {
-    const hostnames = await fetchHostnames()
+    const hostnamesOption = await fetchHostnames()
+    const hostnames = O.getOrElse(() => new Array())(hostnamesOption)
     const newNodes = [
       ...nodes.filter((node) => hostnames.includes(node.hostname)),
       ...hostnames
@@ -101,7 +89,8 @@ export function NodeInfoProvider({ children }: { children: any }) {
         node.hasKexec = await fetchNodeKexecStatus(node.hostname)
       }
       node.ssvKey = await fetchNodeSSVKey(node.hostname)
-      node.config = await fetchNodeConfig(node.hostname)
+      const nodeConfigOption = await fetchNodeConfig(node.hostname)
+      node.config = O.getOrElseW(() => null)(nodeConfigOption)
     }
     setNodes(newNodes)
   }

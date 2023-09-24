@@ -19,6 +19,7 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   Tooltip,
+  Select,
 } from '@chakra-ui/react'
 import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
@@ -170,13 +171,14 @@ const ConfigurationForm = (props: any) => {
     return node != null && node.constructor == Object && 'type' in node
   }
 
-  const processNode = (keys: string[], node: Record<string, any>) => {
+  const processNode = (keys: string[], node: Record<string, any>, sel: Record<string, any>) => {
     const keyName = keys.at(-1)
     const jsonPath = jp.stringify(keys)
     if (isLeaf(node)) {
-      if (props.schema) {
-        const defaultValue = jp.value(props.schema, jsonPath)
-        node.default = defaultValue
+      if (keys.indexOf("nodes") == 0) {
+        const k = jsonPath.replace("nodes", "")
+        const s = jp.value(sel, k)
+        node.default = s
       }
       switch (node.type) {
         case 'bool':
@@ -246,7 +248,7 @@ const ConfigurationForm = (props: any) => {
       return (
         <FormSection key={uuid()} name={keyName}>
           {Object.entries(node).map(([newKey, value]) => {
-            return processNode([...keys, newKey], value)
+            return processNode([...keys, newKey], value, sel)
           })}
         </FormSection>
       )
@@ -265,11 +267,12 @@ const ConfigurationForm = (props: any) => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const result = recursiveReplace(structuredClone(props))
+    const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
     Object.entries(formDataJson).forEach(([key, value]) => {
-      const schemaEntry = jp.query(props, key)
+      key = key.replace("nodes.", "")
+      const schemaEntry = jp.query(props.schema, key)
       const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
       if (value === '' && fieldType !== 'nullOr') {
         return
@@ -290,7 +293,7 @@ const ConfigurationForm = (props: any) => {
               .slice(0, -i)
               .map((v: any) => v['expression']['value'])
           )
-          parent = jp.query(props, parentPath)
+          parent = jp.query(props.schema, parentPath)
           if (parent.length > 0) {
             parent = parent[0]
             break
@@ -329,27 +332,54 @@ const ConfigurationForm = (props: any) => {
     })
   }
 
+  const templates = () => {
+    const [selectedTemplate, setSelectedTemplate] = useState("0");
+
+    const joined = new Array()
+    joined.push(props.schema)
+    joined.push(...props.nodes)
+
+    const options = [<option value="0">New node template</option>]
+    const extOpt = props.nodes.map((v: any, i: number) => (<option value={i + (options.length)}>{v.localization.hostname}</option>))
+    const jopt = new Array()
+    jopt.push(...options)
+    jopt.push(...extOpt)
+
+    const chosenJSON: Record<string, any> = joined.at(parseInt(selectedTemplate))
+
+    const root = selectedTemplate == "0" ? "schema" : "nodes"
+
+    return (
+      <form onSubmit={e => handleSubmit(e)}>
+        <Box borderWidth="1px" borderRadius="lg" p={4} mb={4}>
+          <Heading as="h2" size="md" mb={4}>
+            Configuration
+          </Heading>
+          <OrderedList>
+            <ListItem>Select features below</ListItem>
+            <ListItem>Click on #BUIDL</ListItem>
+            <ListItem>A download will start for your initrd and kernel</ListItem>
+            <ListItem>
+              Execute the <a href="https://en.wikipedia.org/wiki/Kexec">kexec</a> script on an existing Linux distribution
+              to boot
+            </ListItem>
+          </OrderedList>
+        </Box>
+        <Select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
+          {jopt}
+        </Select>
+        {processNode([root], structuredClone(props.schema), chosenJSON)}
+        <Button w="100%" type="submit">
+          #BUIDL
+        </Button>
+      </form>
+    )
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
-      <Box borderWidth="1px" borderRadius="lg" p={4} mb={4}>
-        <Heading as="h2" size="md" mb={4}>
-          Configuration
-        </Heading>
-        <OrderedList>
-          <ListItem>Select features below</ListItem>
-          <ListItem>Click on #BUIDL</ListItem>
-          <ListItem>A download will start for your initrd and kernel</ListItem>
-          <ListItem>
-            Execute the <a href="https://en.wikipedia.org/wiki/Kexec">kexec</a> script on an existing Linux distribution
-            to boot
-          </ListItem>
-        </OrderedList>
-      </Box>
-      {processNode(['$'], structuredClone(props))}
-      <Button w="100%" type="submit">
-        #BUIDL
-      </Button>
-    </form>
+    <>
+      {templates()}
+    </>
   )
 }
 

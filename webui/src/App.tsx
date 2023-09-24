@@ -8,10 +8,11 @@ import RegisterSSVForm from './Components/RegisterSSVForm'
 import NodeList from './Components/NodeList'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
 import useMetaMask from './Hooks/useMetaMask'
-import { NodeInfoProvider } from './Context/NodeInfoContext'
+import { NodeInfoProvider, fetchNodeConfig } from './Context/NodeInfoContext'
 import { StatusPage } from './Components/StatusPage'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
+import { fetchHostnames } from './Context/NodeInfoContext'
 
 const Schema = () => {
   const [schema, setSchema] = useState<O.Option<Record<string, any>>>(O.none)
@@ -20,9 +21,27 @@ const Schema = () => {
     fetch('/schema.json')
       .then((res) => res.json())
       .then((data) => setSchema(O.some(data)))
+      .catch((_) => setSchema(O.none))
   }, [])
 
   return schema
+}
+
+export type BlockResponse = {
+  host: string;
+  data: O.Option<Record<string, any>>;
+}
+
+const Block = async (endpoint: string): Promise<O.Option<Record<string, any>>> => {
+  const block = await fetch(`${endpoint}/eth/v1/beacon/headers/head`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  }).then((res) => res.json())
+    .then((data) => O.some(data))
+    .catch((_) => O.none)
+  return block
 }
 
 const Backend = () => {
@@ -44,21 +63,39 @@ const Backend = () => {
 
 const TabsView = () => {
 
+  const [nodes, setNodes] = useState<Record<string, any>[]>([])
+  const [blocks, setBlocks] = useState<Record<string, any>[]>()
+
   const schema = Schema()
 
-  const configTab = pipe(
-    schema,
-    O.match(
-      () => <Tab isDisabled>NixOS config</Tab>,
-      (_) => <Tab>NixOS config</Tab>
-    )
-  )
+  const refresh = async () => {
+    const res = await fetchHostnames();
+    const xs = O.getOrElse(() => new Array())(res)
+
+    const nm = await Promise.all(xs.map(async (v, _) => await fetchNodeConfig(v)))
+    const nr = nm.map((x) => O.toNullable(x)).flatMap(f => f ? [f] : [])
+    setNodes(nr)
+
+    const blocks = await Promise.all(nr.map(async (n) => {
+      const data = await Block(n.consensus.lighthouse.endpoint)
+      const res: BlockResponse = {
+        host: n.localization.hostname,
+        data: data,
+      }
+      return res
+    }))
+    setBlocks(blocks)
+  }
+
+  useEffect(() => {
+    refresh()
+  }, [])
 
   const configPage = pipe(
     schema,
     O.match(
       () => <></>,
-      (head) => <ConfigurationForm {...head} />
+      (head) => <ConfigurationForm schema={head} nodes={nodes} />
     )
   )
 
@@ -66,14 +103,18 @@ const TabsView = () => {
     <Tabs variant="enclosed">
       <TabList>
         <Tab>Status</Tab>
-        {configTab}
+        <Tab isDisabled={O.isNone(schema) ? true : false}>NixOS config</Tab>
         <Tab>Query node</Tab>
         <Tab>Nodes</Tab>
         <Tab>Register SSV operator</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
-          <StatusPage count={schema} backend={Backend()} />
+          <StatusPage
+            count={schema}
+            backend={Backend()}
+            nodes={nodes}
+            blocks={blocks} />
         </TabPanel>
         <TabPanel>
           {configPage}

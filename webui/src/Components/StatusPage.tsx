@@ -3,9 +3,26 @@ import { pipe } from 'fp-ts/function'
 import {
   Alert,
   AlertIcon,
+  AlertStatus,
+  Spinner,
 } from '@chakra-ui/react'
+import { BlockResponse } from '../App'
 
 export const StatusPage = (props: any) => {
+
+  const nodes = props.nodes ? <Alert status='success'>
+    <AlertIcon />
+    {props.nodes.length} nodes loaded:
+    {props.nodes.map((v: Record<string, any>) => (
+      <details>
+        <summary>{v.localization.hostname}</summary>
+        <code>{JSON.stringify(v)}</code>
+      </details>
+    ))}
+  </Alert> : <Alert status='info'>
+    <AlertIcon />
+    No nodes
+  </Alert>
 
   const backend = props.backend ? <Alert status='success'>
     <AlertIcon />
@@ -35,10 +52,33 @@ export const StatusPage = (props: any) => {
     )
   )
 
+  const blocks = props.blocks ? props.blocks.map((x: BlockResponse) => {
+    const status: AlertStatus = pipe(x.data, O.match(
+      () => "error",
+      (x) => x.execution_optimistic ? "warning" : "success",
+    ))
+    const message: string = pipe(x.data, O.match(
+      () => "Could not connect to JSON-RPC endpoint. Is your VPN connection to this node online?",
+      (x) => `${x.execution_optimistic ? "Node is online but optimistic" : "Node OK"}`,
+    ))
+    const body = pipe(x.data, O.match(
+      () => <>{x.host}: {message}</>,
+      (data) => <details><summary>{x.host}: {message}</summary><code>{JSON.stringify(data)}</code></details>,
+    ))
+    return (
+      <Alert status={status}>
+        <AlertIcon />
+        {body}
+      </Alert>
+    )
+  }) : <Alert status="info"><AlertIcon />Loading node statuses... <Spinner /></Alert>
+
   return (
     <>
       {schema}
       {backend}
+      {nodes}
+      {blocks}
     </>
   )
 }
