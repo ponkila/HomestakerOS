@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import { Handle, Position, NodeProps } from 'reactflow'
-import { Link, Button, Box, Text, Collapse } from '@chakra-ui/react'
+import { Link, Button, Box, Text } from '@chakra-ui/react'
 
 function NixNode({ data }: NodeProps) {
-  const [isOpen, setIsOpen] = useState(false)
   const nodeInfo = data.nodeInfo
   return (
     <>
@@ -32,34 +30,35 @@ function NixNode({ data }: NodeProps) {
         </Link>
         <Text fontSize="xs">
           Endpoints
-          <Button size="xs" ml={2} onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? 'Hide' : 'Show'}
-          </Button>
         </Text>
-        <Collapse in={isOpen} animateOpacity>
+        <>
           {nodeInfo.config?.consensus && (
             <Text fontSize="xs" fontWeight="bold">
               Consensus
             </Text>
           )}
           {nodeInfo.config?.consensus &&
-            Object.entries(nodeInfo.config.consensus).map(([key, value]: [string, any]) => (
-              <Text key={key} fontSize="xs">
-                {key}: {value.endpoint}
-              </Text>
-            ))}
+            Object.entries(nodeInfo.config.consensus)
+              .filter(([_, value]: [string, any]) => value.enable)
+              .map(([key, value]: [string, any]) => (
+                <Text key={key} fontSize="xs">
+                  {key}: {value.endpoint}
+                </Text>
+              ))}
           {nodeInfo.config?.execution && (
             <Text fontSize="xs" fontWeight="bold">
               Execution
             </Text>
           )}
           {nodeInfo.config?.execution &&
-            Object.entries(nodeInfo.config.execution).map(([key, value]: [string, any]) => (
-              <Text key={key} fontSize="xs">
-                {key}: {value.endpoint}
-              </Text>
-            ))}
-        </Collapse>
+            Object.entries(nodeInfo.config.execution)
+              .filter(([_, value]: [string, any]) => value.enable)
+              .map(([key, value]: [string, any]) => (
+                <Text key={key} fontSize="xs">
+                  {key}: {value.endpoint}
+                </Text>
+              ))}
+        </>
       </Box>
       <Handle type="source" position={Position.Bottom} id="a" />
     </>
