@@ -174,7 +174,7 @@ The HTTP connection between your beacon node and execution node needs to be auth
 
 ---
 
-#### Frontend configuration
+#### Frontend Configuration
 
  To enable communication between the clients, you need to specify the path to the `jwt.hex` file we generated earlier. Any clients that you want to be able to communicate with each other should share the same JWT secret. 
  
@@ -182,7 +182,9 @@ The HTTP connection between your beacon node and execution node needs to be auth
 
 ### SSH
 
-Our machine needs its own SSH key pair. Let's create a directory to store the SSH keys at at `/mnt/secrets/ssh`.
+[OpenSSH](https://www.openssh.com/) is a network protocol that offers a secure method for accessing and managing remote computers and servers over an unsecured network, such as the internet. Since we are dealing with a headless system, we communicate with it through SSH (Secure Shell). To do this, our machine needs its own SSH key pair.
+
+Let's create a directory to store the SSH keys at `/mnt/secrets/ssh`:
 
 ```shell
 mkdir /mnt/secrets/ssh
@@ -197,7 +199,7 @@ ssh-keygen -t ed25519 -f /mnt/secrets/ssh/id_ed25519 -N ""
 ```
 
 
-#### Frontend configuration
+#### Frontend Configuration
 
 Regardless of the key creation method, make sure to configure the `privateKeyFile` option under the SSH section in the frontend configuration. This should be set to the path of the private SSH key file. In this case, it should be set to `/mnt/secrets/ssh/id_ed25519`.
 
