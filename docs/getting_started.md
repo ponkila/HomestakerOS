@@ -60,25 +60,19 @@ Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, Erig
 
 ---
 
-Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend when creating the NixOS boot media. 
+#### Frontend Configuration
 
-<details>
-
-<summary> Frontend: How to define systemd mounts for partitionless Btrfs disk</summary>
-&nbsp;
+Now that we have set up the drive as needed, we can define them as [systemd mount](https://www.freedesktop.org/software/systemd/man/systemd.mount.html) units on the frontend at the `mounts` section.
 
 To reference the formatted drive, we simply use the label we set. In this case, we can refer to it with `/dev/disk/by-label/homestaker`. Please note that we also need to add `subvol` options to the mount entries.
 
-
-Create mount entries for each subvolume:
+Create mount entry like this for each subvolume:
 ```conf
 options -> subvol=<subvolumeName>
 type    -> btrfs
 what    -> /dev/disk/by-label/homestaker
 where   -> /mnt/<subvolumeName>
 ```
-
-</details>
 
 ## Secrets
 
@@ -109,6 +103,9 @@ Note: __This guide does not provide instructions on setting up the WireGuard ser
     These commands will create a directory and the configuration file in the subvolume we created earlier.
 
 ---
+
+#### Configuration File
+
 Now that we have the keys and an empty configuration file, it is time to set the WireGuard configuration. Your configuration should look something like this:
 
 ```conf
@@ -143,6 +140,12 @@ For more information: https://man7.org/linux/man-pages/man8/wg.8.html
 
 </details>
 
+---
+
+#### Frontend Configuration
+
+All we need to do at the frontend is enable the WireGuard and specify the path to the configuration file we created earlier. In this case, the value should be set to `/mnt/secrets/wireguard/wg0.conf`.
+
 ### JWT
 The HTTP connection between your beacon node and execution node needs to be authenticated using a JSON Web Token (JWT). There are several ways to generate this token, but let's keep it simple and create it using the OpenSSL command line tool.
 
@@ -162,7 +165,16 @@ The HTTP connection between your beacon node and execution node needs to be auth
     ```
     These commands will copy the generated JWT to both the "erigon" and "lighthouse" subvolumes we created earlier and then remove the original file.
 
+---
+
+#### Frontend configuration
+
+ To enable communication between the clients, you need to specify the path to the `jwt.hex` file we generated earlier. Any clients that you want to be able to communicate with each other should share the same JWT secret. 
+ 
+ In this case, we would set the `jwtSecretFile` option to `/mnt/erigon/jwt.hex` for the Erigon client and `/mnt/lighthouse/jwt.hex` for the Lighthouse client.
+
 ### SSH
+
 Our machine needs its own SSH key pair. Let's create a directory to store the SSH keys at at `/mnt/secrets/ssh`.
 
 ```shell
@@ -177,7 +189,11 @@ You can generate the keys manually by running the following command:
 ssh-keygen -t ed25519 -f /mnt/secrets/ssh/id_ed25519 -N ""
 ```
 
-Either way, make sure to configure the private SSH key path in the SSH settings on the frontend. In this case, the path should be set to `/mnt/secrets/ssh/id_ed25519`.
+#### Frontend configuration
+
+Regardless of the key creation method, make sure to configure the `privateKeyFile` option under the SSH section in the frontend configuration. This should be set to the path of the private SSH key file. In this case, it should be set to `/mnt/secrets/ssh/id_ed25519`.
+
+The configured hosts allow only passwordless SSH login. Therefore, you should set the `authorizedKeys`, which is a list of the public SSH keys you want to authorize for SSH access to the system. This option corresponds to the `/etc/ssh/authorized_keys` file in a traditional Linux system.
 
 ## Addons
 
