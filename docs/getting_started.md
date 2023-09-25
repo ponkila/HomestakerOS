@@ -2,9 +2,16 @@
 
 Before deploying HomestakerOS, you need to have a machine running Linux already. This will serve as the underlying fallback operating system. Any flavour of Linux will do, preferably a headless, minimal one like CoreOS.
 
-We are going to need to format the drives manually and set up the necessary files. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between beacon node (consensus client) and execution node (execution client).
+In addition to the configuration via the frontend, we are going to need to format the drives manually and set up the necessary files. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between the consensus client and the execution client.
 
-## Format Drives
+## Localization
+Theoretically, this is the only configuration required to build a working system via the HomestakerOS Web UI. It includes setting the system's hostname and timezone.
+
+For the hostname, ensure it contains only alphanumeric characters, hyphens, or underscores, with a length ranging from 1 to 63 characters.
+
+You can find a list of valid timezone (TZ) identifiers [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+
+## Mounts
 To begin, we will format the drives to store the secrets and blockchain using the [Btrfs filesystem](https://wiki.archlinux.org/title/btrfs). We prefer Btrfs due to its [Copy-on-Write](https://en.m.wikipedia.org/wiki/Copy-on-write) (COW) resource management technique, allowing efficient snapshot creation. For more information, you can check out this [introduction to Btrfs](https://itsfoss.com/btrfs/).
 
 Let's proceed with creating a Btrfs filesystem with subvolumes for secrets, Erigon and Lighthouse on a single hard drive or SSD. If you are unsure about whether your drive space is enough, you can check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size).
@@ -188,6 +195,7 @@ You can generate the keys manually by running the following command:
 ```shell
 ssh-keygen -t ed25519 -f /mnt/secrets/ssh/id_ed25519 -N ""
 ```
+
 
 #### Frontend configuration
 
