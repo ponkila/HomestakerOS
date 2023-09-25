@@ -4,6 +4,8 @@ Before deploying HomestakerOS, you need to have a machine running Linux already.
 
 In addition to the configuration via the frontend, we are going to need to format the drives manually and set up the necessary files. These files include things like the WireGuard interface configuration and the secret token that ensures a safe connection between the consensus client and the execution client.
 
+The default user for the hosts built through HomeStakerOS is **core**.
+
 ## Localization
 Theoretically, this is the only configuration required to build a working system via the HomestakerOS Web UI. It includes setting the system's hostname and timezone.
 
