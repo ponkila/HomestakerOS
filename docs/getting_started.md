@@ -194,7 +194,7 @@ The [ssv.network](https://ssv.network/overview/) is a fully decentralized, open-
 
 3. Register an SSV operator
 
-    You can register an operator on the Web UI. For more information, see [these instructions](https://ssv-network.gitbook.io/guides/operator/registering-an-operator) by ssv.network.
+    You can register an operator on the HomestakerOS Web UI or alternatively by following [the instructions](https://ssv-network.gitbook.io/guides/operator/registering-an-operator) by ssv.network.
 
 4. Kernel execute to activate
 
