@@ -158,7 +158,7 @@
 
           # Define available system architectures and formats
           formats = ["kexecTree" "isoImage"];
-          systems = ["x86_64-linux" "aarch64-linux"];
+          systems = ["x86_64-linux" "aarch64-linux" "rpi4-linux"];
 
           # Generate list of attribute sets for each possible host
           hosts = builtins.concatMap (hostname:
@@ -178,28 +178,49 @@
             builtins.listToAttrs (map (host: {
                 name = "${host.name}-${host.system}-${host.format}";
                 value = nixpkgs.lib.nixosSystem {
-                  system = host.system;
+                  system =
+                    if host.system == "rpi4-linux"
+                    then "aarch64-linux"
+                    else host.system;
                   specialArgs = {inherit inputs outputs;};
                   modules = [
                     nixobolus.nixosModules.${host.format}
                     nixobolus.nixosModules.homestakeros
                     ./nixosConfigurations/${host.name}
+                    {
+                      system.stateVersion = "23.05";
+                    }
+                    # Format spesific configurations
                     (
-                      if host.format == "isoImage"
+                      if host.format == "isoImage" && host.system != "rpi4-linux"
                       then
                         {pkgs, ...}: {
                           # Use stable kernel
                           boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux);
                         }
-                      else {
+                      else {}
+                    )
+                    # System spesific configurations
+                    (
+                      if host.system == "rpi4-linux"
+                      then
+                        {pkgs, ...}: {
+                          boot.initrd.availableKernelModules = ["xhci_pci" "usbhid" "usb_storage"];
+                          boot.loader = {
+                            grub.enable = false;
+                            generic-extlinux-compatible.enable = true;
+                          };
+                          # Use the Raspberry Pi 4 kernel
+                          boot.kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+                        }
+                      else if host.system == "aarch64-linux" || host.system == "x86_64-linux"
+                      then {
                         # Bootloader for x86_64-linux / aarch64-linux
                         boot.loader.systemd-boot.enable = true;
                         boot.loader.efi.canTouchEfiVariables = true;
                       }
+                      else {}
                     )
-                    {
-                      system.stateVersion = "23.05";
-                    }
                   ];
                 };
               })

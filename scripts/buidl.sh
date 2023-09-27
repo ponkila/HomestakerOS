@@ -33,7 +33,7 @@ Options, required:
       Define the hostname, either for updating an existing host configuration or creating a new one.
 
   -s, --system <system>
-      Select the system architecture. Available: 'x86_64-linux', 'aarch64-linux'.
+      Select the system architecture. Available: 'x86_64-linux', 'aarch64-linux', 'rpi4-linux'.
 
 Options, optional:
 
@@ -139,7 +139,7 @@ parse_arguments() {
     echo "error: system architecture is required."
     echo "try '--help' for more information."
     exit 1
-  elif [[ "$system" != "aarch64-linux" && "$system" != "x86_64-linux" ]]; then
+  elif [[ "$system" != "aarch64-linux" && "$system" != "x86_64-linux" && "$system" != "rpi4-linux" ]]; then
     echo "error: unknown system architecture -- '$system'."
     echo "try '--help' for more information."
     exit 1
