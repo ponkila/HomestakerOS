@@ -147,38 +147,63 @@
 
       flake = let
         inherit (self) outputs;
-        system = "x86_64-linux";
       in {
         nixosConfigurations = let
+          # Fetch hostnames from nixosConfigurations directory
           ls = builtins.readDir ./nixosConfigurations;
           hostnames =
             builtins.filter
             (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
             (builtins.attrNames ls);
+
+          # Define available system architectures and formats
+          formats = ["kexecTree" "isoImage"];
+          systems = ["x86_64-linux" "aarch64-linux"];
+
+          # Generate list of attribute sets for each possible host
+          hosts = builtins.concatMap (hostname:
+            builtins.concatMap (format:
+              builtins.map (system: {
+                name = hostname;
+                format = format;
+                system = system;
+              })
+              systems)
+            formats)
+          hostnames;
         in
           nixpkgs.lib.mkIf (
             builtins.pathExists ./nixosConfigurations
           ) (
-            builtins.listToAttrs (map (hostname: {
-                name = hostname;
+            builtins.listToAttrs (map (host: {
+                name = "${host.name}-${host.system}-${host.format}";
                 value = nixpkgs.lib.nixosSystem {
-                  inherit system;
+                  system = host.system;
                   specialArgs = {inherit inputs outputs;};
-                  modules =
-                    [
-                      nixobolus.nixosModules.kexecTree
-                      nixobolus.nixosModules.homestakeros
-                      ./nixosConfigurations/${hostname}
-                      {
-                        system.stateVersion = "23.05";
+                  modules = [
+                    nixobolus.nixosModules.${host.format}
+                    nixobolus.nixosModules.homestakeros
+                    ./nixosConfigurations/${host.name}
+                    (
+                      if host.format == "isoImage"
+                      then
+                        {pkgs, ...}: {
+                          # Use stable kernel
+                          boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux);
+                        }
+                      else {
                         # Bootloader for x86_64-linux / aarch64-linux
                         boot.loader.systemd-boot.enable = true;
                         boot.loader.efi.canTouchEfiVariables = true;
                       }
-                    ];
+                    )
+                    {
+                      system.stateVersion = "23.05";
+                    }
+                  ];
                 };
               })
-              hostnames)
+              hosts)
           );
 
         schema = nixobolus.outputs.exports.homestakeros;
