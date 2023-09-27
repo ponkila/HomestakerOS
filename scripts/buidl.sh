@@ -13,18 +13,21 @@ display_usage() {
 Usage: $0 [options] [json_data]
 
 Description:
+
   This script compiles a NixOS system by merging module options as JSON data into a base configuration.
 
 Arguments:
+
   json_data
     Specify raw JSON data to merge into the base configuration. This data can also be piped into the script.
 
 Options, required:
-  -b, --base <module_name>
-      Select the base configuration with the specified module name. Available: 'homestakeros'.
 
-  -f, --format <format>
-      Select the output format with the specified format name. Available: 'kexecTree', 'isoImage'.
+  -b, --base <module_name>
+      Select the base configuration. Available: 'homestakeros'.
+
+  -f, --format <output_format>
+      Select the output format. Available: 'kexecTree', 'isoImage'.
 
   -n, --name <hostname>
       Define the hostname, either for updating an existing host configuration or creating a new one.
@@ -33,27 +36,29 @@ Options, required:
       Select the system architecture. Available: 'x86_64-linux', 'aarch64-linux'.
 
 Options, optional:
+
   -o, --output <output_path>
-      Specify the output path for the resulting build symlinks. Default: 'webui/public/nixosConfigurations/<hostname>/result'.
+      Specify the output path for the result. Default: 'webui/public/nixosConfigurations/<hostname>/result'.
   
   -r, --realize
-      Output files instead of symlinks, aka. realize the resulting build symlinks.
+      Output files instead of symlinks.
 
   -d, --dry-run
       Do not run the 'nix build' command.
 
   -v, --verbose
-      Activate verbose output mode, which displays comprehensive information for debugging purposes.
+      Activate verbose output mode.
 
   -h, --help
       Display this help message.
 
 Examples:
+
   Local, using piped input:
-      echo '{"execution":{"erigon":{"enable":true}}}' | nix run .#buidl -- --name foobar --base homestakeros
+      echo '{"execution":{"erigon":{"enable":true}}}' | nix run .#buidl -- --name foobar --base homestakeros --system x86_64-linux --format isoImage
 
   Remote, using a positional argument:
-      nix run github:ponkila/homestakeros#buidl -- -n foobar -b homestakeros '{"execution":{"erigon":{"enable":true}}}'
+      nix run github:ponkila/homestakeros#buidl -- -n foobar -b homestakeros -s x86_64-linux -f isoImage '{"execution":{"erigon":{"enable":true}}}'
 
 USAGE
 }
@@ -113,18 +118,18 @@ parse_arguments() {
     echo "try '--help' for more information."
     exit 1
   elif [[ "$module_name" != "homestakeros" ]]; then
-    echo "error: base configuration must be 'homestakeros'."
+    echo "error: unknown base configuration -- '$module_name'."
     echo "try '--help' for more information."
     exit 1
   fi
 
   # Check that format has been set
   if [[ -z $format ]]; then
-    echo "error: format is required."
+    echo "error: output format is required."
     echo "try '--help' for more information."
     exit 1
   elif [[ "$format" != "isoImage" && "$format" != "kexecTree" ]]; then
-    echo "error: format must be either 'isoImage' or 'kexecTree'."
+    echo "error: unknown output format -- '$format'."
     echo "try '--help' for more information."
     exit 1
   fi
@@ -135,7 +140,7 @@ parse_arguments() {
     echo "try '--help' for more information."
     exit 1
   elif [[ "$system" != "aarch64-linux" && "$system" != "x86_64-linux" ]]; then
-    echo "error: system architecture must be either 'aarch64-linux' or 'x86_64-linux'."
+    echo "error: unknown system architecture -- '$system'."
     echo "try '--help' for more information."
     exit 1
   fi
