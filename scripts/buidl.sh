@@ -23,8 +23,14 @@ Options, required:
   -b, --base <module_name>
       Select the base configuration with the specified module name. Available: 'homestakeros'.
 
+  -f, --format <format>
+      Select the output format with the specified format name. Available: 'kexecTree', 'isoImage'.
+
   -n, --name <hostname>
       Define the hostname, either for updating an existing host configuration or creating a new one.
+
+  -s, --system <system>
+      Select the system architecture. Available: 'x86_64-linux', 'aarch64-linux'.
 
 Options, optional:
   -o, --output <output_path>
@@ -58,9 +64,15 @@ parse_arguments() {
       -b|--base)
         module_name="$2"
         shift 2 ;;
+      -f|--format)
+        format="$2"
+        shift 2 ;;
       -n|--name)
         hostname="$2"
         shift 2 ;;
+      -s|--system)
+        system="$2"
+        shift 2;;
       -o|--output)
         output_path="$2"
         shift 2 ;;
@@ -100,6 +112,32 @@ parse_arguments() {
     echo "error: base configuration is required."
     echo "try '--help' for more information."
     exit 1
+  elif [[ "$module_name" != "homestakeros" ]]; then
+    echo "error: base configuration must be 'homestakeros'."
+    echo "try '--help' for more information."
+    exit 1
+  fi
+
+  # Check that format has been set
+  if [[ -z $format ]]; then
+    echo "error: format is required."
+    echo "try '--help' for more information."
+    exit 1
+  elif [[ "$format" != "isoImage" && "$format" != "kexecTree" ]]; then
+    echo "error: format must be either 'isoImage' or 'kexecTree'."
+    echo "try '--help' for more information."
+    exit 1
+  fi
+
+  # Check that system has been set
+  if [[ -z $system ]]; then
+    echo "error: system architecture is required."
+    echo "try '--help' for more information."
+    exit 1
+  elif [[ "$system" != "aarch64-linux" && "$system" != "x86_64-linux" ]]; then
+    echo "error: system architecture must be either 'aarch64-linux' or 'x86_64-linux'."
+    echo "try '--help' for more information."
+    exit 1
   fi
 
   # Set output path if not set by argument
@@ -129,11 +167,10 @@ EOF
 }
 
 run_nix_build() {
-  local hostname="$1"
+  local build_path="$1"
   local output_path="$2"
   local realize="$3"
-  local format="$4"
-  local -a nix_flags=("${@:5}")
+  local -a nix_flags=("${@:4}")
 
   # Append '--no-link' if realize flag is true, else '--out-link'
   if [[ "$realize" = true ]]; then
@@ -144,9 +181,9 @@ run_nix_build() {
 
   # Append '--show-trace' and '--debug' if verbose flag is true
   [[ "$verbose" = true ]] && nix_flags+=("--show-trace" "--debug")
-  
+
   # Execute the 'nix build' command
-  nix build .#nixosConfigurations."$hostname".config.system.build."$format" "${nix_flags[@]}" || exit 1
+  nix build .#"$build_path" "${nix_flags[@]}" || exit 1
 }
 
 print_output() {
@@ -182,13 +219,12 @@ print_output() {
 }
 
 get_result() {
-    local hostname="$1"
+    local build_path="$1"
     local output_path="$2"
-    local format="$3"
-    local -a nix_flags=("${@:4}")
+    local -a nix_flags=("${@:3}")
 
     # Get the path to the Nix store
-    result=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build."$format" "${nix_flags[@]}")
+    result=$(nix eval --raw .#"$build_path" "${nix_flags[@]}")
 
     # Copy the files to the output path
     mkdir -p "$output_path"
@@ -197,22 +233,6 @@ get_result() {
       real_path="$output_path/$(basename "$symlink")"
       cp -f "$symlink" "$real_path"
     done
-}
-
-detect_format() {
-  local hostname="$1"
-  local -a nix_flags=("${@:2}")
-  
-  supported_formats=("kexecTree" "isoImage")
-
-  for format in "${supported_formats[@]}"; do
-    if [[ "$(nix eval .#nixosConfigurations."$hostname".config.system.build."$format" --apply builtins.isAttrs "${nix_flags[@]}")" == true ]]; then
-      echo "$format"
-      return 0
-    fi
-  done
-
-  echo "error: $hostname has an unsupported format." && return 1 
 }
 
 main() {
@@ -229,6 +249,9 @@ main() {
 
   # Do not change, this path is also hard-coded in flake.nix
   default_nix="nixosConfigurations/$hostname/default.nix"
+
+  # Combine arguments to a nixosConfiguration build path
+  build_path="nixosConfigurations.${hostname}-${system}-${format}.config.system.build.${format}"
 
   # Read JSON data from stdin if it exists and is not provided as an argument
   if [ -z "$json_data" ] && ! tty -s && [ -p /dev/stdin ]; then
@@ -253,17 +276,14 @@ main() {
   # Stage the changes in 'default.nix'
   git add "$default_nix"
 
-  # Detect format, returns either 'kexecTree' or 'isoImage'
-  format=$(detect_format "$hostname" "${nix_flags[@]}" || exit 1)
-
   # Run the 'nix build' command
-  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
+  [[ $dry_run = false ]] && run_nix_build "$build_path" "$output_path" $realize "${nix_flags[@]}"
 
   # Create the JSON files for the webui directory
   update-json
 
   # Copy resulting files from '/nix/store' if realize is true
-  [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"
+  [[ $realize = true ]] && get_result "$build_path" "$output_path" "${nix_flags[@]}"
 
   # Display additional output, including injected data and result
   print_output "$output_path" "$default_nix" $verbose
