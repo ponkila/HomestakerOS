@@ -8,6 +8,24 @@ verbose=false
 dry_run=false
 realize=false
 
+# Available option values
+declare -a formats=("kexecTree" "isoImage")
+declare -a modules=("homestakeros")
+declare -a systems=("x86_64-linux" "aarch64-linux" "rpi4-linux")
+
+# Function to format and print available options
+print_options() {
+  local options=""
+  local delimiter=", "
+  
+  for item in "${@}"; do
+    options+="'$item'$delimiter"
+  done
+  
+  options="${options%"$delimiter"}"
+  echo "$options"
+}
+
 display_usage() {
   cat <<USAGE
 Usage: $0 [options] [json_data]
@@ -24,16 +42,16 @@ Arguments:
 Options, required:
 
   -b, --base <module_name>
-      Select the base configuration. Available: 'homestakeros'.
+      Select the base configuration. Available: $(print_options "${modules[@]}").
 
   -f, --format <output_format>
-      Select the output format. Available: 'kexecTree', 'isoImage'.
+      Select the output format. Available: $(print_options "${formats[@]}").
 
   -n, --name <hostname>
       Define the hostname, either for updating an existing host configuration or creating a new one.
 
   -s, --system <system>
-      Select the system architecture. Available: 'x86_64-linux', 'aarch64-linux', 'rpi4-linux'.
+      Select the system. Available: $(print_options "${systems[@]}").
 
 Options, optional:
 
@@ -61,6 +79,14 @@ Examples:
       nix run github:ponkila/homestakeros#buidl -- -n foobar -b homestakeros -s x86_64-linux -f isoImage '{"execution":{"erigon":{"enable":true}}}'
 
 USAGE
+}
+
+# Function to check if a value is in an array
+value_in_array() {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
 }
 
 parse_arguments() {
@@ -107,41 +133,41 @@ parse_arguments() {
   done
   # Check that hostname has been set
   if [[ -z $hostname ]]; then
-    echo "error: hostname is required."
-    echo "try '--help' for more information."
+    echo "error: hostname is required"
+    echo "try '--help' for more information"
     exit 1
   fi
 
-  # Check that base configuration has been set
+  # Check that base configuration has been set and is valid
   if [[ -z $module_name ]]; then
     echo "error: base configuration is required."
     echo "try '--help' for more information."
     exit 1
-  elif [[ "$module_name" != "homestakeros" ]]; then
-    echo "error: unknown base configuration -- '$module_name'."
-    echo "try '--help' for more information."
+  elif ! value_in_array "$module_name" "${modules[@]}"; then
+    echo "error: unknown base configuration -- '$module_name'"
+    echo "available: $(print_options "${modules[@]}")"
     exit 1
   fi
 
-  # Check that format has been set
+  # Check that output format has been set and is valid
   if [[ -z $format ]]; then
     echo "error: output format is required."
     echo "try '--help' for more information."
     exit 1
-  elif [[ "$format" != "isoImage" && "$format" != "kexecTree" ]]; then
-    echo "error: unknown output format -- '$format'."
-    echo "try '--help' for more information."
+  elif ! value_in_array "$format" "${formats[@]}"; then
+    echo "error: unknown output format -- '$format'"
+    echo "available: $(print_options "${formats[@]}")"
     exit 1
   fi
 
-  # Check that system has been set
+  # Check that system has been set and is valid
   if [[ -z $system ]]; then
-    echo "error: system architecture is required."
+    echo "error: system is required."
     echo "try '--help' for more information."
     exit 1
-  elif [[ "$system" != "aarch64-linux" && "$system" != "x86_64-linux" && "$system" != "rpi4-linux" ]]; then
-    echo "error: unknown system architecture -- '$system'."
-    echo "try '--help' for more information."
+  elif ! value_in_array "$system" "${systems[@]}"; then
+    echo "error: unknown system -- '$system'"
+    echo "available: $(print_options "${systems[@]}")"
     exit 1
   fi
 
