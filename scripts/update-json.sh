@@ -15,14 +15,14 @@ declare -a nix_flags=(
 mkdir -p $config_dir
 
 # Fetch nixosConfiguration attribute names from 'flake.nix'
-mapfile -t attrNames < <(nix eval --json .#nixosConfigurations --apply builtins.attrNames | jq -r '.[]')
+mapfile -t attr_names < <(nix eval --json .#nixosConfigurations --apply builtins.attrNames | jq -r '.[]')
 
 names=()
 
-if [ ${#attrNames[@]} -gt 0 ]; then
-    for attrName in "${attrNames[@]}"; do
+if [ ${#attr_names[@]} -gt 0 ]; then
+    for attr_name in "${attr_names[@]}"; do
       # Extract the name part of the nixosConfiguration entry
-      name=$(echo "$attrName" | cut -d '-' -f1)
+      name=$(echo "$attr_name" | cut -d '-' -f1)
 
       # Skip if the current name is the same as the previous one
       if [[ "$name" == "${names[-1]}" ]]; then
@@ -30,7 +30,7 @@ if [ ${#attrNames[@]} -gt 0 ]; then
       else
         # Fetch and save the JSON data
         default_json="$config_dir/$name/default.json"
-        json_data=$(nix eval --json .#nixosConfigurations."$attrName".config.homestakeros "${nix_flags[@]}")
+        json_data=$(nix eval --json .#nixosConfigurations."$attr_name".config.homestakeros "${nix_flags[@]}")
         mkdir -p "$config_dir/$name"
         echo "$json_data" | jq -r "." > "$default_json"
       fi
