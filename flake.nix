@@ -1,8 +1,7 @@
 {
   inputs = {
+    devenv.url = "github:cachix/devenv";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-root.url = "github:srid/flake-root";
-    mission-control.url = "github:Platonic-Systems/mission-control";
     nixobolus.url = "github:ponkila/nixobolus";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
@@ -22,14 +21,14 @@
         "x86_64-linux"
       ];
       imports = [
-        inputs.flake-root.flakeModule
-        inputs.mission-control.flakeModule
+        inputs.devenv.flakeModule
       ];
 
       perSystem = {
         pkgs,
         lib,
         config,
+        self',
         inputs',
         system,
         ...
@@ -55,31 +54,46 @@
       in rec {
         formatter = nixpkgs.legacyPackages.${system}.alejandra;
 
-        mission-control.scripts = {
-          server = {
-            description = "Initialize and launch the web server";
-            exec = ''
-              nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
-              && yarn install && yarn build \
-              && nix run --no-warn-dirty .#update-json \
-              && nix run --no-warn-dirty .#
-            '';
-            category = "Essentials";
-          };
-        };
-
-        devShells = {
-          default = pkgs.mkShell {
-            nativeBuildInputs = with pkgs; [
+        devenv.shells = {
+          default = {
+            packages = with pkgs; [
+              self'.packages.init-ssv
               nodejs
               jq
               yarn
               yarn2nix
             ];
-            inputsFrom = [
-              config.flake-root.devShell
-              config.mission-control.devShell
-            ];
+            scripts.server.exec = ''
+              nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
+              && yarn install && yarn build \
+              && nix run --no-warn-dirty .#update-json \
+              && nix run --no-warn-dirty .#
+            '';
+            env = {
+              NIX_CONFIG = ''
+                accept-flake-config = true
+                extra-experimental-features = flakes nix-command
+                warn-dirty = false
+              '';
+            };
+            enterShell = ''
+              cat <<INFO
+
+              ### HomestakerOS ###
+
+              Available commands:
+
+                server    : Initialize and launch the web server
+                init-ssv  : Generate an SSV operator key pair
+
+              INFO
+            '';
+            pre-commit.hooks = {
+              alejandra.enable = true;
+              shellcheck.enable = true;
+            };
+            # Workaround for https://github.com/cachix/devenv/issues/760
+            containers = pkgs.lib.mkForce {};
           };
         };
 
