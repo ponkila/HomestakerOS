@@ -49,7 +49,7 @@
         "devshell": "devshell",
         "flake-compat": "flake-compat_2",
         "flake-parts": "flake-parts_2",
-        "flake-root": "flake-root_2",
+        "flake-root": "flake-root",
         "foundry-nix": "foundry-nix",
         "hercules-ci-effects": "hercules-ci-effects",
         "nixpkgs": [
@@ -219,21 +219,6 @@
       }
     },
     "flake-root_2": {
-      "locked": {
-        "lastModified": 1680964220,
-        "narHash": "sha256-dIdTYcf+KW9a4pKHsEbddvLVSfR1yiAJynzg2x0nfWg=",
-        "owner": "srid",
-        "repo": "flake-root",
-        "rev": "f1c0b93d05bdbea6c011136ba1a135c80c5b326c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "srid",
-        "repo": "flake-root",
-        "type": "github"
-      }
-    },
-    "flake-root_3": {
       "locked": {
         "lastModified": 1680964220,
         "narHash": "sha256-dIdTYcf+KW9a4pKHsEbddvLVSfR1yiAJynzg2x0nfWg=",
@@ -456,7 +441,7 @@
       "inputs": {
         "ethereum-nix": "ethereum-nix",
         "flake-parts": "flake-parts_5",
-        "flake-root": "flake-root_3",
+        "flake-root": "flake-root_2",
         "mission-control": "mission-control",
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-stable": "nixpkgs-stable_2",
@@ -739,7 +724,6 @@
       "inputs": {
         "devenv": "devenv",
         "flake-parts": "flake-parts",
-        "flake-root": "flake-root",
         "nixobolus": "nixobolus",
         "nixpkgs": "nixpkgs_6"
       }

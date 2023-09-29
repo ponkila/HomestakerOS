@@ -2,7 +2,6 @@
   inputs = {
     devenv.url = "github:cachix/devenv";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-root.url = "github:srid/flake-root";
     nixobolus.url = "github:ponkila/nixobolus";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
@@ -23,7 +22,6 @@
       ];
       imports = [
         inputs.devenv.flakeModule
-        inputs.flake-root.flakeModule
       ];
 
       perSystem = {
