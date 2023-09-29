@@ -172,7 +172,7 @@ parse_arguments() {
   fi
 
   # Set output path if not set by argument
-  [[ -z $output_path ]] && output_path="webui/public/nixosConfigurations/${hostname}/result"
+  [[ -z $output_path ]] && output_path="webui/nixosConfigurations/${hostname}/result"
 }
 
 create_default_nix() {
@@ -311,7 +311,7 @@ main() {
   [[ $dry_run = false ]] && run_nix_build "$build_path" "$output_path" $realize "${nix_flags[@]}"
 
   # Create the JSON files for the webui directory
-  update-json
+  mkdir -p "webui/nixosConfigurations/$hostname" && update-json
 
   # Copy resulting files from '/nix/store' if realize is true
   [[ $realize = true ]] && get_result "$build_path" "$output_path" "${nix_flags[@]}"
