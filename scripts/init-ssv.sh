@@ -3,7 +3,7 @@
 
 # Check arguments
 if [ "$#" -ne 1 ]; then
-    echo "Usage: nix run .#init-ssv -- <hostname>"
+    echo "Usage: init-ssv <hostname>"
     exit 1
 fi
 
