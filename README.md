@@ -16,12 +16,12 @@ Check out the live demo at https://demo.homestakeros.com/
   ```
 
 3. **Set Up a Development Environment**
-- With Nix: `nix develop`
+- With Nix: `nix develop . --impure`
 - With [direnv](https://direnv.net/): `direnv allow`
 
 4. **Start the Web UI**
   ```
-  , server
+  server
   ```
 
 5. **Open a Command Runner**
