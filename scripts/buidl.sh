@@ -28,7 +28,7 @@ Options, required:
 
 Options, optional:
   -o, --output <output_path>
-      Specify the output path for the resulting build symlinks. Default: 'webui/public/nixosConfigurations/<hostname>/result'.
+      Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
   
   -r, --realize
       Output files instead of symlinks, aka. realize the resulting build symlinks.
@@ -103,7 +103,7 @@ parse_arguments() {
   fi
 
   # Set output path if not set by argument
-  [[ -z $output_path ]] && output_path="webui/public/nixosConfigurations/${hostname}/result"
+  [[ -z $output_path ]] && output_path="webui/nixosConfigurations/${hostname}/result"
 }
 
 create_default_nix() {
@@ -260,7 +260,7 @@ main() {
   [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
 
   # Create the JSON files for the webui directory
-  update-json
+  mkdir -p "webui/nixosConfigurations/$hostname" && update-json
 
   # Copy resulting files from '/nix/store' if realize is true
   [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"

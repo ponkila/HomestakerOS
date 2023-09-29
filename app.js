@@ -9,6 +9,6 @@ app.use(cors());
 
 app.use(express.static("webui/dist"));
 app.use("/api", apiRouter);
-app.use("/nixosConfigurations", express.static("./webui/public/nixosConfigurations"));
+app.use("/nixosConfigurations", express.static("./webui/nixosConfigurations"));
 
 app.listen(8081);
