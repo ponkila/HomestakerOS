@@ -3,3 +3,5 @@ result
 .direnv
 pipe
 private
+.devenv
+.pre-commit-config.yaml
