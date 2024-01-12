@@ -65,8 +65,8 @@
             ];
             scripts.server.exec = ''
               nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
-              && yarn install && yarn build \
               && nix run --no-warn-dirty .#update-json \
+              && yarn install && yarn build \
               && nix run --no-warn-dirty .#
             '';
             env = {
