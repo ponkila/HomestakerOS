@@ -8,48 +8,85 @@ verbose=false
 dry_run=false
 realize=false
 
+# Available option values
+declare -a formats=("kexecTree" "isoImage")
+declare -a modules=("homestakeros")
+declare -a systems=("x86_64-linux" "aarch64-linux" "rpi4-linux")
+
+# Function to format and print available options
+print_options() {
+  local options=""
+  local delimiter=", "
+  
+  for item in "${@}"; do
+    options+="'$item'$delimiter"
+  done
+  
+  options="${options%"$delimiter"}"
+  echo "$options"
+}
+
 display_usage() {
   cat <<USAGE
 Usage: $0 [options] [json_data]
 
 Description:
+
   This script compiles a NixOS system by merging module options as JSON data into a base configuration.
 
 Arguments:
+
   json_data
     Specify raw JSON data to merge into the base configuration. This data can also be piped into the script.
 
 Options, required:
+
   -b, --base <module_name>
-      Select the base configuration with the specified module name. Available: 'homestakeros'.
+      Select the base configuration. Available: $(print_options "${modules[@]}").
+
+  -f, --format <output_format>
+      Select the output format. Available: $(print_options "${formats[@]}").
 
   -n, --name <hostname>
       Define the hostname, either for updating an existing host configuration or creating a new one.
 
+  -s, --system <system>
+      Select the system. Available: $(print_options "${systems[@]}").
+
 Options, optional:
+
   -o, --output <output_path>
-      Specify the output path for the resulting build symlinks. Default: 'webui/nixosConfigurations/<hostname>/result'.
+      Specify the output path for the result. Default: 'webui/public/nixosConfigurations/<hostname>/result'.
   
   -r, --realize
-      Output files instead of symlinks, aka. realize the resulting build symlinks.
+      Output files instead of symlinks.
 
   -d, --dry-run
       Do not run the 'nix build' command.
 
   -v, --verbose
-      Activate verbose output mode, which displays comprehensive information for debugging purposes.
+      Activate verbose output mode.
 
   -h, --help
       Display this help message.
 
 Examples:
+
   Local, using piped input:
-      echo '{"execution":{"erigon":{"enable":true}}}' | nix run .#buidl -- --name foobar --base homestakeros
+      echo '{"execution":{"erigon":{"enable":true}}}' | nix run .#buidl -- --name foobar --base homestakeros --system x86_64-linux --format isoImage
 
   Remote, using a positional argument:
-      nix run github:ponkila/homestakeros#buidl -- -n foobar -b homestakeros '{"execution":{"erigon":{"enable":true}}}'
+      nix run github:ponkila/homestakeros#buidl -- -n foobar -b homestakeros -s x86_64-linux -f isoImage '{"execution":{"erigon":{"enable":true}}}'
 
 USAGE
+}
+
+# Function to check if a value is in an array
+value_in_array() {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
 }
 
 parse_arguments() {
@@ -58,9 +95,15 @@ parse_arguments() {
       -b|--base)
         module_name="$2"
         shift 2 ;;
+      -f|--format)
+        format="$2"
+        shift 2 ;;
       -n|--name)
         hostname="$2"
         shift 2 ;;
+      -s|--system)
+        system="$2"
+        shift 2;;
       -o|--output)
         output_path="$2"
         shift 2 ;;
@@ -90,15 +133,41 @@ parse_arguments() {
   done
   # Check that hostname has been set
   if [[ -z $hostname ]]; then
-    echo "error: hostname is required."
-    echo "try '--help' for more information."
+    echo "error: hostname is required"
+    echo "try '--help' for more information"
     exit 1
   fi
 
-  # Check that base configuration has been set
+  # Check that base configuration has been set and is valid
   if [[ -z $module_name ]]; then
     echo "error: base configuration is required."
     echo "try '--help' for more information."
+    exit 1
+  elif ! value_in_array "$module_name" "${modules[@]}"; then
+    echo "error: unknown base configuration -- '$module_name'"
+    echo "available: $(print_options "${modules[@]}")"
+    exit 1
+  fi
+
+  # Check that output format has been set and is valid
+  if [[ -z $format ]]; then
+    echo "error: output format is required."
+    echo "try '--help' for more information."
+    exit 1
+  elif ! value_in_array "$format" "${formats[@]}"; then
+    echo "error: unknown output format -- '$format'"
+    echo "available: $(print_options "${formats[@]}")"
+    exit 1
+  fi
+
+  # Check that system has been set and is valid
+  if [[ -z $system ]]; then
+    echo "error: system is required."
+    echo "try '--help' for more information."
+    exit 1
+  elif ! value_in_array "$system" "${systems[@]}"; then
+    echo "error: unknown system -- '$system'"
+    echo "available: $(print_options "${systems[@]}")"
     exit 1
   fi
 
@@ -129,11 +198,10 @@ EOF
 }
 
 run_nix_build() {
-  local hostname="$1"
+  local build_path="$1"
   local output_path="$2"
   local realize="$3"
-  local format="$4"
-  local -a nix_flags=("${@:5}")
+  local -a nix_flags=("${@:4}")
 
   # Append '--no-link' if realize flag is true, else '--out-link'
   if [[ "$realize" = true ]]; then
@@ -144,9 +212,9 @@ run_nix_build() {
 
   # Append '--show-trace' and '--debug' if verbose flag is true
   [[ "$verbose" = true ]] && nix_flags+=("--show-trace" "--debug")
-  
+
   # Execute the 'nix build' command
-  nix build .#nixosConfigurations."$hostname".config.system.build."$format" "${nix_flags[@]}" || exit 1
+  nix build .#"$build_path" "${nix_flags[@]}" || exit 1
 }
 
 print_output() {
@@ -182,13 +250,12 @@ print_output() {
 }
 
 get_result() {
-    local hostname="$1"
+    local build_path="$1"
     local output_path="$2"
-    local format="$3"
-    local -a nix_flags=("${@:4}")
+    local -a nix_flags=("${@:3}")
 
     # Get the path to the Nix store
-    result=$(nix eval --raw .#nixosConfigurations."$hostname".config.system.build."$format" "${nix_flags[@]}")
+    result=$(nix eval --raw .#"$build_path" "${nix_flags[@]}")
 
     # Copy the files to the output path
     mkdir -p "$output_path"
@@ -197,22 +264,6 @@ get_result() {
       real_path="$output_path/$(basename "$symlink")"
       cp -f "$symlink" "$real_path"
     done
-}
-
-detect_format() {
-  local hostname="$1"
-  local -a nix_flags=("${@:2}")
-  
-  supported_formats=("kexecTree" "isoImage")
-
-  for format in "${supported_formats[@]}"; do
-    if [[ "$(nix eval .#nixosConfigurations."$hostname".config.system.build."$format" --apply builtins.isAttrs "${nix_flags[@]}")" == true ]]; then
-      echo "$format"
-      return 0
-    fi
-  done
-
-  echo "error: $hostname has an unsupported format." && return 1 
 }
 
 main() {
@@ -229,6 +280,9 @@ main() {
 
   # Do not change, this path is also hard-coded in flake.nix
   default_nix="nixosConfigurations/$hostname/default.nix"
+
+  # Combine arguments to a nixosConfiguration build path
+  build_path="nixosConfigurations.${hostname}-${system}-${format}.config.system.build.${format}"
 
   # Read JSON data from stdin if it exists and is not provided as an argument
   if [ -z "$json_data" ] && ! tty -s && [ -p /dev/stdin ]; then
@@ -253,17 +307,14 @@ main() {
   # Stage the changes in 'default.nix'
   git add "$default_nix"
 
-  # Detect format, returns either 'kexecTree' or 'isoImage'
-  format=$(detect_format "$hostname" "${nix_flags[@]}" || exit 1)
-
   # Run the 'nix build' command
-  [[ $dry_run = false ]] && run_nix_build "$hostname" "$output_path" $realize "$format" "${nix_flags[@]}"
+  [[ $dry_run = false ]] && run_nix_build "$build_path" "$output_path" $realize "${nix_flags[@]}"
 
   # Create the JSON files for the webui directory
   mkdir -p "webui/nixosConfigurations/$hostname" && update-json
 
   # Copy resulting files from '/nix/store' if realize is true
-  [[ $realize = true ]] && get_result "$hostname" "$output_path" "$format" "${nix_flags[@]}"
+  [[ $realize = true ]] && get_result "$build_path" "$output_path" "${nix_flags[@]}"
 
   # Display additional output, including injected data and result
   print_output "$output_path" "$default_nix" $verbose

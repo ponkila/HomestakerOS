@@ -14,19 +14,30 @@ declare -a nix_flags=(
 # Make config directory if doesn't exist
 mkdir -p $config_dir
 
-# Fetch hostnames from 'flake.nix'
-mapfile -t hostnames < <(nix eval --json .#nixosConfigurations --apply builtins.attrNames | jq -r '.[]')
+# Fetch nixosConfiguration attribute names from 'flake.nix'
+mapfile -t attr_names < <(nix eval --json .#nixosConfigurations --apply builtins.attrNames | jq -r '.[]')
 
-if [ ${#hostnames[@]} -gt 0 ]; then
-    printf '%s\n' "${hostnames[@]}" | jq -R . | jq -s . > $config_dir/hostnames.json
+names=()
 
-    # Get and save the JSON data
-    for hostname in "${hostnames[@]}"; do
-      default_json="$config_dir/$hostname/default.json"
-      json_data=$(nix eval --json .#nixosConfigurations."$hostname".config.homestakeros "${nix_flags[@]}")
-      mkdir -p "$config_dir/$hostname"
-      echo "$json_data" | jq -r "." > "$default_json"
+if [ ${#attr_names[@]} -gt 0 ]; then
+    for attr_name in "${attr_names[@]}"; do
+      # Extract the name part of the nixosConfiguration entry
+      name=$(echo "$attr_name" | cut -d '-' -f1)
+
+      # Skip if the current name is the same as the previous one
+      if [[ "$name" == "${names[-1]}" ]]; then
+        continue
+      else
+        # Fetch and save the JSON data
+        default_json="$config_dir/$name/default.json"
+        json_data=$(nix eval --json .#nixosConfigurations."$attr_name".config.homestakeros "${nix_flags[@]}")
+        mkdir -p "$config_dir/$name"
+        echo "$json_data" | jq -r "." > "$default_json"
+      fi
+      names+=("$name")
     done
+    # Save (host)names as JSON data
+    printf '%s\n' "${names[@]}" | jq -R . | jq -s . > $config_dir/hostnames.json
 else
     echo "[]" > $config_dir/hostnames.json
 fi
