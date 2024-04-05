@@ -2,7 +2,8 @@
   inputs = {
     devenv.url = "github:cachix/devenv";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixobolus.url = "github:ponkila/nixobolus";
+    # homestakeros.url = "github:ponkila/HomestakerOS\?ref=main\?dir=modules/homestakeros";
+    homestakeros.url = "path:./modules/homestakeros/";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
@@ -10,7 +11,7 @@
     self,
     nixpkgs,
     flake-parts,
-    nixobolus,
+    homestakeros,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -135,7 +136,7 @@
             name = "init-ssv";
             deps = [
               pkgs.jq
-              nixobolus.inputs.ethereum-nix.packages."x86_64-linux".ssvnode
+              homestakeros.inputs.ethereum-nix.packages."x86_64-linux".ssvnode
             ];
           };
           "update-json" = mkScriptPackage {
@@ -179,8 +180,8 @@
                   inherit system;
                   specialArgs = {inherit inputs outputs;};
                   modules = [
-                    nixobolus.nixosModules.kexecTree
-                    nixobolus.nixosModules.homestakeros
+                    self.nixosModules.kexecTree
+                    homestakeros.nixosModules.homestakeros
                     ./nixosConfigurations/${hostname}
                     {
                       system.stateVersion = "23.05";
@@ -194,7 +195,15 @@
               hostnames)
           );
 
-        schema = nixobolus.outputs.exports.homestakeros;
+        schema = homestakeros.outputs.exports.homestakeros;
+
+        # Format modules
+        nixosModules.isoImage = {
+          imports = [./modules/copytoram-iso.nix];
+        };
+        nixosModules.kexecTree = {
+          imports = [./modules/netboot-kexec.nix];
+        };
       };
     };
 }
