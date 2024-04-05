@@ -2,8 +2,7 @@
   inputs = {
     devenv.url = "github:cachix/devenv";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    # homestakeros.url = "github:ponkila/HomestakerOS\?ref=main\?dir=modules/homestakeros";
-    homestakeros.url = "path:./modules/homestakeros/";
+    homestakeros.url = "github:ponkila/HomestakerOS\?dir=modules/homestakeros";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
