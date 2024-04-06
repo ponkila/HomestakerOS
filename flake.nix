@@ -78,7 +78,7 @@
           };
         in
         {
-          # Custom packages
+          # Custom packages and entrypoint aliases -> 'nix run' or 'nix build'
           inherit packages;
 
           # Overlays
@@ -91,8 +91,10 @@
           };
           overlayAttrs = packages;
 
+          # Nix code formatter -> 'nix fmt'
           formatter = nixpkgs.legacyPackages.${system}.nixpkgs-fmt;
 
+          # Development shell -> 'nix develop' or 'direnv allow'
           devenv.shells = {
             default = {
               packages = with pkgs; [
@@ -200,16 +202,13 @@
                   hostnames)
               );
 
-          schema = self.exports.homestakeros;
-
           # Format modules
           nixosModules = {
-            homestakeros = {
-              imports = [
-                ./nixosModules/homestakeros
-              ];
-            };
+            homestakeros.imports = [
+              ./nixosModules/homestakeros
+            ];
           };
+          schema = self.exports.homestakeros;
 
           # Module option exports for the frontend
           # Accessible through 'nix eval --json .#exports'
