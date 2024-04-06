@@ -4,6 +4,10 @@ import fs from 'fs'
 const router = express.Router()
 var writable = fs.createWriteStream('pipe')
 
+router.get('/', (req, res) => {
+  res.json({ status: 'ok' })
+})
+
 router.post('/nixosConfig', (req, res) => {
   const homestakerConfig = req.body
   const hostname = homestakerConfig.localization.hostname
