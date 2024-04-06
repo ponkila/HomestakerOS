@@ -1,11 +1,11 @@
-{
-  lib,
-  pkgs,
-  ...
+{ lib
+, pkgs
+, ...
 }: {
   options.homestakeros = with lib; let
-    nospace = str: filter (c: c == " ") (stringToCharacters str) == [];
-  in {
+    nospace = str: filter (c: c == " ") (stringToCharacters str) == [ ];
+  in
+  {
     localization = {
       hostname = mkOption {
         type = types.strMatching "^$|^[[:alnum:]]([[:alnum:]_-]{0,61}[[:alnum:]])?$";
@@ -22,7 +22,7 @@
 
     mounts = mkOption {
       type = types.attrsOf types.attrs;
-      default = {};
+      default = { };
       description = "Definition of systemd mount units. Click [here](https://www.freedesktop.org/software/systemd/man/systemd.mount.html#Options) for more information.";
       example = {
         my-mount = {
@@ -34,7 +34,7 @@
           options = "noatime";
           type = "btrfs";
 
-          wantedBy = ["multi-user.target"];
+          wantedBy = [ "multi-user.target" ];
         };
       };
     };
@@ -57,7 +57,7 @@
     ssh = {
       authorizedKeys = mkOption {
         type = types.listOf types.singleLineStr;
-        default = [];
+        default = [ ];
         description = "A list of public SSH keys to be added to the user's authorized keys.";
       };
       privateKeyFile = mkOption {

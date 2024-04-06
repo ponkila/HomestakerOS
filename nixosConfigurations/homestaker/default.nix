@@ -1,9 +1,8 @@
-{
-  pkgs,
-  config,
-  inputs,
-  lib,
-  ...
+{ pkgs
+, config
+, inputs
+, lib
+, ...
 }: {
   homestakeros = {
     addons = {
@@ -43,7 +42,7 @@
         endpoint = "http://127.0.0.1:3500";
         execEndpoint = "http://127.0.0.1:8551";
         jwtSecretFile = null;
-        slasher = {enable = false;};
+        slasher = { enable = false; };
       };
       teku = {
         dataDir = "/var/mnt/teku";
@@ -83,9 +82,9 @@
       hostname = "homestaker";
       timezone = null;
     };
-    mounts = {};
+    mounts = { };
     ssh = {
-      authorizedKeys = [];
+      authorizedKeys = [ ];
       privateKeyFile = null;
     };
     vpn = {
