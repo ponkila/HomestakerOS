@@ -54,7 +54,6 @@
             "json2nix" = pkgs.callPackage ./packages/json2nix { };
             "update-json" = pkgs.callPackage ./packages/update-json { };
             # Ethereum.nix
-            "blutgang" = inputs.ethereum-nix.packages.${system}.blutgang;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
