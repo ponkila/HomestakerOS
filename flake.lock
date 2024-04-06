@@ -818,17 +818,16 @@
       },
       "locked": {
         "dir": "nixosModules/base",
-        "lastModified": 1712410805,
-        "narHash": "sha256-SPUFA/qnCaiEIGoppT/E+CY6QDmuls7Dg7NTzzKdCPM=",
+        "lastModified": 1712442381,
+        "narHash": "sha256-N1DYj/YVK2PbxJCIaJqqxdaFirCps2eZAA50ZCwbR0w=",
         "owner": "ponkila",
         "repo": "HomestakerOS",
-        "rev": "e5c066326b498ac20e4152bb0f5b42ae056fd135",
+        "rev": "260f6c2408a37a8130c4f9441abba45a30bc152c",
         "type": "github"
       },
       "original": {
         "dir": "nixosModules/base",
         "owner": "ponkila",
-        "ref": "jesse/mv-module-here",
         "repo": "HomestakerOS",
         "type": "github"
       }

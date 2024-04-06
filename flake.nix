@@ -18,7 +18,7 @@
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     ponkila.inputs.nixpkgs.follows = "nixpkgs";
-    ponkila.url = "github:ponkila/HomestakerOS/jesse/mv-module-here?dir=nixosModules/base";
+    ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
@@ -100,6 +100,7 @@
               deadnix.enable = true;
               statix.enable = true;
             };
+            settings.global.excludes = [ "nixosModules/base/flake.nix" ];
           };
 
           # Development shell -> 'nix develop' or 'direnv allow'
