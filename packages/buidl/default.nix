@@ -1,6 +1,7 @@
 { pkgs
 , lib
-,
+, json2nix
+, update-json
 }:
 let
   packageName = "buidl";
