@@ -5,7 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { nixpkgs }: {
+  outputs = { self, nixpkgs }: {
 
     # derived from https://github.com/nix-community/nixos-generators/blob/master/formats/install-iso.nix
     nixosModules.isoImage = { lib, modulesPath, ... }: {
