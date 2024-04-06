@@ -810,6 +810,29 @@
         "type": "github"
       }
     },
+    "ponkila": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "dir": "nixosModules/base",
+        "lastModified": 1712410805,
+        "narHash": "sha256-SPUFA/qnCaiEIGoppT/E+CY6QDmuls7Dg7NTzzKdCPM=",
+        "owner": "ponkila",
+        "repo": "HomestakerOS",
+        "rev": "e5c066326b498ac20e4152bb0f5b42ae056fd135",
+        "type": "github"
+      },
+      "original": {
+        "dir": "nixosModules/base",
+        "owner": "ponkila",
+        "ref": "jesse/mv-module-here",
+        "repo": "HomestakerOS",
+        "type": "github"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": "flake-compat_3",
@@ -870,7 +893,8 @@
         "ethereum-nix": "ethereum-nix",
         "flake-parts": "flake-parts_2",
         "nixpkgs": "nixpkgs_4",
-        "nixpkgs-stable": "nixpkgs-stable_3"
+        "nixpkgs-stable": "nixpkgs-stable_3",
+        "ponkila": "ponkila"
       }
     },
     "systems": {

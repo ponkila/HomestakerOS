@@ -17,7 +17,8 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
+    ponkila.inputs.nixpkgs.follows = "nixpkgs";
+    ponkila.url = "github:ponkila/HomestakerOS/jesse/mv-module-here?dir=nixosModules/base";
   };
 
   outputs =
