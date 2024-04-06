@@ -190,6 +190,7 @@
                       system = "x86_64-linux";
                       specialArgs = { inherit inputs outputs; };
                       modules = [
+                        ponkila.nixosModules.base
                         ponkila.nixosModules.kexecTree
                         self.nixosModules.homestakeros
                         ./nixosConfigurations/${hostname}
