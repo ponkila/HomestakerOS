@@ -1,5 +1,4 @@
 { lib
-, pkgs
 , ...
 }: {
   options.homestakeros = with lib; let

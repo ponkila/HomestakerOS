@@ -8,53 +8,51 @@
     nixvim.url = "github:nix-community/nixvim";
   };
 
-  outputs = inputs @ {
-    self,
-    flake-parts,
-    juuso,
-    nixpkgs,
-    nixvim,
-    ...
-  }:
-    flake-parts.lib.mkFlake {inherit inputs;} {
+  outputs =
+    inputs @ { flake-parts
+    , juuso
+    , nixpkgs
+    , nixvim
+    , ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
       systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [];
+      imports = [ ];
 
-      perSystem = {
-        pkgs,
-        lib,
-        config,
-        system,
-        ...
-      }: {
-        _module.args.pkgs = import inputs.nixpkgs {
-          inherit system;
-          overlays = [
-            inputs.juuso.overlays.default
-          ];
-          config = {};
-        };
-
-        packages.neovim = nixvim.legacyPackages.${system}.makeNixvimWithModule {
-          inherit pkgs;
-          module = {
-            imports = [
-              inputs.juuso.outputs.nixosModules.neovim
+      perSystem =
+        { pkgs
+        , config
+        , system
+        , ...
+        }: {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [
+              inputs.juuso.overlays.default
             ];
-            extraPackages = with pkgs; [
-            ];
-            extraConfigVim = ''
-            '';
-            plugins.lsp = {
-              servers.tsserver.enable = true;
-            };
-            plugins.treesitter.grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [typescript];
-            extraPlugins = [
-            ];
+            config = { };
           };
-        };
 
-        packages.default = config.packages.neovim;
-      };
+          packages.neovim = nixvim.legacyPackages.${system}.makeNixvimWithModule {
+            inherit pkgs;
+            module = {
+              imports = [
+                inputs.juuso.outputs.nixosModules.neovim
+              ];
+              extraPackages = with pkgs; [
+              ];
+              extraConfigVim = ''
+            '';
+              plugins.lsp = {
+                servers.tsserver.enable = true;
+              };
+              plugins.treesitter.grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [ typescript ];
+              extraPlugins = [
+              ];
+            };
+          };
+
+          packages.default = config.packages.neovim;
+        };
     };
 }

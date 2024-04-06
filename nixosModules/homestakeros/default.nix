@@ -1,8 +1,6 @@
 { config
 , lib
 , pkgs
-, inputs
-, outputs
 , ...
 }:
 let
@@ -35,7 +33,7 @@ in
 
     # Function to create a service
     createService = serviceName: serviceType: execStart: parsedEndpoint: allowedPorts:
-      mkIf (cfg.${serviceType}.${serviceName}.enable) {
+      mkIf cfg.${serviceType}.${serviceName}.enable {
         environment.systemPackages = [
           pkgs.${serviceName}
         ];
@@ -46,8 +44,7 @@ in
 
           description = "${serviceType}, mainnet";
           requires =
-            [ ]
-            ++ lib.optional (elem "wireguard" activeVPNClients)
+            lib.optional (elem "wireguard" activeVPNClients)
               "wg-quick-${getVpnInterfaceName "wireguard"}.service";
 
           after =
@@ -111,8 +108,8 @@ in
             (name: mount: {
               enable = mount.enable or true;
               description = mount.description or "${name} mount point";
-              what = mount.what;
-              where = mount.where;
+              inherit (mount) what;
+              inherit (mount) where;
               type = mount.type or "ext4";
               options = mount.options or "defaults";
               before = lib.mkDefault (mount.before or [ ]);
@@ -323,7 +320,7 @@ in
         ];
         allowedPorts = [ 30303 30304 42069 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### GETH
@@ -364,7 +361,7 @@ in
         ];
         allowedPorts = [ 30303 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### NETHERMIND
@@ -399,7 +396,7 @@ in
         ];
         allowedPorts = [ 30303 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### BESU
@@ -441,7 +438,7 @@ in
         ];
         allowedPorts = [ 30303 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### MEV-BOOST
@@ -469,7 +466,7 @@ in
         ];
         allowedPorts = [ ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### LIGHTHOUSE
@@ -516,7 +513,7 @@ in
         ];
         allowedPorts = [ 9000 9001 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### PRYSM
@@ -556,7 +553,7 @@ in
         ];
         allowedPorts = [ 9000 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### TEKU
@@ -590,7 +587,7 @@ in
         ];
         allowedPorts = [ 9000 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
 
     #################################################################### NIMBUS
@@ -622,7 +619,7 @@ in
         ];
         allowedPorts = [ 9000 ];
       in
-      (createService serviceName serviceType execStart parsedEndpoint allowedPorts)
+      createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
   ];
 }

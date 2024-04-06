@@ -1,9 +1,4 @@
-{ pkgs
-, config
-, inputs
-, lib
-, ...
-}: {
+_: {
   homestakeros = {
     addons = {
       mev-boost = {

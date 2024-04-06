@@ -19,6 +19,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     ponkila.inputs.nixpkgs.follows = "nixpkgs";
     ponkila.url = "github:ponkila/HomestakerOS/jesse/mv-module-here?dir=nixosModules/base";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
   outputs =
@@ -26,7 +28,6 @@
     , devenv
     , ethereum-nix
     , flake-parts
-    , nixpkgs-stable
     , nixpkgs
     , ponkila
     , ...
@@ -36,14 +37,13 @@
       imports = [
         inputs.devenv.flakeModule
         inputs.flake-parts.flakeModules.easyOverlay
+        inputs.treefmt-nix.flakeModule
       ];
 
       perSystem =
         { pkgs
         , lib
         , config
-        , self'
-        , inputs'
         , system
         , ...
         }:
@@ -91,7 +91,16 @@
           overlayAttrs = packages;
 
           # Nix code formatter -> 'nix fmt'
-          formatter = nixpkgs.legacyPackages.${system}.nixpkgs-fmt;
+          treefmt.config = {
+            projectRootFile = "flake.nix";
+            flakeFormatter = true;
+            flakeCheck = true;
+            programs = {
+              nixpkgs-fmt.enable = true;
+              deadnix.enable = true;
+              statix.enable = true;
+            };
+          };
 
           # Development shell -> 'nix develop' or 'direnv allow'
           devenv.shells = {
@@ -145,17 +154,13 @@
           # Function to format module options
           parseOpts = options:
             nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! nixpkgs.lib.options.isOption v)
-              (k: v: {
+              (_k: v: {
                 type = v.type.name;
-                default = v.default;
+                inherit (v) default;
                 description =
-                  if v ? description
-                  then v.description
-                  else null;
+                  v.description or null;
                 example =
-                  if v ? example
-                  then v.example
-                  else null;
+                  v.example or null;
               })
               options;
 

@@ -1,9 +1,6 @@
-{
-  fetchurl,
-  fetchgit,
-  linkFarm,
-  runCommand,
-  gnutar,
+{ fetchurl
+, linkFarm
+,
 }: rec {
   offline_cache = linkFarm "offline" packages;
   packages = [

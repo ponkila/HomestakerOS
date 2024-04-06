@@ -5,10 +5,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }@inputs: {
+  outputs = { nixpkgs }: {
 
     # derived from https://github.com/nix-community/nixos-generators/blob/master/formats/install-iso.nix
-    nixosModules.isoImage = { config, lib, modulesPath, ... }: {
+    nixosModules.isoImage = { lib, modulesPath, ... }: {
       imports = [
         "${toString modulesPath}/installer/cd-dvd/installation-cd-base.nix"
       ];
@@ -212,7 +212,7 @@
           "tsx=on"
           "tsx_async_abort=off"
         ];
-        kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor (pkgs.linux_latest));
+        kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_latest);
         # Increase tmpfs (default: "50%")
         tmp.tmpfsSize = "80%";
       };
