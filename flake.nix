@@ -200,11 +200,7 @@
                   hostnames)
               );
 
-          # Module option schema for the frontend
-          # Accessible through 'nix eval --json .#schema'
-          schema = parseOpts (getOpts [
-            ./nixosModules/homestakeros/options.nix
-          ]);
+          schema = self.exports.homestakeros;
 
           # Format modules
           nixosModules = {
@@ -215,6 +211,11 @@
             };
           };
 
+          # Module option exports for the frontend
+          # Accessible through 'nix eval --json .#exports'
+          exports = parseOpts (getOpts [
+            ./nixosModules/homestakeros/options.nix
+          ]);
         };
     };
 }
