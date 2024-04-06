@@ -48,24 +48,38 @@
         , ...
         }:
         let
-          # Function to create a basic shell script package
-          # https://www.ertt.ca/nix/shell-scripts/#org6f67de6
-          mkScriptPackage = { name, deps, ... }:
-            let
-              pkgs = import nixpkgs { inherit system; };
-              scriptPath = ./scripts/${name}.sh;
-              script = (pkgs.writeScriptBin name (builtins.readFile scriptPath)).overrideAttrs (old: {
-                buildCommand = "${old.buildCommand}\n patchShebangs $out";
-              });
-            in
-            pkgs.symlinkJoin {
-              inherit name;
-              paths = [ script ] ++ deps;
-              buildInputs = [ pkgs.makeWrapper ];
-              postBuild = "wrapProgram $out/bin/${name} --prefix PATH : $out/bin";
+          packages = rec {
+            "buidl" = pkgs.callPackage ./packages/buidl { inherit json2nix update-json; };
+            "init-ssv" = pkgs.callPackage ./packages/init-ssv { inherit ssvnode; };
+            "json2nix" = pkgs.callPackage ./packages/json2nix { };
+            "update-json" = pkgs.callPackage ./packages/update-json { };
+            # Ethereum.nix
+            "blutgang" = inputs.ethereum-nix.packages.${system}.blutgang;
+            "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
+            "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
+            "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
+            "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
+            "prysm" = inputs.ethereum-nix.packages.${system}.prysm;
+            "reth" = inputs.ethereum-nix.packages.${system}.reth;
+            "ssvnode" = inputs.ethereum-nix.packages.${system}.ssvnode;
+            "teku" = inputs.ethereum-nix.packages.${system}.teku;
+            "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
+            # Main
+            "homestakeros" = pkgs.mkYarnPackage {
+              pname = "homestakeros";
+              version = "0.0.1";
+
+              src = ./.;
+              packageJSON = ./package.json;
+              yarnLock = ./yarn.lock;
+              yarnNix = ./yarn.nix;
             };
+            "default" = packages.homestakeros;
+          };
         in
-        rec {
+        {
+          # Custom packages
+          inherit packages;
 
           # Overlays
           _module.args.pkgs = import inputs.nixpkgs {
@@ -75,27 +89,14 @@
             ];
             config = { };
           };
-          overlayAttrs = {
-            inherit
-              (config.packages)
-              blutgang
-              erigon
-              lighthouse
-              nethermind
-              nimbus
-              prysm
-              reth
-              ssvnode
-              teku
-              ;
-          };
+          overlayAttrs = packages;
 
           formatter = nixpkgs.legacyPackages.${system}.nixpkgs-fmt;
 
           devenv.shells = {
             default = {
               packages = with pkgs; [
-                self'.packages.init-ssv
+                init-ssv
                 nodejs
                 jq
                 yarn
@@ -133,79 +134,6 @@
               # Workaround for https://github.com/cachix/devenv/issues/760
               containers = pkgs.lib.mkForce { };
             };
-          };
-
-          apps = {
-            json2nix = {
-              type = "app";
-              program = "${self.packages.${system}.json2nix}/bin/json2nix";
-            };
-            buidl = {
-              type = "app";
-              program = "${self.packages.${system}.buidl}/bin/buidl";
-            };
-            init-ssv = {
-              type = "app";
-              program = "${self.packages.${system}.init-ssv}/bin/init-ssv";
-            };
-            update-json = {
-              type = "app";
-              program = "${self.packages.${system}.update-json}/bin/update-json";
-            };
-          };
-
-          packages = {
-            "json2nix" = mkScriptPackage {
-              name = "json2nix";
-              deps = [ pkgs.nix ];
-            };
-            "buidl" = mkScriptPackage {
-              name = "buidl";
-              deps = [
-                pkgs.nix
-                pkgs.jq
-                pkgs.git
-                self.packages.${system}.json2nix
-                self.packages.${system}.update-json
-              ];
-            };
-            "init-ssv" = mkScriptPackage {
-              name = "init-ssv";
-              deps = [
-                pkgs.jq
-                inputs.ethereum-nix.packages.${system}.ssvnode
-              ];
-            };
-            "update-json" = mkScriptPackage {
-              name = "update-json";
-              deps = [
-                pkgs.nix
-                pkgs.jq
-              ];
-
-              # Ethereum.nix
-              "blutgang" = inputs.ethereum-nix.packages.${system}.blutgang;
-              "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
-              "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
-              "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
-              "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
-              "prysm" = inputs.ethereum-nix.packages.${system}.prysm;
-              "reth" = inputs.ethereum-nix.packages.${system}.reth;
-              "ssvnode" = inputs.ethereum-nix.packages.${system}.ssvnode;
-              "teku" = inputs.ethereum-nix.packages.${system}.teku;
-              "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
-            };
-
-            homestakeros = pkgs.mkYarnPackage {
-              pname = "homestakeros";
-              version = "0.0.1";
-
-              src = ./.;
-              packageJSON = ./package.json;
-              yarnLock = ./yarn.lock;
-              yarnNix = ./yarn.nix;
-            };
-            default = packages.homestakeros;
           };
         };
 
