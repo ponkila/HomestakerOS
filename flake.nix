@@ -15,7 +15,6 @@
     devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     ponkila.inputs.nixpkgs.follows = "nixpkgs";
     ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
@@ -23,17 +22,9 @@
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
 
-  outputs =
-    inputs @ { self
-    , devenv
-    , ethereum-nix
-    , flake-parts
-    , nixpkgs
-    , ponkila
-    , ...
-    }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
+  outputs = { self, ... }@inputs:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = inputs.nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.devenv.flakeModule
         inputs.flake-parts.flakeModules.easyOverlay
@@ -55,25 +46,18 @@
             "update-json" = pkgs.callPackage ./packages/update-json { };
             # Ethereum.nix
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
+            "geth" = inputs.ethereum-nix.packages.${system}.geth;
             "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
+            "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
             "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
             "prysm" = inputs.ethereum-nix.packages.${system}.prysm;
             "reth" = inputs.ethereum-nix.packages.${system}.reth;
             "ssvnode" = inputs.ethereum-nix.packages.${system}.ssvnode;
             "teku" = inputs.ethereum-nix.packages.${system}.teku;
-            "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
             # Main
-            "homestakeros" = pkgs.mkYarnPackage {
-              pname = "homestakeros";
-              version = "0.0.1";
-
-              src = ./.;
-              packageJSON = ./package.json;
-              yarnLock = ./yarn.lock;
-              yarnNix = ./yarn.nix;
-            };
-            "default" = packages.homestakeros;
+            "homestakeros-backend" = pkgs.callPackage ./packages/backend { };
+            "default" = packages.homestakeros-backend;
           };
         in
         {
@@ -100,7 +84,7 @@
               deadnix.enable = true;
               statix.enable = true;
             };
-            settings.global.excludes = [ "nixosModules/base/flake.nix" ];
+            settings.global.excludes = [ "*/flake.nix" ];
           };
 
           # Development shell -> 'nix develop' or 'direnv allow'
@@ -112,6 +96,7 @@
                 jq
                 yarn
                 yarn2nix
+                nodePackages.eslint
               ];
               scripts.server.exec = ''
                 nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
@@ -154,7 +139,7 @@
 
           # Function to format module options
           parseOpts = options:
-            nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! nixpkgs.lib.options.isOption v)
+            inputs.nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! inputs.nixpkgs.lib.options.isOption v)
               (_k: v: {
                 type = v.type.name;
                 inherit (v) default;
@@ -168,9 +153,9 @@
           # Function to get options from module(s)
           getOpts = modules:
             builtins.removeAttrs
-              (nixpkgs.lib.evalModules {
+              (inputs.nixpkgs.lib.evalModules {
                 inherit modules;
-                specialArgs = { inherit nixpkgs; };
+                specialArgs = { inherit (inputs) nixpkgs; };
               }).options [ "_module" ];
 
         in
@@ -183,7 +168,7 @@
                   (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
                   (builtins.attrNames ls);
             in
-            nixpkgs.lib.mkIf
+            inputs.nixpkgs.lib.mkIf
               (
                 builtins.pathExists ./nixosConfigurations
               )
@@ -191,16 +176,16 @@
                 builtins.listToAttrs (map
                   (hostname: {
                     name = hostname;
-                    value = nixpkgs.lib.nixosSystem {
+                    value = inputs.nixpkgs.lib.nixosSystem {
                       system = "x86_64-linux";
                       specialArgs = { inherit inputs outputs; };
                       modules = [
-                        ponkila.nixosModules.base
-                        ponkila.nixosModules.kexecTree
+                        inputs.ponkila.nixosModules.base
+                        inputs.ponkila.nixosModules.kexecTree
                         self.nixosModules.homestakeros
                         ./nixosConfigurations/${hostname}
                         {
-                          system.stateVersion = "23.05";
+                          system.stateVersion = "24.05";
                         }
                       ];
                     };

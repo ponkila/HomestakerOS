@@ -1,13 +1,11 @@
 {
-    "name": "homestakeros",
+    "name": "homestakeros-frontend",
     "version": "1.0.0",
     "type": "module",
-    "bin": "app.js",
     "scripts": {
-        "dev": "concurrently 'vite serve webui' 'nodemon app.js'",
-        "build": "tsc -p webui/tsconfig.json && vite build webui",
-        "lint": "eslint ./webui --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-        "preview": "node app.js"
+        "dev": "vite serve",
+        "build": "tsc -p tsconfig.json && vite build",
+        "lint": "eslint --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
     },
     "repository": {
         "type": "git",
@@ -26,7 +24,6 @@
         "@emotion/styled": "^11.11.0",
         "@metamask/detect-provider": "^2.0.0",
         "ethers": "<6",
-        "express": "^4.18.2",
         "fp-ts": "^2.16.1",
         "framer-motion": "^10.15.1",
         "jsonpath": "^1.1.1",
@@ -41,13 +38,9 @@
         "@typescript-eslint/eslint-plugin": "^6.0.0",
         "@typescript-eslint/parser": "^6.0.0",
         "@vitejs/plugin-react": "^4.0.3",
-        "concurrently": "^8.2.0",
-        "cors": "^2.8.5",
         "eslint": "^8.45.0",
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-react-refresh": "^0.4.3",
-        "express": "^4.18.2",
-        "nodemon": "^3.0.1",
         "prettier": "3.0.1",
         "typescript": "^5.0.2",
         "vite": "^4.4.5"

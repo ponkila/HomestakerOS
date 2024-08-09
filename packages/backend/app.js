@@ -1,8 +1,15 @@
-import express from 'express'
+#!/usr/bin/env node
+import express from "express";
+import cors from "cors";
 import fs from 'fs'
 
+const app = express();
 const router = express.Router()
-var writable = fs.createWriteStream('pipe')
+const writable = fs.createWriteStream('pipe')
+
+app.use(express.json());
+app.use(cors());
+app.use("/api", apiRouter);
 
 router.get('/', (req, res) => {
   res.json({ status: 'ok' })
@@ -15,4 +22,4 @@ router.post('/nixosConfig', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-export default router
+app.listen(8081);
