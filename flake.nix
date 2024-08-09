@@ -15,7 +15,7 @@
     devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/24.05";
     ponkila.inputs.nixpkgs.follows = "nixpkgs";
     ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
