@@ -212,7 +212,6 @@
           "tsx=on"
           "tsx_async_abort=off"
         ];
-        kernelPackages = lib.mkDefault (pkgs.linuxPackagesFor pkgs.linux_latest);
         # Increase tmpfs (default: "50%")
         tmp.tmpfsSize = "80%";
       };
