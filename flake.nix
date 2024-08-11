@@ -45,6 +45,7 @@
             "json2nix" = pkgs.callPackage ./packages/json2nix { };
             "update-json" = pkgs.callPackage ./packages/update-json { };
             # Ethereum.nix
+            "besu" = inputs.ethereum-nix.packages.${system}.besu;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
             "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
