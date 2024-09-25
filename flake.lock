@@ -140,15 +140,16 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1723151529,
-        "narHash": "sha256-OwVgU0m7nWuR6bf/dbrS9qk3iM+aT2katfe6vJZv0Fk=",
-        "owner": "nix-community",
+        "lastModified": 1727280682,
+        "narHash": "sha256-JzGO+Il85vrLw0+DzG9rPvMz/11XBIIxxiEWsnD28MM=",
+        "owner": "jhvst",
         "repo": "ethereum.nix",
-        "rev": "8197b12613e08f1a986a2ea9c726992cde84dcca",
+        "rev": "4866a507aefc2104963ee9ca29658b4dca1ccd6d",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
+        "owner": "jhvst",
+        "ref": "jhvst/ssvnode-v2",
         "repo": "ethereum.nix",
         "type": "github"
       }
