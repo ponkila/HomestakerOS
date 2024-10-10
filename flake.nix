@@ -57,8 +57,8 @@
             "ssvnode" = inputs.ethereum-nix.packages.${system}.ssvnode;
             "teku" = inputs.ethereum-nix.packages.${system}.teku;
             # Main
-            "homestakeros-backend" = pkgs.callPackage ./packages/backend { };
-            "default" = packages.homestakeros-backend;
+            "backend" = pkgs.callPackage ./packages/backend { };
+            "default" = packages.backend;
           };
         in
         {
