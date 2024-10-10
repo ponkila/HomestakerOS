@@ -6,7 +6,7 @@ Check out the live demo at [https://demo.homestakeros.com](https://demo.homestak
 
 ## 📋 Overview
 
-You can configure and build your host with a simple form and push of a button, without requiring extensive knowledge of the Nix language. The resulting images are deployed by loading the entire operating system into RAM. This makes it possible to deploy the OS in various ways, such as netbooting, or even booting by double-clicking a kernel execution script. If you want to return to your previous distribution, just restart your computer!
+The wizard produces Linux disk images based on NixOS. NixOS allows configurations to be public, deterministic, and self-upgrading. You can configure and build your host with a simple form and push of a button, without requiring extensive knowledge of the Nix language. The resulting images are deployed by loading the entire operating system into RAM. This makes it possible to deploy the OS in various ways, such as netbooting, or even booting by double-clicking a kernel execution script. If you want to return to your previous distribution, just restart your computer!
 
 It also offers a dashboard where you can inspect and manage the entire infrastructure from a single point. Information is presented in an intuitive way, with automatically generated graphs and diagrams, representing the entire cluster of machines and real-time data about the services they manage.
 
