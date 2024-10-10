@@ -1,16 +1,14 @@
-# 🚀 HomestakerOS
+# 🏠📈 HomestakerOS
 
 HomestakerOS is a web UI that creates a custom Linux OS for Ethereum homestaking. It aims to democratize homestaking by simplifying the process of creating and maintaining servers in home environments.
 
-This is still a work in progress. We are actively seeking funding and support for ongoing development!
+Check out the live demo at [https://demo.homestakeros.com](https://demo.homestakeros.com)
 
 ## 📋 Overview
 
 You can configure and build your host with a simple form and push of a button, without requiring extensive knowledge of the Nix language. The resulting images are deployed by loading the entire operating system into RAM. This makes it possible to deploy the OS in various ways, such as netbooting, or even booting by double-clicking a kernel execution script. If you want to return to your previous distribution, just restart your computer!
 
 It also offers a dashboard where you can inspect and manage the entire infrastructure from a single point. Information is presented in an intuitive way, with automatically generated graphs and diagrams, representing the entire cluster of machines and real-time data about the services they manage.
-
-Check out the live demo at [https://demo.homestakeros.com](https://demo.homestakeros.com)
 
 ## 🛠️ Usage
 
@@ -58,23 +56,19 @@ In the web user interface, you will configure your node under the 'NixOS config'
 
 For those interested in the details, let's dive into the documentation from here.
 
-- [1. 📚 Getting Started](./docs/getting_started.md)
+- [1. 📕 Getting Started](./docs/getting_started.md)
 
   Learn how to set up your machine for deploying HomestakerOS, including essential setup and configurations.
 
-- [2. 🤔 What is Ethereum](./docs/what_is_ethereum.md)
+- [2. 📗 Tutorial for Homestaking](./docs/tutorial_for_homestaking.md)
 
-  A deep dive into Ethereum’s architecture, from the execution and consensus layers to running Ethereum nodes and clients.
+  This is our entry-level guide to Ethereum and homestaking.
 
-- [3. ⚙️ Client Configuration](./docs/client_configuration.md)
-
-  A guide to configuring popular Ethereum clients, including execution and consensus options.
-
-- [4. 📖 Details](./docs/workflow.md)
+- [3. 📘 Working with Nix](./docs/workflow.md)
 
   An in-depth explanation of the HomestakerOS workflow, including the initialization process and build process.
 
-- [5. 🌐 Netbooting with Nixie](https://github.com/majbacka-labs/nixos.fi)
+- [4. 📙 Netbooting with Nixie](https://github.com/majbacka-labs/nixos.fi)
 
   Explore Nixie, a project designed for deploying and managing ephemeral operating systems.
 
