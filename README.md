@@ -1,48 +1,54 @@
 # 🚀 HomestakerOS
 
-HomestakerOS is a web UI that creates a custom Linux OS for Ethereum homestaking. It aims to democratize homestaking by simplifying the process of creating and maintaining servers in home environments, while offering a dashboard where you can inspect and manage the entire infrastructure from a single point. Information is presented in an intuitive way, with automatically generated graphs and diagrams, representing the entire cluster of machines and real-time data about the services they manage.
+HomestakerOS is a web UI that creates a custom Linux OS for Ethereum homestaking. It aims to democratize homestaking by simplifying the process of creating and maintaining servers in home environments.
 
-Check out the live demo at [https://demo.homestakeros.com](https://demo.homestakeros.com)
-
----
-
-⚠️  **Disclaimer:** HomestakerOS is still a work in progress. We are actively seeking funding and support for ongoing development!
+This is still a work in progress. We are actively seeking funding and support for ongoing development!
 
 ## 📋 Overview
 
-The wizard produces Linux disk images based on NixOS. It allows configurations to be public, deterministic, and self-upgrading. You can configure and build your host with a simple form and push of a button, without requiring extensive knowledge of the Nix language. The resulting images are deployed by loading the entire operating system into RAM. This makes it possible to deploy the OS in various ways, such as netbooting, or even booting by double-clicking a kernel execution script. If you want to return to your previous distribution, just restart your computer!
+You can configure and build your host with a simple form and push of a button, without requiring extensive knowledge of the Nix language. The resulting images are deployed by loading the entire operating system into RAM. This makes it possible to deploy the OS in various ways, such as netbooting, or even booting by double-clicking a kernel execution script. If you want to return to your previous distribution, just restart your computer!
+
+It also offers a dashboard where you can inspect and manage the entire infrastructure from a single point. Information is presented in an intuitive way, with automatically generated graphs and diagrams, representing the entire cluster of machines and real-time data about the services they manage.
+
+Check out the live demo at [https://demo.homestakeros.com](https://demo.homestakeros.com)
+
+## 🌟 Inspiration
 
 This project was inspired by the challenges encountered while managing our existing Ethereum infrastructure. The lack of knowledge about the setup and configuration of other maintainers' nodes within the same infrastructure leads to wasted time, effort, and downtime. The declarative nature of NixOS configurations, combined with the ephemeral approach, significantly enhances management and collaboration among team maintainers. It ensures that configurations are centralized and real-time information about the whole infrastructure is easily accessible by all participants.
 
-You can see our running, real-time infrastructure right in [homestaking-infra](https://github.com/ponkila/homestaking-infra). HomestakerOS endpoint to be added.
+You can see our running, real-time infrastructure right in [homestaking-infra](https://github.com/ponkila/homestaking-infra).
 
 ## 🛠️ Usage
 
 1. **Install Nix** [nixos.org](https://nixos.org/download.html)
 
 2. **Clone this Repository**
-  ```
-  git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS
-  ```
+
+    ```
+    git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS
+    ```
 
 3. **Set Up a Development Environment**
-- With Nix: `nix develop . --impure`
-- With [direnv](https://direnv.net/): `direnv allow`
+
+    - With Nix: `nix develop . --impure`
+    - With [direnv](https://direnv.net/): `direnv allow`
 
 4. **Start the Web UI**
-  ```
-  server
-  ```
+
+    ```
+    server
+    ```
 
 5. **Open a Command Runner**
-  ```
-  tail -f pipe | sh
-  ```
-  The frontend runs its commands through this, leave it open for functionality.
+
+    ```
+    tail -f pipe | sh
+    ```
+    The frontend runs its commands through this, leave it open for functionality.
 
 6. **Check it out**
 
-  Go to [http://localhost:8081](http://localhost:8081) to start using the Web UI.
+    Go to [http://localhost:8081](http://localhost:8081) to start using the Web UI.
 
 ## 🔍 Looking Ahead
 
@@ -50,7 +56,7 @@ For those interested in the details, let's dive into the documentation from here
 
 - [1. 📚 Getting Started](./docs/getting_started.md)
 
-  Learn how to set up your machine for deploying HomestakerOS, including manual drive formatting and essential configurations.
+  Learn how to set up your machine for deploying HomestakerOS, including essential setup and configurations.
 
 - [2. 🤔 What is Ethereum](./docs/what_is_ethereum.md)
 
@@ -58,7 +64,7 @@ For those interested in the details, let's dive into the documentation from here
 
 - [3. ⚙️ Client Configuration](./docs/client_configuration.md)
 
-  A guide to configuring popular Ethereum clients, including execution and consensus options, network settings, and key features.
+  A guide to configuring popular Ethereum clients, including execution and consensus options.
 
 - [4. 📖 Details](./docs/workflow.md)
 
