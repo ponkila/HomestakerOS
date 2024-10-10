@@ -12,12 +12,6 @@ It also offers a dashboard where you can inspect and manage the entire infrastru
 
 Check out the live demo at [https://demo.homestakeros.com](https://demo.homestakeros.com)
 
-## 🌟 Inspiration
-
-This project was inspired by the challenges encountered while managing our existing Ethereum infrastructure. The lack of knowledge about the setup and configuration of other maintainers' nodes within the same infrastructure leads to wasted time, effort, and downtime. The declarative nature of NixOS configurations, combined with the ephemeral approach, significantly enhances management and collaboration among team maintainers. It ensures that configurations are centralized and real-time information about the whole infrastructure is easily accessible by all participants.
-
-You can see our running, real-time infrastructure right in [homestaking-infra](https://github.com/ponkila/homestaking-infra).
-
 ## 🛠️ Usage
 
 1. **Install Nix** [nixos.org](https://nixos.org/download.html)
@@ -50,6 +44,16 @@ You can see our running, real-time infrastructure right in [homestaking-infra](h
 
     Go to [http://localhost:8081](http://localhost:8081) to start using the Web UI.
 
+## 🌟 Inspiration
+
+This project was inspired by the challenges encountered while managing our existing Ethereum infrastructure. The lack of knowledge about the setup and configuration of other maintainers' nodes within the same infrastructure leads to wasted time, effort, and downtime. The declarative nature of NixOS configurations, combined with the ephemeral approach, significantly enhances management and collaboration among team maintainers. It ensures that configurations are centralized and real-time information about the whole infrastructure is easily accessible by all participants.
+
+You can see our running, real-time infrastructure right in [homestaking-infra](https://github.com/ponkila/homestaking-infra).
+
+## 🧩 Clients and Addons
+
+In the web user interface, you will configure your node under the 'NixOS config' tab. You can select the Ethereum client(s) and any additional addons. The packages for these mainly come from [ethereum.nix](https://github.com/nix-community/ethereum.nix) and are frequently updated by the collaborators who use them. We look forward to adding more components on-demand and preferably upstreaming them if we package them ourselves.
+
 ## 🔍 Looking Ahead
 
 For those interested in the details, let's dive into the documentation from here.
@@ -70,7 +74,7 @@ For those interested in the details, let's dive into the documentation from here
 
   An in-depth explanation of the HomestakerOS workflow, including the initialization process and build process.
 
-- [5. 🌐 Netbooting with Nixie](https://github.com/majbacka-labs/nixos.fi)a
+- [5. 🌐 Netbooting with Nixie](https://github.com/majbacka-labs/nixos.fi)
 
   Explore Nixie, a project designed for deploying and managing ephemeral operating systems.
 
