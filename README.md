@@ -72,3 +72,6 @@ For those interested in the details, let's dive into the documentation from here
 
   Explore Nixie, a project designed for deploying and managing ephemeral operating systems.
 
+## 💼 Backers and Support
+
+HomestakerOS is still a work in progress, and while it has previously received support from a grant by the [Ethereum Foundation](https://ethereum.org/en/foundation/) and [ssv.network](https://ssv.network/), we are actively seeking additional funding and support to continue development. If you're interested in contributing or funding this project, please reach out!
