@@ -1,16 +1,18 @@
 import { useContext, createContext, useState, useEffect } from 'react'
 import * as O from 'fp-ts/Option'
 
-export const fetchHostnames = async (): Promise<O.Option<string[]>> => {
-  const hostnames = await fetch('/nixosConfigurations/hostnames.json')
+export const fetchHostnames = async (flake: string): Promise<O.Option<string[]>> => {
+  const uri = `${flake}/nixosConfigurations/hostnames.json`
+  const hostnames = await fetch(uri)
     .then((res) => res.json())
     .then((data) => O.some(data))
     .catch((_) => O.none)
   return hostnames
 }
 
-export const fetchNodeConfig = async (hostname: string): Promise<O.Option<Record<string, any>>> => {
-  const res = await fetch(`/nixosConfigurations/${hostname}/default.json`)
+export const fetchNodeConfig = async (flake: string, hostname: string): Promise<O.Option<Record<string, any>>> => {
+  const uri = `${flake}/nixosConfigurations/${hostname}/default.json`
+  const res = await fetch(uri)
     .then((res) => res.json())
     .then((data) => O.some(data))
     .catch((_) => O.none)
@@ -62,8 +64,10 @@ export const NodeInfoContext = createContext<NodeInfo[]>([])
 export function NodeInfoProvider({ children }: { children: any }) {
   const [nodes, setNodes] = useState<NodeInfo[]>([])
 
+  const flake = "https://raw.githubusercontent.com/ponkila/homestaking-infra/main";
+
   const refresh = async () => {
-    const hostnamesOption = await fetchHostnames()
+    const hostnamesOption = await fetchHostnames(flake)
     const hostnames = O.getOrElse(() => new Array())(hostnamesOption)
     const newNodes = [
       ...nodes.filter((node) => hostnames.includes(node.hostname)),
@@ -89,7 +93,7 @@ export function NodeInfoProvider({ children }: { children: any }) {
         node.hasKexec = await fetchNodeKexecStatus(node.hostname)
       }
       node.ssvKey = await fetchNodeSSVKey(node.hostname)
-      const nodeConfigOption = await fetchNodeConfig(node.hostname)
+      const nodeConfigOption = await fetchNodeConfig(flake, node.hostname)
       node.config = O.getOrElseW(() => null)(nodeConfigOption)
     }
     setNodes(newNodes)
@@ -97,10 +101,6 @@ export function NodeInfoProvider({ children }: { children: any }) {
 
   useEffect(() => {
     refresh()
-    const interval = setInterval(() => {
-      refresh()
-    }, 10000)
-    return () => clearInterval(interval)
   }, [])
 
   return <NodeInfoContext.Provider value={nodes}>{children}</NodeInfoContext.Provider>
