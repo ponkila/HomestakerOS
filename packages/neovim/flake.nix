@@ -44,7 +44,7 @@
               extraConfigVim = ''
             '';
               plugins.lsp = {
-                servers.tsserver.enable = true;
+                servers.ts-ls.enable = true;
               };
               plugins.treesitter.grammarPackages = with pkgs.vimPlugins.nvim-treesitter.builtGrammars; [ typescript ];
               extraPlugins = [
