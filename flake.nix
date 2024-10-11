@@ -58,6 +58,7 @@
             "teku" = inputs.ethereum-nix.packages.${system}.teku;
             # Main
             "backend" = pkgs.callPackage ./packages/backend { };
+            "frontend" = pkgs.callPackage ./webui { };
             "default" = packages.backend;
           };
         in
