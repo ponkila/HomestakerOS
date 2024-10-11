@@ -61,12 +61,11 @@ export type NodeInfo = {
 
 export const NodeInfoContext = createContext<NodeInfo[]>([])
 
-export function NodeInfoProvider({ children }: { children: any }) {
+export function NodeInfoProvider(props: any) {
+  useState(props.flake)
   const [nodes, setNodes] = useState<NodeInfo[]>([])
 
-  const flake = "https://raw.githubusercontent.com/ponkila/homestaking-infra/main";
-
-  const refresh = async () => {
+  const refresh = async (flake: string) => {
     const hostnamesOption = await fetchHostnames(flake)
     const hostnames = O.getOrElse(() => new Array())(hostnamesOption)
     const newNodes = [
@@ -100,10 +99,11 @@ export function NodeInfoProvider({ children }: { children: any }) {
   }
 
   useEffect(() => {
-    refresh()
-  }, [])
+    const flake: string = O.getOrElseW(() => "")(props.flake)
+    refresh(flake)
+  }, [props.flake])
 
-  return <NodeInfoContext.Provider value={nodes}>{children}</NodeInfoContext.Provider>
+  return <NodeInfoContext.Provider value={nodes}>{props.children}</NodeInfoContext.Provider>
 }
 
 export function useNodeInfo() {

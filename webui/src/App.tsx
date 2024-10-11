@@ -144,7 +144,7 @@ const App = () => {
   ))
 
   return (
-    <NodeInfoProvider>
+    <NodeInfoProvider flake={flake}>
       <Container maxW="container.lg">
         <Box position="fixed" top={4} right={4}>
           {wallet.accounts.length > 0 ? (
