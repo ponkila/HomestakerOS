@@ -19,7 +19,7 @@ buildNpmPackage {
 
   # How the output of the build phase
   installPhase = ''
-    mkdir $out 
-    cp -r dist $out
+    mkdir $out
+    cp -r dist/* $out
   '';
 }
