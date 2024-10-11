@@ -9,9 +9,8 @@ const writable = fs.createWriteStream('pipe')
 
 app.use(express.json());
 app.use(cors());
-app.use("/api", apiRouter);
 
-router.get('/', (req, res) => {
+router.get('/', (_, res) => {
   res.json({ status: 'ok' })
 })
 
