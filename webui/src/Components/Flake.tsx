@@ -2,10 +2,9 @@ import { Select } from '@chakra-ui/react'
 import { Radio, Button, RadioGroup } from '@chakra-ui/react'
 import { Input } from '@chakra-ui/react'
 import { FormControl } from '@chakra-ui/react'
-import * as O from 'fp-ts/Option'
 import { useState } from 'react'
 
-export const FlakeSection = (props: any) => {
+export const FlakeSection = () => {
 
   const [source, setSource] = useState('0')
 
@@ -26,21 +25,18 @@ export const FlakeSection = (props: any) => {
     e.preventDefault();
     const form = new FormData(e.target);
     const uri = form.get("uri");
-    props.setter(O.some(`https://raw.githubusercontent.com/${uri}/main`));
+    window.location.replace("/" + uri);
   }
 
   return (
-    <>
-      <form onSubmit={formatURI}>
-        <fieldset>
-          <p>Hello</p>
-          <FormControl>
-            {radio()}
-            {input}
-            <Button colorScheme='teal' type='submit'>Submit</Button>
-          </FormControl>
-        </fieldset>
-      </form>
-    </>
+    <form onSubmit={formatURI}>
+      <fieldset>
+        <FormControl>
+          {radio()}
+          {input}
+          <Button colorScheme='teal' type='submit'>Submit</Button>
+        </FormControl>
+      </fieldset>
+    </form>
   )
 }

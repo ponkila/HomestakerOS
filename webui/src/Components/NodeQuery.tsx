@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Text, Button, Box, FormControl, FormLabel, Heading, Input } from '@chakra-ui/react'
 
-const NodeQuery = () => {
+export const NodeQuery = () => {
   const [nodeResponse, setNodeResponse] = useState('')
 
   const queryIp = async (e: any) => {

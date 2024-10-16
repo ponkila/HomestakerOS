@@ -7,13 +7,17 @@ import {
   Spinner,
 } from '@chakra-ui/react'
 import { BlockResponse } from '../App'
+import { useLoaderData, useOutletContext } from "react-router-dom";
 
 export const StatusPage = (props: any) => {
 
-  const nodes = props.nodes ? <Alert status='success'>
+  const loader: any = useLoaderData();
+  const [_, s]: any = useOutletContext();
+
+  const nodes = loader.nodes ? <Alert status='success'>
     <AlertIcon />
-    {props.nodes.length} nodes loaded:
-    {props.nodes.map((v: Record<string, any>) => (
+    {loader.nodes.length} nodes loaded:
+    {loader.nodes.map((v: Record<string, any>) => (
       <details>
         <summary>{v.localization.hostname}</summary>
         <code>{JSON.stringify(v)}</code>
@@ -33,7 +37,7 @@ export const StatusPage = (props: any) => {
   </Alert>
 
   const schema = pipe(
-    props.count,
+    s,
     O.match(
       () =>
         <Alert status='error'>
@@ -52,7 +56,7 @@ export const StatusPage = (props: any) => {
     )
   )
 
-  const blocks = props.blocks ? props.blocks.map((x: BlockResponse) => {
+  const blocks = loader.blocks ? loader.blocks.map((x: BlockResponse) => {
     const status: AlertStatus = pipe(x.data, O.match(
       () => "error",
       (x) => x.execution_optimistic ? "warning" : "success",

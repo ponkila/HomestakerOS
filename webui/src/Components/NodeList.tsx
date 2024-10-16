@@ -40,7 +40,6 @@ const EditConfigModal = ({
         <ModalHeader>Edit "{node.hostname}"</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <ConfigurationForm schema={node.config} />
         </ModalBody>
       </ModalContent>
     </Modal>
@@ -66,7 +65,7 @@ export default function NodeList() {
       id: node.hostname,
       type: 'nixNode',
       position: { x: i * 300, y: 100 },
-      data: { label: node.config?.localization.hostname || node.hostname, nodeInfo: node, onClick: onNodeClick },
+      data: { label: node.hostname, nodeInfo: node, onClick: onNodeClick },
     }))
 
     const newEdges = nodeInfo.map((node) => ({

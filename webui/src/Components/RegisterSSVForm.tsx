@@ -4,12 +4,13 @@ import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
+import * as O from 'fp-ts/Option'
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [node, setNode] = useState<NodeInfo | null>(null)
+  const [node, setNode] = useState<O.Option<string>>(O.none)
   const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
@@ -41,9 +42,9 @@ const RegisterSSVForm = () => {
 
   const onHostnameChange = (e: any) => {
     if (e.target.value) {
-      setNode(nodeInfo.find((node) => node.hostname === e.target.value) || null)
+      setNode(e.target.value)
     } else {
-      setNode(null)
+      setNode(O.none)
     }
   }
 

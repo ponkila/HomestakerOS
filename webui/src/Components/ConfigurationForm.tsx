@@ -24,6 +24,7 @@ import {
 import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import * as jp from 'jsonpath'
+import { useLoaderData, useOutletContext } from "react-router-dom";
 let uuid = () => self.crypto.randomUUID();
 
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
@@ -165,7 +166,15 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
   )
 }
 
-const ConfigurationForm = (props: any) => {
+export const ConfigurationForm = () => {
+
+  const loader: any = useLoaderData();
+  const [_, s]: any = useOutletContext();
+
+  let props = {
+    schema: s.value,
+    nodes: loader.nodes,
+  };
 
   const isLeaf = (node: Record<string, any>) => {
     return node != null && node.constructor == Object && 'type' in node

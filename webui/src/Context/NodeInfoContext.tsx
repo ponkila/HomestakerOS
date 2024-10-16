@@ -1,12 +1,13 @@
-import { useContext, createContext, useState, useEffect } from 'react'
+import { useContext, createContext } from 'react'
 import * as O from 'fp-ts/Option'
+import { useLoaderData } from 'react-router-dom'
 
-export const fetchHostnames = async (flake: string): Promise<O.Option<string[]>> => {
+export const fetchHostnames = async (flake: string): Promise<string[]> => {
   const uri = `${flake}/nixosConfigurations/hostnames.json`
   const hostnames = await fetch(uri)
     .then((res) => res.json())
-    .then((data) => O.some(data))
-    .catch((_) => O.none)
+    .then((data) => data)
+    .catch((_) => [])
   return hostnames
 }
 
@@ -19,34 +20,26 @@ export const fetchNodeConfig = async (flake: string, hostname: string): Promise<
   return res
 }
 
-const fetchNodeInitrdStatus = async (hostname: string) => {
+export const fetchNodeInitrdStatus = async (hostname: string) => {
   const initrdStatus = await fetch(`/nixosConfigurations/${hostname}/result/initrd.zst`, { method: 'HEAD' })
   return initrdStatus.ok && initrdStatus.status === 200
 }
 
-const fetchNodeBzImageStatus = async (hostname: string) => {
+export const fetchNodeBzImageStatus = async (hostname: string) => {
   const bzImageStatus = await fetch(`/nixosConfigurations/${hostname}/result/bzImage`, { method: 'HEAD' })
   return bzImageStatus.ok && bzImageStatus.status === 200
 }
 
-const fetchNodeKexecStatus = async (hostname: string) => {
+export const fetchNodeKexecStatus = async (hostname: string) => {
   const kexecStatus = await fetch(`/nixosConfigurations/${hostname}/result/kexec-boot`, { method: 'HEAD' })
   return kexecStatus.ok && kexecStatus.status === 200
 }
 
-export const fetchNodeSSVKey = async (hostname: string) => {
+export const fetchNodeSSVKey = async (hostname: string): Promise<O.Option<string>> => {
   const pubKey = await fetch(`/nixosConfigurations/${hostname}/ssv_operator_key.pub`)
-    .then(async (res) => {
-      if (!res.ok || res.status !== 200) {
-        return null
-      }
-      return await res.text()
-    })
-    .catch((err) => {
-      console.log(err)
-      return null
-    })
-
+    .then((res) => res.text())
+    .then((data) => O.some(data))
+    .catch((_) => O.none)
   return pubKey
 }
 
@@ -55,55 +48,15 @@ export type NodeInfo = {
   hasInitrd: boolean
   hasBzImage: boolean
   hasKexec: boolean
-  ssvKey: string | null
-  config: Record<string, any> | null
+  ssvKey: O.Option<string>
+  config: O.Option<Record<string, any>>
 }
 
 export const NodeInfoContext = createContext<NodeInfo[]>([])
 
 export function NodeInfoProvider(props: any) {
-  useState(props.flake)
-  const [nodes, setNodes] = useState<NodeInfo[]>([])
-
-  const refresh = async (flake: string) => {
-    const hostnamesOption = await fetchHostnames(flake)
-    const hostnames = O.getOrElse(() => new Array())(hostnamesOption)
-    const newNodes = [
-      ...nodes.filter((node) => hostnames.includes(node.hostname)),
-      ...hostnames
-        .filter((hostname) => !nodes.map((node) => node.hostname).includes(hostname))
-        .map((hostname) => ({
-          hostname,
-          hasInitrd: false,
-          hasBzImage: false,
-          hasKexec: false,
-          ssvKey: null,
-          config: null,
-        })),
-    ]
-    for (const node of newNodes) {
-      if (!node.hasInitrd) {
-        node.hasInitrd = await fetchNodeInitrdStatus(node.hostname)
-      }
-      if (!node.hasBzImage) {
-        node.hasBzImage = await fetchNodeBzImageStatus(node.hostname)
-      }
-      if (!node.hasKexec) {
-        node.hasKexec = await fetchNodeKexecStatus(node.hostname)
-      }
-      node.ssvKey = await fetchNodeSSVKey(node.hostname)
-      const nodeConfigOption = await fetchNodeConfig(flake, node.hostname)
-      node.config = O.getOrElseW(() => null)(nodeConfigOption)
-    }
-    setNodes(newNodes)
-  }
-
-  useEffect(() => {
-    const flake: string = O.getOrElseW(() => "")(props.flake)
-    refresh(flake)
-  }, [props.flake])
-
-  return <NodeInfoContext.Provider value={nodes}>{props.children}</NodeInfoContext.Provider>
+  const { newNodes }: any = useLoaderData();
+  return <NodeInfoContext.Provider value={newNodes}>{props.children}</NodeInfoContext.Provider>
 }
 
 export function useNodeInfo() {
