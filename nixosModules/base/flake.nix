@@ -2,7 +2,7 @@
   description = "Opinionated NixOS base config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
   outputs = { self, nixpkgs }: {
@@ -93,8 +93,8 @@
         prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
         contents = [
           {
-            object = config.system.build.squashfsStore;
-            symlink = "/nix-store.squashfs";
+            source = config.system.build.squashfsStore;
+            target = "/nix-store.squashfs";
           }
         ];
       };
