@@ -13,7 +13,7 @@
 
   inputs = {
     devenv.url = "github:cachix/devenv";
-    ethereum-nix.url = "github:jhvst/ethereum.nix/jhvst/ssvnode-v2";
+    ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs.url = "github:NixOS/nixpkgs/24.05";
     ponkila.inputs.nixpkgs.follows = "nixpkgs";
