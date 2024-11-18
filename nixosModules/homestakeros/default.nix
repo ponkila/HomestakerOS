@@ -317,7 +317,8 @@ in
           "--txpool.api.addr=localhost:9090"
           # ws for ssv
           "--ws"
-        ];
+        ]
+        ++ lib.optional (cfg.execution.erigon.extraOption != null) cfg.execution.erigon.extraOption;
         allowedPorts = [ 30303 30304 42069 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -358,7 +359,8 @@ in
           "--ws.origins=\"*\""
           "--ws.port=8545"
           "--ws"
-        ];
+        ]
+        ++ lib.optional (cfg.execution.geth.extraOption != null) cfg.execution.geth.extraOption;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -393,7 +395,8 @@ in
           # ws for ssv
           "--Init.WebSocketsEnabled true"
           "--JsonRpc.WebSocketsPort 8545"
-        ];
+        ]
+        ++ lib.optional (cfg.execution.nethermind.extraOption != null) cfg.execution.nethermind.extraOption;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -435,7 +438,8 @@ in
           "--rpc-ws-enabled=true"
           "--rpc-ws-host=${parsedEndpoint.addr}"
           "--rpc-ws-port=8546"
-        ];
+        ]
+        ++ lib.optional (cfg.execution.besu.extraOption != null) cfg.execution.besu.extraOption;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -463,7 +467,8 @@ in
               "https://0xa1559ace749633b997cb3fdacffb890aeebdb0f5a3b6aaa7eeeaf1a38af0a8fe88b9e4b1f61f236d2e64d95733327a62@relay.ultrasound.money"
             ]}"
           "-addr ${parsedEndpoint.addr}:${parsedEndpoint.port}"
-        ];
+        ]
+        ++ lib.optional (cfg.addons.mev-boost.extraOption != null) cfg.addons.mev-boost.extraOption;
         allowedPorts = [ ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -511,7 +516,8 @@ in
           )
           "--metrics"
           "--checkpoint-sync-url \"https://beaconstate.info\""
-        ];
+        ]
+        ++ lib.optional (cfg.consensus.lighthouse.extraOption != null) cfg.consensus.lighthouse.extraOption;
         allowedPorts = [ 9000 9001 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -553,7 +559,8 @@ in
           "--accept-terms-of-use"
           "--checkpoint-sync-url=https://beaconstate.info"
           "--genesis-beacon-api-url=https://beaconstate.info"
-        ];
+        ]
+        ++ lib.optional (cfg.consensus.prysm.extraOption != null) cfg.consensus.prysm.extraOption;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -587,7 +594,8 @@ in
             else ""
           )
           "--metrics-enabled=true"
-        ];
+        ]
+        ++ lib.optional (cfg.consensus.teku.extraOption != null) cfg.consensus.teku.extraOption;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -619,7 +627,8 @@ in
             else ""
           )
           "--metrics=true"
-        ];
+        ]
+        ++ lib.optional (cfg.consensus.nimbus.extraOption != null) cfg.consensus.nimbus.extraOption;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
