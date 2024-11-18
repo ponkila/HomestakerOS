@@ -90,6 +90,12 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/erigon/jwt.hex";
         };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
+        };
       };
 
       geth = {
@@ -113,6 +119,12 @@
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/geth/jwt.hex";
+        };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
         };
       };
 
@@ -138,6 +150,12 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/nethermind/jwt.hex";
         };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
+        };
       };
 
       besu = {
@@ -161,6 +179,12 @@
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/besu/jwt.hex";
+        };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
         };
       };
     };
@@ -210,6 +234,12 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/lighthouse/jwt.hex";
         };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
+        };
       };
 
       prysm = {
@@ -246,6 +276,12 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/prysm/jwt.hex";
         };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
+        };
       };
 
       teku = {
@@ -274,6 +310,12 @@
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/teku/jwt.hex";
+        };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
         };
       };
 
@@ -304,6 +346,12 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/nimbus/jwt.hex";
         };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
+        };
       };
     };
 
@@ -324,6 +372,12 @@
           default = "/var/mnt/addons/ssv";
           description = "Path to a persistent directory to store the node's database.";
         };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
+        };
       };
       mev-boost = {
         enable = mkOption {
@@ -335,6 +389,12 @@
           type = types.str;
           default = "http://127.0.0.1:18550";
           description = "Listening interface for the MEV-Boost server.";
+        };
+        extraOption = mkOption {
+          type = types.nullOr (types.listOf types.str);
+          default = null;
+          description = "Additional command-line arguments.";
+          example = [ "--some-extra-option=value" ];
         };
       };
     };
