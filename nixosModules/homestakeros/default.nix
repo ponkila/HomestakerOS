@@ -550,6 +550,8 @@ in
             else ""
           )
           "--accept-terms-of-use"
+          "--checkpoint-sync-url=https://beaconstate.info"
+          "--genesis-beacon-api-url=https://beaconstate.info"
         ];
         allowedPorts = [ 9000 ];
       in
