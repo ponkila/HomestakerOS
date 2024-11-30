@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -s http://192.168.100.50:8545 -X POST -H "Content-Type: application/json" --data '{"method":"eth_getLogs","params":[{"blockHash": "0x5993219e8c35b6dfe99fb0d39b4ecf78a1789a1f23d3075ddce85c5c2b65ab34", "address": [ "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA" ], "topics": [ "0x48a3ea0796746043948f6341d17ff8200937b99262a0b48c2663b951ed7114e5" ] }],"id":1,"jsonrpc":"2.0"}' | jq '[.result[] | .data]'
