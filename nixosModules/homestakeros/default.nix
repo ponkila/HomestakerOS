@@ -318,7 +318,7 @@ in
           # ws for ssv
           "--ws"
         ]
-        ++ lib.optional (cfg.execution.erigon.extraOption != null) cfg.execution.erigon.extraOption;
+        ++ lib.optional (cfg.execution.erigon.extraOptions != null) cfg.execution.erigon.extraOptions;
         allowedPorts = [ 30303 30304 42069 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -360,7 +360,7 @@ in
           "--ws.port=8545"
           "--ws"
         ]
-        ++ lib.optional (cfg.execution.geth.extraOption != null) cfg.execution.geth.extraOption;
+        ++ lib.optional (cfg.execution.geth.extraOptions != null) cfg.execution.geth.extraOptions;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -396,7 +396,7 @@ in
           "--Init.WebSocketsEnabled true"
           "--JsonRpc.WebSocketsPort 8545"
         ]
-        ++ lib.optional (cfg.execution.nethermind.extraOption != null) cfg.execution.nethermind.extraOption;
+        ++ lib.optional (cfg.execution.nethermind.extraOptions != null) cfg.execution.nethermind.extraOptions;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -439,7 +439,7 @@ in
           "--rpc-ws-host=${parsedEndpoint.addr}"
           "--rpc-ws-port=8546"
         ]
-        ++ lib.optional (cfg.execution.besu.extraOption != null) cfg.execution.besu.extraOption;
+        ++ lib.optional (cfg.execution.besu.extraOptions != null) cfg.execution.besu.extraOptions;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -468,7 +468,7 @@ in
             ]}"
           "-addr ${parsedEndpoint.addr}:${parsedEndpoint.port}"
         ]
-        ++ lib.optional (cfg.addons.mev-boost.extraOption != null) cfg.addons.mev-boost.extraOption;
+        ++ lib.optional (cfg.addons.mev-boost.extraOptions != null) cfg.addons.mev-boost.extraOptions;
         allowedPorts = [ ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -517,7 +517,7 @@ in
           "--metrics"
           "--checkpoint-sync-url \"https://beaconstate.info\""
         ]
-        ++ lib.optional (cfg.consensus.lighthouse.extraOption != null) cfg.consensus.lighthouse.extraOption;
+        ++ lib.optional (cfg.consensus.lighthouse.extraOptions != null) cfg.consensus.lighthouse.extraOptions;
         allowedPorts = [ 9000 9001 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -560,7 +560,7 @@ in
           "--checkpoint-sync-url=https://beaconstate.info"
           "--genesis-beacon-api-url=https://beaconstate.info"
         ]
-        ++ lib.optional (cfg.consensus.prysm.extraOption != null) cfg.consensus.prysm.extraOption;
+        ++ lib.optional (cfg.consensus.prysm.extraOptions != null) cfg.consensus.prysm.extraOptions;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -595,7 +595,7 @@ in
           )
           "--metrics-enabled=true"
         ]
-        ++ lib.optional (cfg.consensus.teku.extraOption != null) cfg.consensus.teku.extraOption;
+        ++ lib.optional (cfg.consensus.teku.extraOptions != null) cfg.consensus.teku.extraOptions;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -628,7 +628,7 @@ in
           )
           "--metrics=true"
         ]
-        ++ lib.optional (cfg.consensus.nimbus.extraOption != null) cfg.consensus.nimbus.extraOption;
+        ++ lib.optional (cfg.consensus.nimbus.extraOptions != null) cfg.consensus.nimbus.extraOptions;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts

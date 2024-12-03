@@ -90,7 +90,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/erigon/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -120,7 +120,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/geth/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -150,7 +150,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/nethermind/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -180,7 +180,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/besu/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -234,7 +234,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/lighthouse/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -276,7 +276,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/prysm/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -311,7 +311,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/teku/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -346,7 +346,7 @@
           description = "Path to the token that ensures safe connection between CL and EL.";
           example = "/var/mnt/nimbus/jwt.hex";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -372,7 +372,7 @@
           default = "/var/mnt/addons/ssv";
           description = "Path to a persistent directory to store the node's database.";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
@@ -390,7 +390,7 @@
           default = "http://127.0.0.1:18550";
           description = "Listening interface for the MEV-Boost server.";
         };
-        extraOption = mkOption {
+        extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
           default = null;
           description = "Additional command-line arguments.";
