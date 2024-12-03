@@ -187,6 +187,9 @@
                         self.nixosModules.homestakeros
                         ./nixosConfigurations/${hostname}
                         {
+                          nixpkgs.overlays = [
+                            self.overlays.default
+                          ];
                           system.stateVersion = "24.05";
                         }
                       ];
