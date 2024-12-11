@@ -510,6 +510,7 @@ in
             else ""
           )
           "--metrics"
+          "--checkpoint-sync-url \"https://beaconstate.info\""
         ];
         allowedPorts = [ 9000 9001 ];
       in
