@@ -2,7 +2,7 @@
   description = "Opinionated NixOS base config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
   };
 
   outputs = { self, nixpkgs }: {
@@ -251,7 +251,6 @@
 
       # Rip out packages
       environment.defaultPackages = lib.mkForce [ ];
-      environment.noXlibs = true;
       documentation.doc.enable = false;
       xdg.mime.enable = false;
       xdg.menus.enable = false;
