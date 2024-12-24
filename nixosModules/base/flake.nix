@@ -45,7 +45,7 @@
       fileSystems."/nix/.ro-store" = lib.mkImageMediaOverride {
         fsType = "squashfs";
         device = "../nix-store.squashfs";
-        options = [ "loop" ];
+        options = [ "loop" "threads=multi" ];
         neededForBoot = true;
       };
 
@@ -93,8 +93,8 @@
         prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
         contents = [
           {
-            object = config.system.build.squashfsStore;
-            symlink = "/nix-store.squashfs";
+            source = config.system.build.squashfsStore;
+            target = "/nix-store.squashfs";
           }
         ];
       };
@@ -216,47 +216,37 @@
         tmp.tmpfsSize = "80%";
       };
 
+      users.mutableUsers = false;
+
       environment.systemPackages = with pkgs; [
         btrfs-progs
         kexec-tools
-        fuse-overlayfs
         rsync
-        bind
-        file
-        tree
         vim
       ];
 
-      # Better clock sync via chrony
-      services.timesyncd.enable = false;
-      services.chrony = {
-        enable = true;
-        servers = [
-          "ntp1.hetzner.de"
-          "ntp2.hetzner.com"
-          "ntp3.hetzner.net"
-        ];
-      };
+      services.timesyncd.enable = true;
+      services.timesyncd.servers = [ "time.cloudflare.com" ];
+
+      networking.nftables.enable = true;
+      services.resolved.dnsovertls = "opportunistic";
 
       # Reboots hanged system
       systemd.watchdog.device = "/dev/watchdog";
       systemd.watchdog.runtimeTime = "30s";
 
-      # Audit tracing
-      security.auditd.enable = true;
-      security.audit.enable = true;
-      security.audit.rules = [
-        "-a exit,always -F arch=b64 -S execve"
-      ];
-
       # Rip out packages
       environment.defaultPackages = lib.mkForce [ ];
       documentation.doc.enable = false;
+      documentation.info.enable = false;
       xdg.mime.enable = false;
       xdg.menus.enable = false;
       xdg.icons.enable = false;
       xdg.sounds.enable = false;
       xdg.autostart.enable = false;
+
+      # https://github.com/NixOS/nixpkgs/pull/330440#issuecomment-2369082964
+      services.speechd.enable = lib.mkForce false;
 
       # Allow passwordless sudo from wheel group
       security.sudo = {
