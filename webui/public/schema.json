@@ -1,0 +1,364 @@
+{
+  "addons": {
+    "mev-boost": {
+      "enable": {
+        "default": false,
+        "description": "Whether to enable MEV-Boost.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:18550",
+        "description": "Listening interface for the MEV-Boost server.",
+        "example": null,
+        "type": "str"
+      }
+    },
+    "ssv-node": {
+      "dataDir": {
+        "default": "/var/mnt/addons/ssv",
+        "description": "Path to a persistent directory to store the node's database.",
+        "example": null,
+        "type": "path"
+      },
+      "privateKeyFile": {
+        "default": "/var/mnt/addons/ssv/ssv_operator_key",
+        "description": "Path to the private SSV operator key.",
+        "example": null,
+        "type": "nullOr"
+      },
+      "privateKeyPasswordFile": {
+        "default": "/var/mnt/addons/ssv/password",
+        "description": "Path to the password file of SSV operator key",
+        "example": null,
+        "type": "nullOr"
+      }
+    }
+  },
+  "consensus": {
+    "lighthouse": {
+      "dataDir": {
+        "default": "/var/mnt/lighthouse",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Lighthouse.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:5052",
+        "description": "HTTP server listening interface.",
+        "example": null,
+        "type": "str"
+      },
+      "execEndpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/lighthouse/jwt.hex",
+        "type": "nullOr"
+      },
+      "slasher": {
+        "enable": {
+          "default": false,
+          "description": "Whether to enable slasher.",
+          "example": null,
+          "type": "bool"
+        },
+        "historyLength": {
+          "default": 4096,
+          "description": "Number of epochs to store.",
+          "example": null,
+          "type": "int"
+        },
+        "maxDatabaseSize": {
+          "default": 256,
+          "description": "Maximum size of the slasher database in gigabytes.",
+          "example": null,
+          "type": "int"
+        }
+      }
+    },
+    "nimbus": {
+      "dataDir": {
+        "default": "/var/mnt/nimbus",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Nimbus.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:5052",
+        "description": "JSON-HTTP server listening interface.",
+        "example": null,
+        "type": "str"
+      },
+      "execEndpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/nimbus/jwt.hex",
+        "type": "nullOr"
+      }
+    },
+    "prysm": {
+      "dataDir": {
+        "default": "/var/mnt/prysm",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Prysm.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:3500",
+        "description": "JSON-HTTP server listening interface.",
+        "example": null,
+        "type": "str"
+      },
+      "execEndpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/prysm/jwt.hex",
+        "type": "nullOr"
+      },
+      "slasher": {
+        "enable": {
+          "default": false,
+          "description": "Whether to enable historical slasher.",
+          "example": null,
+          "type": "bool"
+        }
+      }
+    },
+    "teku": {
+      "dataDir": {
+        "default": "/var/mnt/teku",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Teku.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:5051",
+        "description": "JSON-HTTP server listening interface.",
+        "example": null,
+        "type": "str"
+      },
+      "execEndpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/teku/jwt.hex",
+        "type": "nullOr"
+      }
+    }
+  },
+  "execution": {
+    "besu": {
+      "dataDir": {
+        "default": "/var/mnt/besu",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Besu.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "HTTP-RPC server listening interface of engine API.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/besu/jwt.hex",
+        "type": "nullOr"
+      }
+    },
+    "erigon": {
+      "dataDir": {
+        "default": "/var/mnt/erigon",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Erigon.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "HTTP-RPC server listening interface of engine API.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/erigon/jwt.hex",
+        "type": "nullOr"
+      }
+    },
+    "geth": {
+      "dataDir": {
+        "default": "/var/mnt/geth",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Geth.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "HTTP-RPC server listening interface of engine API.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/geth/jwt.hex",
+        "type": "nullOr"
+      }
+    },
+    "nethermind": {
+      "dataDir": {
+        "default": "/var/mnt/nethermind",
+        "description": "Data directory for the blockchain.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable Nethermind.",
+        "example": null,
+        "type": "bool"
+      },
+      "endpoint": {
+        "default": "http://127.0.0.1:8551",
+        "description": "HTTP-RPC server listening interface of engine API.",
+        "example": null,
+        "type": "str"
+      },
+      "jwtSecretFile": {
+        "default": null,
+        "description": "Path to the token that ensures safe connection between CL and EL.",
+        "example": "/var/mnt/nethermind/jwt.hex",
+        "type": "nullOr"
+      }
+    }
+  },
+  "localization": {
+    "hostname": {
+      "default": "homestaker",
+      "description": "The name of the machine.",
+      "example": null,
+      "type": "strMatching \"^\\$|^[[:alnum:]]([[:alnum:]_-]{0,61}[[:alnum:]])?\\$\""
+    },
+    "timezone": {
+      "default": null,
+      "description": "The time zone used when displaying times and dates.",
+      "example": "America/New_York",
+      "type": "nullOr"
+    }
+  },
+  "mounts": {
+    "default": {},
+    "description": "Definition of systemd mount units. Click [here](https://www.freedesktop.org/software/systemd/man/systemd.mount.html#Options) for more information.",
+    "example": {
+      "my-mount": {
+        "description": "A storage device",
+        "enable": true,
+        "options": "noatime",
+        "type": "btrfs",
+        "wantedBy": [
+          "multi-user.target"
+        ],
+        "what": "/dev/disk/by-label/my-label",
+        "where": "/path/to/my/mount"
+      }
+    },
+    "type": "attrsOf"
+  },
+  "ssh": {
+    "authorizedKeys": {
+      "default": [],
+      "description": "A list of public SSH keys to be added to the user's authorized keys.",
+      "example": null,
+      "type": "listOf"
+    },
+    "privateKeyFile": {
+      "default": null,
+      "description": "Path to the Ed25519 SSH host key. If absent, the key will be generated automatically.",
+      "example": "/var/mnt/secrets/ssh/id_ed25519",
+      "type": "nullOr"
+    }
+  },
+  "vpn": {
+    "wireguard": {
+      "configFile": {
+        "default": "/var/mnt/secrets/wg0.conf",
+        "description": "A file path for the wg-quick configuration.",
+        "example": null,
+        "type": "path"
+      },
+      "enable": {
+        "default": false,
+        "description": "Whether to enable WireGuard.",
+        "example": null,
+        "type": "bool"
+      }
+    }
+  }
+}

@@ -13,7 +13,6 @@ import {
   ModalCloseButton,
 } from '@chakra-ui/react'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
-import ConfigurationForm from './ConfigurationForm'
 
 const initialNodes: Node[] = []
 const initialEdges: Edge[] = []
@@ -54,6 +53,7 @@ export default function NodeList() {
   const nodeInfo = useNodeInfo()
 
   useEffect(() => {
+    console.log(nodeInfo)
     const wgNode = {
       id: 'wg',
       type: 'default',

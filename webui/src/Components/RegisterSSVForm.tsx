@@ -5,12 +5,13 @@ import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
 import * as O from 'fp-ts/Option'
+import { getOrElse, isSome } from 'fp-ts/Option'
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [node, setNode] = useState<O.Option<string>>(O.none)
+  const [node, setNode] = useState<NodeInfo | null>(null)
   const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
@@ -44,7 +45,7 @@ const RegisterSSVForm = () => {
     if (e.target.value) {
       setNode(e.target.value)
     } else {
-      setNode(O.none)
+      setNode(null)
     }
   }
 
@@ -82,21 +83,25 @@ const RegisterSSVForm = () => {
                 <FormLabel>Hostname</FormLabel>
                 <Select placeholder="Select hostname" onChange={onHostnameChange}>
                   {nodeInfo.map((node: NodeInfo) => (
-                    <option value={node.hostname}>{node.hostname}</option>
+                    <option key={node.hostname} value={node.hostname}>{node.hostname}</option>
                   ))}
                 </Select>
               </FormControl>
               <FormControl my={4} id="publicKey">
                 <FormLabel>Public key</FormLabel>
-                <Input disabled value={node?.ssvKey || 'No public key available'} />
+                <Input
+                  disabled
+                  value={getOrElse(() => "No public key available")(node?.ssvKey ?? O.none)}
+                />
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
                 <Input placeholder="1.0" />
               </FormControl>
-              <Button w="100%" type="submit" isDisabled={!node?.ssvKey}>
+              <Button w="100%" type="submit" isDisabled={!isSome(node?.ssvKey ?? O.none)}>
                 Register
               </Button>
+
             </form>
           ))}
       </Box>

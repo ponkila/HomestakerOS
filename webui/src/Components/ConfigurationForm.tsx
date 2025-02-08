@@ -339,6 +339,16 @@ export const ConfigurationForm = () => {
       body: JSON.stringify(result),
       mode: 'cors',
     })
+      .then(response => {
+        console.log("Raw response:", response);
+        return response.json(); // Convert response to JSON
+      })
+      .then(data => {
+        console.log("Parsed response data:", data);
+      })
+      .catch(error => {
+        console.error("Fetch error:", error);
+      });
   }
 
   const templates = () => {

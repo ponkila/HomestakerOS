@@ -8,6 +8,7 @@ export const fetchHostnames = async (flake: string): Promise<string[]> => {
     .then((res) => res.json())
     .then((data) => data)
     .catch((_) => [])
+    console.log(hostnames)
   return hostnames
 }
 
@@ -40,6 +41,7 @@ export const fetchNodeSSVKey = async (hostname: string): Promise<O.Option<string
     .then((res) => res.text())
     .then((data) => O.some(data))
     .catch((_) => O.none)
+    console.log("TÄÄLLÄ MENNNÄÄN!!!! ",pubKey)
   return pubKey
 }
 
