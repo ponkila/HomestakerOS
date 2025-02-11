@@ -8,7 +8,6 @@ export const fetchHostnames = async (flake: string): Promise<string[]> => {
     .then((res) => res.json())
     .then((data) => data)
     .catch((_) => [])
-    console.log(hostnames)
   return hostnames
 }
 
