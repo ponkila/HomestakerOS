@@ -53,7 +53,6 @@ export default function NodeList() {
   const nodeInfo = useNodeInfo()
 
   useEffect(() => {
-    console.log(nodeInfo)
     const wgNode = {
       id: 'wg',
       type: 'default',
