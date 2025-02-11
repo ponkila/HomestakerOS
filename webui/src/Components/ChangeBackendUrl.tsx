@@ -30,4 +30,3 @@ const ChangeBackendUrl = () => {
 };
 
 export default ChangeBackendUrl;
-
