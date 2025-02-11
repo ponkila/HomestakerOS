@@ -41,7 +41,6 @@ export const fetchNodeSSVKey = async (hostname: string): Promise<O.Option<string
     .then((res) => res.text())
     .then((data) => O.some(data))
     .catch((_) => O.none)
-    console.log("TÄÄLLÄ MENNNÄÄN!!!! ",pubKey)
   return pubKey
 }
 
