@@ -7,6 +7,7 @@ import useMetaMask from './Hooks/useMetaMask'
 import * as O from 'fp-ts/Option'
 import { Outlet, Link } from "react-router-dom";
 import { useParams, useLoaderData } from "react-router-dom";
+import { useBackend } from './Context/BackendContext';
 
 export const Schema = (flake: string) => {
   const [schema, setSchema] = useState<O.Option<Record<string, any>>>(O.none)
@@ -26,34 +27,49 @@ export type BlockResponse = {
   data: O.Option<Record<string, any>>;
 }
 
-export const Block = async (endpoint: string): Promise<O.Option<Record<string, any>>> => {
-  const block = await fetch(`${endpoint}/eth/v1/beacon/headers/head`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-  }).then((res) => res.json())
-    .then((data) => O.some(data))
-    .catch((_) => O.none)
-  return block
-}
+export const Block = async (endpoint: string, timeout: number): Promise<O.Option<Record<string, any>>> => {
+  const controller = new AbortController();
+  const signal = controller.signal;
 
-const Backend = () => {
-  const [status, setStatus] = useState<boolean>(false)
-
-  useEffect(() => {
-    fetch('http://localhost:8081/api', {
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(`${endpoint}/eth/v1/beacon/headers/head`, {
       method: 'GET',
       headers: {
-        'Access-Control-Allow-Origin': '*',
         Accept: 'application/json',
-        'Content-Type': 'application/json',
       },
-    }).then((res) => setStatus(res.ok))
-  }, [])
+      signal,
+    });
 
-  return status
-}
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return O.some(data);
+  } catch (_) {
+    return O.none
+  }
+};
+
+// const Backend = () => {
+//   const [status, setStatus] = useState<boolean>(false)
+
+//   useEffect(() => {
+//     fetch('http://localhost:8081/api', {
+//       method: 'GET',
+//       headers: {
+//         'Access-Control-Allow-Origin': '*',
+//         Accept: 'application/json',
+//         'Content-Type': 'application/json',
+//       },
+//     }).then((res) => setStatus(res.ok))
+//   }, [])
+
+//   return status
+// }
 
 export const TabsView = () => {
 
@@ -113,6 +129,7 @@ export const App = () => {
         <Spacer />
         <NewsletterForm />
       </Flex>
+
       <Box w="100%" mt={8} mb={8}>
         <Outlet />
       </Box>

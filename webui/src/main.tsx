@@ -13,6 +13,8 @@ import * as O from 'fp-ts/Option'
 import { ConfigurationForm } from './Components/ConfigurationForm.tsx'
 import NodeQuery from './Components/NodeQuery.tsx'
 import NodeList from './Components/NodeList.tsx'
+import { BackendProvider, useBackend } from "./Context/BackendContext";
+import ChangeBackendUrl from './Components/ChangeBackendUrl.tsx'
 
 const fetchNodes = async (flake: string) => {
   const res = await fetchHostnames(flake);
@@ -28,7 +30,7 @@ export type BlockResponse = {
 
 const fetchBlocks = async (nodes: any) => {
   const blocks = await Promise.all(nodes.map(async (n: any) => {
-    const data = await Block(n.consensus.lighthouse.endpoint)
+    const data = await Block(n.consensus.lighthouse.endpoint, 200)
     const res: BlockResponse = {
       host: n.localization.hostname,
       data: data,
@@ -41,11 +43,11 @@ const fetchBlocks = async (nodes: any) => {
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <BackendProvider><App /></BackendProvider>,
     children: [
       {
         index: true,
-        element: <FlakeSection />,
+        element: <div><ChangeBackendUrl /><FlakeSection /></div>,
       },
       {
         path: "/:owner/:repo",
@@ -134,7 +136,7 @@ const router = createBrowserRouter([
           },
         ],
       },
-      
+
     ],
   },
 ]);

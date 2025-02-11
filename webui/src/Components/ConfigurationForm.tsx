@@ -25,6 +25,8 @@ import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import * as jp from 'jsonpath'
 import { useLoaderData, useOutletContext } from "react-router-dom";
+import { useBackend } from "../Context/BackendContext";
+
 let uuid = () => self.crypto.randomUUID();
 
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
@@ -276,6 +278,7 @@ export const ConfigurationForm = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const backendUrl = useBackend()
     const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
@@ -329,7 +332,7 @@ export const ConfigurationForm = () => {
       }
     })
     console.log(JSON.stringify(result, null, 2))
-    fetch('http://localhost:8081/api/nixosConfig', {
+    fetch(`${backendUrl}/api/nixosConfig`, {
       method: 'POST',
       headers: {
         'Access-Control-Allow-Origin': '*',

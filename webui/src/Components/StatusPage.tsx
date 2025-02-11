@@ -18,7 +18,7 @@ export const StatusPage = (props: any) => {
     <AlertIcon />
     {loader.nodes.length} nodes loaded:
     {loader.nodes.map((v: Record<string, any>) => (
-      <details>
+      <details key={v.localization.hostname}>
         <summary>{v.localization.hostname}</summary>
         <code>{JSON.stringify(v)}</code>
       </details>
@@ -70,7 +70,7 @@ export const StatusPage = (props: any) => {
       (data) => <details><summary>{x.host}: {message}</summary><code>{JSON.stringify(data)}</code></details>,
     ))
     return (
-      <Alert status={status}>
+      <Alert status={status} key={x.host}>
         <AlertIcon />
         {body}
       </Alert>
