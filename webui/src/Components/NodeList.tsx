@@ -13,7 +13,6 @@ import {
   ModalCloseButton,
 } from '@chakra-ui/react'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
-import ConfigurationForm from './ConfigurationForm'
 
 const initialNodes: Node[] = []
 const initialEdges: Edge[] = []

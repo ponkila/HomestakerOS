@@ -71,7 +71,7 @@ export const TabsView = () => {
           <Link to={`/${owner}/${repo}/nixosConfigurations`}><Tab isDisabled={O.isNone(schema) ? true : false}>NixOS config</Tab></Link>
           <Link to={`/${owner}/${repo}/query`}><Tab>Query node</Tab></Link>
           <Link to={`/${owner}/${repo}/visualize`}><Tab>Nodes</Tab></Link>
-          <Tab>Register SSV operator</Tab>
+          <Link to={`/${owner}/${repo}/ssvform`}><Tab>Register SSV operator</Tab></Link>
         </TabList>
       </Tabs >
       <Outlet context={[flake, schema]} />

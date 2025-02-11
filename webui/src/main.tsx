@@ -5,9 +5,10 @@ import { App, TabsView, Block } from './App.tsx'
 import './index.css'
 import { createBrowserRouter, RouterProvider, json } from "react-router-dom";
 import { FlakeSection } from './Components/Flake.tsx'
+import RegisterSSVForm from './Components/RegisterSSVForm.tsx'
 import { StatusPage } from './Components/StatusPage.tsx'
-import { NodeInfo, NodeInfoProvider, fetchHostnames, fetchNodeBzImageStatus, fetchNodeInitrdStatus, fetchNodeKexecStatus, fetchNodeSSVKey } from './Context/NodeInfoContext'
-import { fetchNodeConfig } from './Context/NodeInfoContext'
+import { NodeInfo, NodeInfoProvider, fetchHostnames, fetchNodeBzImageStatus, fetchNodeInitrdStatus, fetchNodeKexecStatus, fetchNodeSSVKey } from './Context/NodeInfoContext.tsx'
+import { fetchNodeConfig } from './Context/NodeInfoContext.tsx'
 import * as O from 'fp-ts/Option'
 import { ConfigurationForm } from './Components/ConfigurationForm.tsx'
 import NodeQuery from './Components/NodeQuery.tsx'
@@ -105,8 +106,35 @@ const router = createBrowserRouter([
               return { newNodes: newNodes }
             },
           },
+          {
+            element: <NodeInfoProvider><RegisterSSVForm /></NodeInfoProvider>,
+            path: "/:owner/:repo/ssvform",
+            loader: async ({ params }) => {
+              const flake = `https://raw.githubusercontent.com/${params.owner}/${params.repo}/main`
+              const hosts = await fetchHostnames(flake)
+              let newNodes = hosts.map((hostname: string): NodeInfo => {
+                return {
+                  hostname,
+                  hasInitrd: false,
+                  hasBzImage: false,
+                  hasKexec: false,
+                  ssvKey: O.none,
+                  config: O.none,
+                }
+              })
+              for (const node of newNodes) {
+                node.hasInitrd = await fetchNodeInitrdStatus(node.hostname)
+                node.hasBzImage = await fetchNodeBzImageStatus(node.hostname)
+                node.hasKexec = await fetchNodeKexecStatus(node.hostname)
+                node.ssvKey = await fetchNodeSSVKey(node.hostname)
+                node.config = await fetchNodeConfig(flake, node.hostname)
+              }
+              return { newNodes: newNodes }
+            },
+          },
         ],
       },
+      
     ],
   },
 ]);
