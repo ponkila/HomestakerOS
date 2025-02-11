@@ -3,10 +3,12 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.nixos.org"
+      "https://devenv.cachix.org"
       "https://nix-community.cachix.org"
     ];
     extra-trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
   };
@@ -15,8 +17,7 @@
     devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs.url = "github:NixOS/nixpkgs/24.05";
-    ponkila.inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
@@ -94,11 +95,12 @@
             default = {
               packages = with pkgs; [
                 init-ssv
-                nodejs
                 jq
+                nodePackages.eslint
+                nodejs
+                typescript
                 yarn
                 yarn2nix
-                nodePackages.eslint
               ];
               scripts.server.exec = ''
                 nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
@@ -190,7 +192,7 @@
                           nixpkgs.overlays = [
                             self.overlays.default
                           ];
-                          system.stateVersion = "24.05";
+                          system.stateVersion = "24.11";
                         }
                       ];
                     };
