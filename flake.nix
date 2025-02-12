@@ -58,7 +58,7 @@
             "ssvnode" = inputs.ethereum-nix.packages.${system}.ssvnode;
             "teku" = inputs.ethereum-nix.packages.${system}.teku;
             # Main
-            "backend" = pkgs.callPackage ./packages/backend { };
+            "backend" = pkgs.callPackage ./packages/backend { inherit json2nix; };
             "frontend" = pkgs.callPackage ./webui { };
             "default" = packages.backend;
           };
