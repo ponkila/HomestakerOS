@@ -29,6 +29,21 @@ async fn nixos_config(config: web::Json<Value>, output_dir: web::Data<String>) -
         }));
     };
 
+    // Ensure that ssh.authorizedKeys is provided and contains at least one entry.
+    if let Some(keys) = config.pointer("/ssh/authorizedKeys").and_then(|v| v.as_array()) {
+        if keys.is_empty() {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "status": "error",
+                "message": "ssh.authorizedKeys must contain at least one entry"
+            }));
+        }
+    } else {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "status": "error",
+            "message": "Missing ssh.authorizedKeys"
+        }));
+    }
+
     // Convert the received JSON into a string.
     let json_str = match serde_json::to_string(&config.into_inner()) {
         Ok(json) => json,

@@ -35,7 +35,6 @@
                       inputs.homestakeros.nixosModules.homestakeros
                       ./nixosConfigurations/${hostname}
                       {
-                        users.allowNoPasswordLogin = true; # WARN: just for testing
                         system.stateVersion = "24.11";
                       }
                     ];
