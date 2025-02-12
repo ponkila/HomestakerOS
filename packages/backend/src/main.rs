@@ -13,7 +13,6 @@ use sha2::{Sha256, Digest};
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
-const FLAKE_LOCK: &str = include_str!("static/flake.lock");
 
 /// Application state.
 struct AppState {
@@ -153,13 +152,6 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "status": "error",
             "message": "Failed to write flake.nix"
-        }));
-    }
-    if let Err(e) = fs::write(format!("{}/flake.lock", output), FLAKE_LOCK) {
-        eprintln!("Failed to write flake.lock: {:?}", e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
-            "status": "error",
-            "message": "Failed to write flake.lock"
         }));
     }
 
