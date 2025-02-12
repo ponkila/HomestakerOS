@@ -34,14 +34,11 @@
 
       perSystem =
         { pkgs
-        , lib
-        , config
         , system
         , ...
         }:
         let
           packages = rec {
-            "buidl" = pkgs.callPackage ./packages/buidl { inherit json2nix update-json; };
             "init-ssv" = pkgs.callPackage ./packages/init-ssv { inherit ssvnode; };
             "json2nix" = pkgs.callPackage ./packages/json2nix { };
             "update-json" = pkgs.callPackage ./packages/update-json { };
@@ -102,12 +99,6 @@
                 yarn
                 yarn2nix
               ];
-              scripts.server.exec = ''
-                nix eval --no-warn-dirty --json .#schema | jq > webui/public/schema.json \
-                && yarn install && yarn build \
-                && nix run --no-warn-dirty .#update-json \
-                && nix run --no-warn-dirty .#
-              '';
               env = {
                 NIX_CONFIG = ''
                   accept-flake-config = true
@@ -122,7 +113,6 @@
 
                 Available commands:
 
-                  server    : Initialize and launch the web server
                   init-ssv  : Generate an SSV operator key pair
 
                 INFO
@@ -139,7 +129,6 @@
 
       flake =
         let
-          inherit (self) outputs;
 
           # Function to format module options
           parseOpts = options:
@@ -164,42 +153,6 @@
 
         in
         {
-          nixosConfigurations =
-            let
-              ls = builtins.readDir ./nixosConfigurations;
-              hostnames =
-                builtins.filter
-                  (name: builtins.hasAttr name ls && (ls.${name} == "directory"))
-                  (builtins.attrNames ls);
-            in
-            inputs.nixpkgs.lib.mkIf
-              (
-                builtins.pathExists ./nixosConfigurations
-              )
-              (
-                builtins.listToAttrs (map
-                  (hostname: {
-                    name = hostname;
-                    value = inputs.nixpkgs.lib.nixosSystem {
-                      system = "x86_64-linux";
-                      specialArgs = { inherit inputs outputs; };
-                      modules = [
-                        inputs.ponkila.nixosModules.base
-                        inputs.ponkila.nixosModules.kexecTree
-                        self.nixosModules.homestakeros
-                        ./nixosConfigurations/${hostname}
-                        {
-                          nixpkgs.overlays = [
-                            self.overlays.default
-                          ];
-                          system.stateVersion = "24.11";
-                        }
-                      ];
-                    };
-                  })
-                  hostnames)
-              );
-
           # Format modules
           nixosModules = {
             homestakeros.imports = [
