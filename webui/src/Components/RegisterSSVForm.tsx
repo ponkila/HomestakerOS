@@ -37,13 +37,7 @@ const RegisterSSVForm = () => {
           setIsLoading(false);
           setError('');
         })
-        .catch((err: Error) => {
-          console.log(err);
-          setError(err.message);
-          setIsLoading(false);
-        });
     } catch (err: any) {
-      console.log(err);
       setError(err.message);
       setIsLoading(false);
     }
