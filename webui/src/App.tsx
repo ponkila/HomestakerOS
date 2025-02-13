@@ -7,7 +7,6 @@ import useMetaMask from './Hooks/useMetaMask'
 import * as O from 'fp-ts/Option'
 import { Outlet, Link } from "react-router-dom";
 import { useParams, useLoaderData } from "react-router-dom";
-import { useBackend } from './Context/BackendContext';
 
 export const Schema = (flake: string) => {
   const [schema, setSchema] = useState<O.Option<Record<string, any>>>(O.none)
@@ -82,7 +81,7 @@ export const TabsView = () => {
   return (
     <>
       <Tabs variant="enclosed">
-        <TabList>
+        <TabList mb={5}>
           <Link to={`/${owner}/${repo}`}><Tab>Status</Tab></Link>
           <Link to={`/${owner}/${repo}/nixosConfigurations`}><Tab isDisabled={O.isNone(schema) ? true : false}>NixOS config</Tab></Link>
           <Link to={`/${owner}/${repo}/query`}><Tab>Query node</Tab></Link>
@@ -123,9 +122,11 @@ export const App = () => {
         )}
       </Box>
       <Flex mb={8} mt={8}>
-        <Heading as="h1" size="xl" mb={4}>
-          🪄 HomestakerOS
-        </Heading>
+        <a href="/">
+          <Heading as="h1" size="xl" mb={4} cursor="pointer">
+            🪄 HomestakerOS
+          </Heading>
+        </a>
         <Spacer />
         <NewsletterForm />
       </Flex>

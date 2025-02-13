@@ -11,17 +11,18 @@ const ChangeBackendUrl = () => {
     };
 
     const handleSave = () => {
-        setBackendUrl(newUrl); // This will update the backend URL in memory and localStorage
+        setBackendUrl(newUrl); 
     };
 
     return (
-        <FormControl id="backend-url">
+        <FormControl id="backend-url" mb={5}>
             <FormLabel>Backend URL</FormLabel>
             <Input
                 type="url"
                 placeholder="Enter backend URL"
                 value={newUrl}
                 onChange={handleChange}
+                mb={2}
             />
             <Button colorScheme='teal' type='submit' onClick={handleSave}>Save</Button>
         </FormControl>
@@ -29,3 +30,4 @@ const ChangeBackendUrl = () => {
 };
 
 export default ChangeBackendUrl;
+

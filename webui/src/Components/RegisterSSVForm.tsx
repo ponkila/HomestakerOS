@@ -4,8 +4,6 @@ import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
-import * as O from 'fp-ts/Option'
-import { getOrElse, isSome } from 'fp-ts/Option'
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
@@ -15,31 +13,41 @@ const RegisterSSVForm = () => {
   const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
-    e.preventDefault()
-    setIsLoading(true)
-    console.log(ethers)
-    const coder = new ethers.utils.AbiCoder()
-    const pk = e.target.publicKey.value
-    const fee = Number(e.target.fee.value)
-    console.log(pk, fee)
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = await provider.getSigner()
-    const abi = await (await fetch('/SSVNetwork.json')).json()
-    //const contract = new ethers.Contract("0x8dB45282d7C4559fd093C26f677B3837a5598914", abi, provider) //views
-    const contract = new ethers.Contract('0xAfdb141Dd99b5a101065f40e3D7636262dce65b3', abi, signer)
-    contract
-      .registerOperator(coder.encode(['string'], [pk]), fee, { gasLimit: 10000000 })
-      .then((tx: any) => {
-        console.log(tx)
-        setIsLoading(false)
-        setError('')
-      })
-      .catch((err: Error) => {
-        console.log(err)
-        setError(err.message)
-        setIsLoading(false)
-      })
-  }
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const coder = new ethers.utils.AbiCoder();
+
+      const pk = e.target.publicKey.value;
+      const fee = Number(e.target.fee.value);
+      const setPrivate = e.target.isPrivate.checked;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      const abi = await (await fetch('/SSVNetwork.json')).json();
+      const contract = new ethers.Contract("0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA", abi, signer);
+      const gasEstimate = await contract.estimateGas.registerOperator(coder.encode(['string'], [pk]), fee, setPrivate);
+      const pkDecoded = ethers.utils.base64.decode(pk);
+      const publicKeyBytes = ethers.utils.arrayify(pkDecoded);
+      contract
+        .registerOperator(publicKeyBytes, fee, setPrivate, { gasLimit: gasEstimate })
+        .then((tx: any) => {
+          console.log(tx);
+          setIsLoading(false);
+          setError('');
+        })
+        .catch((err: Error) => {
+          console.log(err);
+          setError(err.message);
+          setIsLoading(false);
+        });
+    } catch (err: any) {
+      console.log(err);
+      setError(err.message);
+      setIsLoading(false);
+    }
+  };
 
   const onHostnameChange = (e: any) => {
     if (e.target.value) {
@@ -90,15 +98,18 @@ const RegisterSSVForm = () => {
               <FormControl my={4} id="publicKey">
                 <FormLabel>Public key</FormLabel>
                 <Input
-                  disabled
-                  value={getOrElse(() => "No public key available")(node?.ssvKey ?? O.none)}
+                // value={getOrElse(() => "No public key available")(node?.ssvKey ?? O.none)}
                 />
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
                 <Input placeholder="1.0" />
               </FormControl>
-              <Button w="100%" type="submit" isDisabled={!isSome(node?.ssvKey ?? O.none)}>
+              <FormControl my={4} id="isPrivate">
+                <FormLabel>Private Operator</FormLabel>
+                <input type="checkbox" name="isPrivate" />
+              </FormControl>
+              <Button w="100%" type="submit">
                 Register
               </Button>
 

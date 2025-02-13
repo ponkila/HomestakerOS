@@ -34,7 +34,7 @@ export const FlakeSection = () => {
         <FormControl>
           {radio()}
           {input}
-          <Button colorScheme='teal' type='submit'>Submit</Button>
+          <Button mt={2} colorScheme='teal' type='submit'>Submit</Button>
         </FormControl>
       </fieldset>
     </form>

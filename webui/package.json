@@ -23,6 +23,7 @@
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
         "@metamask/detect-provider": "^2.0.0",
+        "@ssv-labs/ssv-sdk": "^0.0.3",
         "ethers": "<6",
         "fp-ts": "^2.16.1",
         "framer-motion": "^10.15.1",

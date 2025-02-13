@@ -83,7 +83,7 @@ const ListOfControl = (props: ListOfControlProps) => {
       <FormControl id={name}>
         <DescriptionFormLabel label={name} description={description} />
         {list.map((item, i) => (
-          <Flex mb={2}>
+          <Flex key={i} mb={2}>
             <Input
               name={`${nodeKey}[${i}]`}
               value={item}
@@ -131,7 +131,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
     <FormSection name={name}>
       <FormControl>
         {list.map((item, i) => (
-          <FormSection name={`${item}`}>
+          <FormSection key={i} name={`${item}`}>
             <Flex mb={2} direction="column">
               <FormControl mr={4} mb={4} isRequired>
                 <FormLabel>name</FormLabel>
@@ -144,7 +144,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 />
               </FormControl>
               {Object.entries(fields).map(([key, value]) => (
-                <FormControl mr={4} mb={4}>
+                <FormControl key={value} mr={4} mb={4}>
                   <FormLabel>{key}</FormLabel>
                   {typeof value == 'boolean' ? (
                     <CustomCheckbox name={jp.stringify([...keys, item, key])} defaultChecked={value || false} />
@@ -352,7 +352,7 @@ export const ConfigurationForm = () => {
     joined.push(...props.nodes)
 
     const options = [<option value="0">New node template</option>]
-    const extOpt = props.nodes.map((v: any, i: number) => (<option value={i + (options.length)}>{v.localization.hostname}</option>))
+    const extOpt = props.nodes.map((v: any, i: number) => (<option key={i} value={i + (options.length)}>{v.localization.hostname}</option>))
     const jopt = new Array()
     jopt.push(...options)
     jopt.push(...extOpt)
@@ -378,7 +378,11 @@ export const ConfigurationForm = () => {
           </OrderedList>
         </Box>
         <Select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
-          {jopt}
+          {jopt.map((option, index) => (
+            <option key={index} value={option.value}>
+              {option.label}
+            </option>
+          ))}
         </Select>
         {processNode([root], structuredClone(props.schema), chosenJSON)}
         <Button w="100%" type="submit">
