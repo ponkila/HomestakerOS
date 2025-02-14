@@ -65,22 +65,22 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     };
 
     // Use the provided output directory.
-    let output = data.temp_dir.path().to_str().unwrap();
+    let output_dir = data.temp_dir.path();
 
     // Create a base directory for the nix files.
-    let nix_config_dir = format!("{}/nixConfig", output);
+    let nix_config_dir = output_dir.join("nixConfig");
     if let Err(e) = fs::create_dir_all(&nix_config_dir) {
-        eprintln!("Failed to create nixConfig directory '{}': {:?}", nix_config_dir, e);
+        eprintln!("Failed to create nixConfig directory '{}': {:?}", nix_config_dir.display(), e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "status": "error",
-            "message": format!("Failed to create directory '{}'", nix_config_dir)
+            "message": format!("Failed to create directory '{}'", nix_config_dir.display())
         }));
     }
 
     // Create a hostname-specific directory.
-    let hostname_dir = format!("{}/nixosConfigurations/{}", nix_config_dir, hostname);
+    let hostname_dir = nix_config_dir.join("nixosConfigurations").join(&hostname);
     if let Err(e) = fs::create_dir_all(&hostname_dir) {
-        eprintln!("Failed to create hostname directory '{}': {:?}", hostname_dir, e);
+        eprintln!("Failed to create hostname directory '{}': {:?}", hostname_dir.display(), e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "status": "error",
             "message": format!("Failed to create directory for hostname '{}'", hostname)
@@ -96,12 +96,23 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
 
     let child = match json2nix_output {
         Ok(mut child) => {
-            if let Err(e) = child.stdin.as_mut().unwrap().write_all(json_str.as_bytes()) {
-                eprintln!("Failed to write to stdin of json2nix: {:?}", e);
-                return HttpResponse::InternalServerError().json(serde_json::json!({
-                    "status": "error",
-                    "message": "Failed to pipe JSON to json2nix"
-                }));
+            match child.stdin.as_mut() {
+                Some(stdin) => {
+                    if let Err(e) = stdin.write_all(json_str.as_bytes()) {
+                        eprintln!("Failed to write to stdin of json2nix: {:?}", e);
+                        return HttpResponse::InternalServerError().json(serde_json::json!({
+                            "status": "error",
+                            "message": "Failed to pipe JSON to json2nix"
+                        }));
+                    }
+                }
+                None => {
+                    eprintln!("Failed to open stdin for json2nix");
+                    return HttpResponse::InternalServerError().json(serde_json::json!({
+                        "status": "error",
+                        "message": "Failed to open stdin for json2nix"
+                    }));
+                }
             }
             child.wait_with_output()
         }
@@ -137,7 +148,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
 
     // Prepend boilerplate and write default.nix.
     let nix_boilerplate = format!("{{ pkgs, lib, config, ... }}: {{ homestakeros = {}; }}", stdout);
-    let default_nix_path = format!("{}/default.nix", hostname_dir);
+    let default_nix_path = hostname_dir.join("default.nix");
     if let Err(e) = fs::write(&default_nix_path, nix_boilerplate.as_bytes()) {
         eprintln!("Failed to write default.nix: {:?}", e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -147,7 +158,8 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     }
 
     // Write the embedded flake file.
-    if let Err(e) = fs::write(format!("{}/flake.nix", nix_config_dir), FLAKE_NIX) {
+    let flake_nix_path = nix_config_dir.join("flake.nix");
+    if let Err(e) = fs::write(&flake_nix_path, FLAKE_NIX) {
         eprintln!("Failed to write flake.nix: {:?}", e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "status": "error",
@@ -156,8 +168,9 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     }
 
     // Run nix build.
-    let build_arg = format!("path:{}#nixosConfigurations.{}.config.system.build.kexecTree", nix_config_dir, hostname);
-    let out_link = format!("{}/kexecTree", output);
+    let nix_config_dir_str = format!("{}", nix_config_dir.display());
+    let build_arg = format!("path:{}#nixosConfigurations.{}.config.system.build.kexecTree", nix_config_dir_str, hostname);
+    let out_link = output_dir.join("kexecTree");
     let build_output = StdCommand::new("nix")
         .arg("build")
         .arg(build_arg)
@@ -192,7 +205,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     println!("Nix build stderr: {}", build_stderr);
 
     // Create a tarball for the nixConfig directory.
-    let nixconfig_tar = format!("{}/nixConfig.tar", output);
+    let nixconfig_tar = output_dir.join("nixConfig.tar");
     if let Err(e) = create_tarball(&nix_config_dir, "nixConfig", &nixconfig_tar) {
         eprintln!("Failed to create nixConfig.tar: {:?}", e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -213,8 +226,8 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         }
     };
 
-    let kexec_tar = format!("{}/kexecTree.tar", output);
-    if let Err(e) = create_tarball(kexec_tree_real.to_str().unwrap(), "kexecTree", &kexec_tar) {
+    let kexec_tar = output_dir.join("kexecTree.tar");
+    if let Err(e) = create_tarball(&kexec_tree_real, "kexecTree", &kexec_tar) {
         eprintln!("Failed to create kexecTree.tar: {:?}", e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
             "status": "error",
@@ -255,7 +268,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
 
     // Write the hashes to verify.txt.
     let verify_txt = format!("nixConfig.tar {}\nkexecTree.tar {}\n", nix_hash, kexec_hash);
-    let verify_path = format!("{}/verify.txt", output);
+    let verify_path = output_dir.join("verify.txt");
     if let Err(e) = fs::write(&verify_path, verify_txt.as_bytes()) {
         eprintln!("Failed to write verify.txt: {:?}", e);
         return HttpResponse::InternalServerError().json(serde_json::json!({
@@ -278,7 +291,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
 }
 
 /// Create a tar archive from a source directory.
-fn create_tarball<P: AsRef<Path>>(source: P, dir_name: &str, tar_path: P) -> std::io::Result<()> {
+fn create_tarball<P: AsRef<Path>, Q: AsRef<Path>>(source: P, dir_name: &str, tar_path: Q) -> std::io::Result<()> {
     let tar_file = fs::File::create(tar_path)?;
     let mut builder = Builder::new(tar_file);
     builder.append_dir_all(dir_name, source)?;
@@ -341,7 +354,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(health_check))
             .route("/nixosConfig", web::post().to(nixos_config))
             .service(
-                Files::new("/result", app_state.temp_dir.path().to_str().unwrap())
+                Files::new("/result", app_state.temp_dir.path())
                     .prefer_utf8(true)
                     .show_files_listing(),
             )
