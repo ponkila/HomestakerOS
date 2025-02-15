@@ -2,7 +2,7 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use actix_files::Files;
 use actix_cors::Cors;
 use clap::{Command, Arg};
-use serde_json::Value;
+use serde_json::json;
 use std::process::{Command as StdCommand, Stdio};
 use std::path::Path;
 use std::io::{Write, Read, BufReader};
@@ -10,6 +10,9 @@ use std::fs;
 use tempfile::TempDir;
 use tar::Builder;
 use sha2::{Sha256, Digest};
+
+mod schema_types;
+use schema_types::Config;
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
@@ -21,45 +24,20 @@ struct AppState {
 }
 
 async fn health_check() -> impl Responder {
-    HttpResponse::Ok().json(serde_json::json!({ "status": "ok" }))
+    HttpResponse::Ok().json(json!({ "status": "ok" }))
 }
 
-/// Accepts arbitrary JSON (for now), and then processes it.
-async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> impl Responder {
+/// Accepts strongly typed JSON and then processes it.
+async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> impl Responder {
 
-    // Extract the hostname using a JSON pointer.
-    let hostname = if let Some(host) = config.pointer("/localization/hostname").and_then(|v| v.as_str()) {
-        host.to_string()
-    } else {
-        return HttpResponse::BadRequest().json(serde_json::json!({
-            "status": "error",
-            "message": "Missing localization.hostname"
-        }));
-    };
-
-    // Ensure that ssh.authorizedKeys is provided and contains at least one entry.
-    if let Some(keys) = config.pointer("/ssh/authorizedKeys").and_then(|v| v.as_array()) {
-        if keys.is_empty() {
-            return HttpResponse::BadRequest().json(serde_json::json!({
-                "status": "error",
-                "message": "ssh.authorizedKeys must contain at least one entry"
-            }));
-        }
-    } else {
-        return HttpResponse::BadRequest().json(serde_json::json!({
-            "status": "error",
-            "message": "Missing ssh.authorizedKeys"
-        }));
-    }
-
-    // Convert the received JSON into a string.
-    let json_str = match serde_json::to_string(&config.into_inner()) {
-        Ok(json) => json,
+    // Serialize the typed config into a JSON string.
+    let json_str = match serde_json::to_string(&*config) {
+        Ok(s) => s,
         Err(e) => {
             eprintln!("JSON Serialization Error: {:?}", e);
-            return HttpResponse::BadRequest().json(serde_json::json!({
+            return HttpResponse::BadRequest().json(json!({
                 "status": "error",
-                "message": "Invalid JSON"
+                "message": e.to_string()
             }));
         }
     };
@@ -71,17 +49,18 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let nix_config_dir = output_dir.join("nixConfig");
     if let Err(e) = fs::create_dir_all(&nix_config_dir) {
         eprintln!("Failed to create nixConfig directory '{}': {:?}", nix_config_dir.display(), e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": format!("Failed to create directory '{}'", nix_config_dir.display())
         }));
     }
 
     // Create a hostname-specific directory.
+    let hostname = config.localization.hostname.clone();
     let hostname_dir = nix_config_dir.join("nixosConfigurations").join(&hostname);
     if let Err(e) = fs::create_dir_all(&hostname_dir) {
         eprintln!("Failed to create hostname directory '{}': {:?}", hostname_dir.display(), e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": format!("Failed to create directory for hostname '{}'", hostname)
         }));
@@ -100,7 +79,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
                 Some(stdin) => {
                     if let Err(e) = stdin.write_all(json_str.as_bytes()) {
                         eprintln!("Failed to write to stdin of json2nix: {:?}", e);
-                        return HttpResponse::InternalServerError().json(serde_json::json!({
+                        return HttpResponse::InternalServerError().json(json!({
                             "status": "error",
                             "message": "Failed to pipe JSON to json2nix"
                         }));
@@ -108,7 +87,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
                 }
                 None => {
                     eprintln!("Failed to open stdin for json2nix");
-                    return HttpResponse::InternalServerError().json(serde_json::json!({
+                    return HttpResponse::InternalServerError().json(json!({
                         "status": "error",
                         "message": "Failed to open stdin for json2nix"
                     }));
@@ -118,7 +97,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         }
         Err(e) => {
             eprintln!("Failed to spawn json2nix process: {:?}", e);
-            return HttpResponse::InternalServerError().json(serde_json::json!({
+            return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to spawn json2nix process"
             }));
@@ -129,7 +108,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         Ok(output) => output,
         Err(e) => {
             eprintln!("Command execution failed: {:?}", e);
-            return HttpResponse::InternalServerError().json(serde_json::json!({
+            return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to execute json2nix"
             }));
@@ -140,7 +119,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let stderr = String::from_utf8_lossy(&output_child.stderr);
 
     if !output_child.status.success() {
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": stderr
         }));
@@ -151,7 +130,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let default_nix_path = hostname_dir.join("default.nix");
     if let Err(e) = fs::write(&default_nix_path, nix_boilerplate.as_bytes()) {
         eprintln!("Failed to write default.nix: {:?}", e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": "Failed to write default.nix file"
         }));
@@ -161,7 +140,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let flake_nix_path = nix_config_dir.join("flake.nix");
     if let Err(e) = fs::write(&flake_nix_path, FLAKE_NIX) {
         eprintln!("Failed to write flake.nix: {:?}", e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": "Failed to write flake.nix"
         }));
@@ -184,7 +163,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         Ok(output) => output,
         Err(e) => {
             eprintln!("Failed to execute nix build: {:?}", e);
-            return HttpResponse::InternalServerError().json(serde_json::json!({
+            return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to execute nix build"
             }));
@@ -195,7 +174,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let build_stderr = String::from_utf8_lossy(&build_output.stderr);
 
     if !build_output.status.success() {
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": build_stderr
         }));
@@ -208,7 +187,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let nixconfig_tar = output_dir.join("nixConfig.tar");
     if let Err(e) = create_tarball(&nix_config_dir, "nixConfig", &nixconfig_tar) {
         eprintln!("Failed to create nixConfig.tar: {:?}", e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": "Failed to create nixConfig.tar"
         }));
@@ -219,7 +198,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         Ok(p) => p,
         Err(e) => {
             eprintln!("Failed to resolve kexecTree symlink: {:?}", e);
-            return HttpResponse::InternalServerError().json(serde_json::json!({
+            return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to resolve kexecTree"
             }));
@@ -229,7 +208,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let kexec_tar = output_dir.join("kexecTree.tar");
     if let Err(e) = create_tarball(&kexec_tree_real, "kexecTree", &kexec_tar) {
         eprintln!("Failed to create kexecTree.tar: {:?}", e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": "Failed to create kexecTree.tar"
         }));
@@ -248,7 +227,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         Ok(h) => h,
         Err(e) => {
             eprintln!("Failed to compute SHA256 for nixConfig.tar: {:?}", e);
-            return HttpResponse::InternalServerError().json(serde_json::json!({
+            return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to compute SHA256 for nixConfig.tar"
             }));
@@ -259,7 +238,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         Ok(h) => h,
         Err(e) => {
             eprintln!("Failed to compute SHA256 for kexecTree.tar: {:?}", e);
-            return HttpResponse::InternalServerError().json(serde_json::json!({
+            return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
                 "message": "Failed to compute SHA256 for kexecTree.tar"
             }));
@@ -271,7 +250,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
     let verify_path = output_dir.join("verify.txt");
     if let Err(e) = fs::write(&verify_path, verify_txt.as_bytes()) {
         eprintln!("Failed to write verify.txt: {:?}", e);
-        return HttpResponse::InternalServerError().json(serde_json::json!({
+        return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": "Failed to write verify.txt"
         }));
@@ -284,7 +263,7 @@ async fn nixos_config(config: web::Json<Value>, data: web::Data<AppState>) -> im
         format!("{}/result/{}", data.base_url, "verify.txt"),
     ];
 
-    HttpResponse::Ok().json(serde_json::json!({
+    HttpResponse::Ok().json(json!({
         "download_links": download_links,
         "status": "ok"
     }))
@@ -350,6 +329,26 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
+            // Custom JSON error handler that refactors the original error message
+            .app_data(web::JsonConfig::default().error_handler(|err, _req| {
+                let err_str = err.to_string();
+                // Truncate at " at line"
+                let truncated = if let Some(pos) = err_str.find(" at line") {
+                    &err_str[..pos]
+                } else {
+                    &err_str
+                };
+                // Remove the "Json deserialize error:" prefix if present
+                let cleaned = truncated.strip_prefix("Json deserialize error: ").unwrap_or(truncated);
+                actix_web::error::InternalError::from_response(
+                    err,
+                    HttpResponse::BadRequest().json(json!({
+                        "status": "error",
+                        "message": cleaned,
+                    }))
+                )
+                .into()
+            }))
             .wrap(Cors::permissive())
             .route("/", web::get().to(health_check))
             .route("/nixosConfig", web::post().to(nixos_config))

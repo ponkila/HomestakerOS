@@ -339,6 +339,7 @@ dependencies = [
  "actix-files",
  "actix-web",
  "clap",
+ "serde",
  "serde_json",
  "sha2",
  "tar",
