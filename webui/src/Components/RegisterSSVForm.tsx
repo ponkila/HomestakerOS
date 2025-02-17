@@ -5,6 +5,11 @@ import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
 
+const enum ContractAddresses {
+  Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
+  Mainnet = "0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1",
+}
+
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
@@ -26,7 +31,7 @@ const RegisterSSVForm = () => {
       const signer = provider.getSigner();
 
       const abi = await (await fetch('/SSVNetwork.json')).json();
-      const contract = new ethers.Contract("0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA", abi, signer);
+      const contract = new ethers.Contract(ContractAddresses.Testnet, abi, signer);
       const gasEstimate = await contract.estimateGas.registerOperator(coder.encode(['string'], [pk]), fee, setPrivate);
       const pkDecoded = ethers.utils.base64.decode(pk);
       const publicKeyBytes = ethers.utils.arrayify(pkDecoded);
@@ -91,9 +96,7 @@ const RegisterSSVForm = () => {
               </FormControl>
               <FormControl my={4} id="publicKey">
                 <FormLabel>Public key</FormLabel>
-                <Input
-                // value={getOrElse(() => "No public key available")(node?.ssvKey ?? O.none)}
-                />
+                <Input />
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
