@@ -16,6 +16,7 @@ import NodeList from './Components/NodeList.tsx'
 import { BackendProvider, useBackend } from "./Context/BackendContext";
 import ChangeBackendUrl from './Components/ChangeBackendUrl.tsx'
 import { useEffect, useState } from 'react'
+import ErrorBoundary from './Components/ErrorBoundary.tsx'
 const fetchNodes = async (flake: string) => {
   const res = await fetchHostnames(flake);
   const nm = await Promise.all(res.map(async (v, _) => await fetchNodeConfig(flake, v)))
@@ -59,6 +60,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <BackendProvider><App /></BackendProvider>,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
