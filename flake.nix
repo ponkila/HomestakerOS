@@ -158,6 +158,10 @@
             homestakeros.imports = [
               ./nixosModules/homestakeros
             ];
+            backend = {
+              imports = [ ./nixosModules/backend ];
+              nixpkgs.overlays = [ self.overlays.default ];
+            };
           };
           schema = self.exports.homestakeros;
 
