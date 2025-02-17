@@ -10,7 +10,6 @@ import { BlockResponse } from '../App'
 import { useLoaderData, useOutletContext } from "react-router-dom";
 
 export const StatusPage = (props: any) => {
-  console.log(props.backend());
   const loader: any = useLoaderData();
   const [_, s]: any = useOutletContext();
 
