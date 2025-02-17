@@ -5,3 +5,8 @@ pipe
 private
 .devenv
 .pre-commit-config.yaml
+debug/
+target/
+**/*.rs.bk
+*.pdb
+file-server
