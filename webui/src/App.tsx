@@ -53,22 +53,7 @@ export const Block = async (endpoint: string, timeout: number): Promise<O.Option
   }
 };
 
-// const Backend = () => {
-//   const [status, setStatus] = useState<boolean>(false)
 
-//   useEffect(() => {
-//     fetch('http://localhost:8081/api', {
-//       method: 'GET',
-//       headers: {
-//         'Access-Control-Allow-Origin': '*',
-//         Accept: 'application/json',
-//         'Content-Type': 'application/json',
-//       },
-//     }).then((res) => setStatus(res.ok))
-//   }, [])
-
-//   return status
-// }
 
 export const TabsView = () => {
 

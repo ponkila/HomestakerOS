@@ -9,7 +9,7 @@ const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [node, setNode] = useState<NodeInfo | null>(null)
+  const [_, setNode] = useState<NodeInfo | null>(null)
   const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
