@@ -13,7 +13,7 @@ buildNpmPackage {
 
   # The code sources for the package
   src = ./.;
-  npmDepsHash = "sha256-n2yxxk7ww6gClyHa2tx8FaFwYHPlTT1Hy2Cwsfy/430=";
+  npmDepsHash = "sha256-jFIlfKrIGJolkjmYoleQ1nbmOgG246uMjbehAsZUf+c=";
 
   npmBuild = "npm run build";
 
@@ -22,4 +22,6 @@ buildNpmPackage {
     mkdir $out
     cp -r dist/* $out
   '';
+
+  makeCacheWritable = true;
 }

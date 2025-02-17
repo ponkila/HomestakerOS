@@ -26,34 +26,34 @@ export type BlockResponse = {
   data: O.Option<Record<string, any>>;
 }
 
-export const Block = async (endpoint: string): Promise<O.Option<Record<string, any>>> => {
-  const block = await fetch(`${endpoint}/eth/v1/beacon/headers/head`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-  }).then((res) => res.json())
-    .then((data) => O.some(data))
-    .catch((_) => O.none)
-  return block
-}
+export const Block = async (endpoint: string, timeout: number): Promise<O.Option<Record<string, any>>> => {
+  const controller = new AbortController();
+  const signal = controller.signal;
 
-const Backend = () => {
-  const [status, setStatus] = useState<boolean>(false)
-
-  useEffect(() => {
-    fetch('http://localhost:8081/api', {
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(`${endpoint}/eth/v1/beacon/headers/head`, {
       method: 'GET',
       headers: {
-        'Access-Control-Allow-Origin': '*',
         Accept: 'application/json',
-        'Content-Type': 'application/json',
       },
-    }).then((res) => setStatus(res.ok))
-  }, [])
+      signal,
+    });
 
-  return status
-}
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return O.some(data);
+  } catch (_) {
+    return O.none
+  }
+};
+
+
 
 export const TabsView = () => {
 
@@ -66,7 +66,7 @@ export const TabsView = () => {
   return (
     <>
       <Tabs variant="enclosed">
-        <TabList>
+        <TabList mb={5}>
           <Link to={`/${owner}/${repo}`}><Tab>Status</Tab></Link>
           <Link to={`/${owner}/${repo}/nixosConfigurations`}><Tab isDisabled={O.isNone(schema) ? true : false}>NixOS config</Tab></Link>
           <Link to={`/${owner}/${repo}/query`}><Tab>Query node</Tab></Link>
@@ -107,12 +107,15 @@ export const App = () => {
         )}
       </Box>
       <Flex mb={8} mt={8}>
-        <Heading as="h1" size="xl" mb={4}>
-          🪄 HomestakerOS
-        </Heading>
+        <a href="/">
+          <Heading as="h1" size="xl" mb={4} cursor="pointer">
+            🪄 HomestakerOS
+          </Heading>
+        </a>
         <Spacer />
         <NewsletterForm />
       </Flex>
+
       <Box w="100%" mt={8} mb={8}>
         <Outlet />
       </Box>

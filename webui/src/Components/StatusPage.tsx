@@ -10,7 +10,6 @@ import { BlockResponse } from '../App'
 import { useLoaderData, useOutletContext } from "react-router-dom";
 
 export const StatusPage = (props: any) => {
-
   const loader: any = useLoaderData();
   const [_, s]: any = useOutletContext();
 
@@ -18,7 +17,7 @@ export const StatusPage = (props: any) => {
     <AlertIcon />
     {loader.nodes.length} nodes loaded:
     {loader.nodes.map((v: Record<string, any>) => (
-      <details>
+      <details key={v.localization.hostname}>
         <summary>{v.localization.hostname}</summary>
         <code>{JSON.stringify(v)}</code>
       </details>
@@ -28,7 +27,7 @@ export const StatusPage = (props: any) => {
     No nodes
   </Alert>
 
-  const backend = props.backend ? <Alert status='success'>
+  const backend = props.backend() ? <Alert status='success'>
     <AlertIcon />
     Backend: ok, NixOS building enabled
   </Alert> : <Alert status='warning'>
@@ -70,7 +69,7 @@ export const StatusPage = (props: any) => {
       (data) => <details><summary>{x.host}: {message}</summary><code>{JSON.stringify(data)}</code></details>,
     ))
     return (
-      <Alert status={status}>
+      <Alert status={status} key={x.host}>
         <AlertIcon />
         {body}
       </Alert>
