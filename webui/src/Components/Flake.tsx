@@ -1,25 +1,26 @@
-import { Select } from '@chakra-ui/react'
-import { Radio, Button, RadioGroup } from '@chakra-ui/react'
-import { Input } from '@chakra-ui/react'
-import { FormControl } from '@chakra-ui/react'
+import { Select, Radio, Button, RadioGroup, Input, FormControl, HStack } from '@chakra-ui/react'
 import { useState } from 'react'
 
 export const FlakeSection = () => {
-
   const [source, setSource] = useState('0')
 
-  const radio = () => {
-    return (
-      <RadioGroup defaultValue="0" onChange={setSource}>
+  const radio = () => (
+    <RadioGroup defaultValue="0" onChange={setSource} pr={2}>
+      <HStack spacing={4}>  {/* Add spacing between radio buttons */}
         <Radio value="0">Flake</Radio>
         <Radio value="1">URI</Radio>
-      </RadioGroup>
-    )
-  }
+        <Radio value="2">Demo</Radio>
+      </HStack>
+    </RadioGroup>
+  );
 
-  const input = source == "0" ? <Select name="uri">
-    <option value="ponkila/homestaking-infra">ponkila/homestaking-infra</option>
-  </Select> : <Input name="uri" required type='text' />
+  const input = source === "0" ? (
+    <Select name="uri" mr={2}>
+      <option value="ponkila/homestaking-infra">ponkila/homestaking-infra</option>
+    </Select>
+  ) : source === "1" ? (
+    <Input name="uri" required type='text' />
+  ) : null
 
   const formatURI = (e: any) => {
     e.preventDefault();
@@ -34,7 +35,7 @@ export const FlakeSection = () => {
         <FormControl>
           {radio()}
           {input}
-          <Button mt={2} colorScheme='teal' type='submit'>Submit</Button>
+          <Button colorScheme='teal' type='submit' mt={2}>Submit</Button>
         </FormControl>
       </fieldset>
     </form>
