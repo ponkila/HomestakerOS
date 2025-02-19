@@ -330,7 +330,6 @@ export const ConfigurationForm = () => {
         jp.apply(result, key, () => value)
       }
     })
-    console.log("urli!!! " + backendUrl)
     console.log(JSON.stringify(result, null, 2))
     fetch(`${backendUrl}/api/nixosConfig`, {
       method: 'POST',
