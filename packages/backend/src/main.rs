@@ -10,9 +10,7 @@ use std::fs;
 use tempfile::TempDir;
 use tar::Builder;
 use sha2::{Sha256, Digest};
-
-mod schema_types;
-use schema_types::Config;
+use backend::schema_types::Config;
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
