@@ -13,7 +13,10 @@ import * as O from 'fp-ts/Option'
 import { ConfigurationForm } from './Components/ConfigurationForm.tsx'
 import NodeQuery from './Components/NodeQuery.tsx'
 import NodeList from './Components/NodeList.tsx'
-
+import { BackendProvider, useBackend } from "./Context/BackendContext";
+import ChangeBackendUrl from './Components/ChangeBackendUrl.tsx'
+import { useEffect, useState } from 'react'
+import ErrorBoundary from './Components/ErrorBoundary.tsx'
 const fetchNodes = async (flake: string) => {
   const res = await fetchHostnames(flake);
   const nm = await Promise.all(res.map(async (v, _) => await fetchNodeConfig(flake, v)))
@@ -28,7 +31,7 @@ export type BlockResponse = {
 
 const fetchBlocks = async (nodes: any) => {
   const blocks = await Promise.all(nodes.map(async (n: any) => {
-    const data = await Block(n.consensus.lighthouse.endpoint)
+    const data = await Block(n.consensus.lighthouse.endpoint, 200)
     const res: BlockResponse = {
       host: n.localization.hostname,
       data: data,
@@ -37,15 +40,31 @@ const fetchBlocks = async (nodes: any) => {
   }))
   return blocks
 }
+const Backend = () => {
+  const [status, setStatus] = useState<boolean>(false)
+  const backendUrl = useBackend()
+  useEffect(() => {
+    fetch(`${backendUrl}/api`, {
+      method: 'GET',
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    }).then((res) => setStatus(res.ok))
+  }, [])
+  return status
+}
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <BackendProvider><App /></BackendProvider>,
+    errorElement: <ErrorBoundary />,
     children: [
       {
         index: true,
-        element: <FlakeSection />,
+        element: <div><ChangeBackendUrl /><FlakeSection /></div>,
       },
       {
         path: "/:owner/:repo",
@@ -64,12 +83,12 @@ const router = createBrowserRouter([
               const flake = `https://raw.githubusercontent.com/${params.owner}/${params.repo}/main`
               const nodes = await fetchNodes(flake)
               const blocks = await fetchBlocks(nodes)
-              return { nodes: nodes, blocks: blocks }
+              return { nodes: nodes, blocks: blocks, backend: Backend }
             },
           },
           {
             path: "/:owner/:repo/nixosConfigurations",
-            element: <ConfigurationForm />,
+            element: <ConfigurationForm/>,
             loader: async ({ params }) => {
               const flake = `https://raw.githubusercontent.com/${params.owner}/${params.repo}/main`
               const nodes = await fetchNodes(flake)
@@ -134,7 +153,7 @@ const router = createBrowserRouter([
           },
         ],
       },
-      
+
     ],
   },
 ]);
