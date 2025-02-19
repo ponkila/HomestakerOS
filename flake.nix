@@ -98,6 +98,7 @@
                 typescript
                 yarn
                 yarn2nix
+                cargo
               ];
               env = {
                 NIX_CONFIG = ''
