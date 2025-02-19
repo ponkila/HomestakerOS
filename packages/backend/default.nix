@@ -21,6 +21,7 @@ rustPlatform.buildRustPackage rec {
     "^Cargo.lock$"
     "^example.toml$"
     "^src.*$"
+    "^tests.*$"
   ];
 
   cargoLock.lockFile = ./Cargo.lock;
