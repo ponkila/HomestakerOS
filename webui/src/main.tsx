@@ -78,12 +78,12 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <StatusPage backend={Backend} />,
+            element: <StatusPage />,
             loader: async ({ params }) => {
               const flake = `https://raw.githubusercontent.com/${params.owner}/${params.repo}/main`
               const nodes = await fetchNodes(flake)
               const blocks = await fetchBlocks(nodes)
-              return { nodes: nodes, blocks: blocks }
+              return { nodes: nodes, blocks: blocks, backend: Backend }
             },
           },
           {

@@ -276,9 +276,8 @@ export const ConfigurationForm = () => {
     return obj
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>, backendUrl : String) => {
     e.preventDefault()
-    const backendUrl = useBackend()
     const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
@@ -331,6 +330,7 @@ export const ConfigurationForm = () => {
         jp.apply(result, key, () => value)
       }
     })
+    console.log("urli!!! " + backendUrl)
     console.log(JSON.stringify(result, null, 2))
     fetch(`${backendUrl}/api/nixosConfig`, {
       method: 'POST',
@@ -346,6 +346,7 @@ export const ConfigurationForm = () => {
 
   const templates = () => {
     const [selectedTemplate, setSelectedTemplate] = useState("0");
+    const backend = useBackend()
 
     const joined = new Array()
     joined.push(props.schema)
@@ -362,7 +363,7 @@ export const ConfigurationForm = () => {
     const root = selectedTemplate == "0" ? "schema" : "nodes"
 
     return (
-      <form onSubmit={e => handleSubmit(e)}>
+      <form onSubmit={e => handleSubmit(e, backend.backendUrl)}>
         <Box borderWidth="1px" borderRadius="lg" p={4} mb={4}>
           <Heading as="h2" size="md" mb={4}>
             Configuration

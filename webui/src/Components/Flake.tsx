@@ -1,8 +1,9 @@
 import { Select, Radio, Button, RadioGroup, Input, FormControl, HStack } from '@chakra-ui/react'
 import { useState } from 'react'
-
+import { useBackend } from '../Context/BackendContext'
 export const FlakeSection = () => {
   const [source, setSource] = useState('0')
+  const { backendUrl } = useBackend();
 
   const radio = () => (
     <RadioGroup defaultValue="0" onChange={setSource} pr={2}>
@@ -26,8 +27,8 @@ export const FlakeSection = () => {
     e.preventDefault();
     const form = new FormData(e.target);
     const uri = form.get("uri");
-    window.location.replace("/" + uri);
-  }
+
+    window.location.replace(`/${uri}#backendUrl=${encodeURIComponent(backendUrl)}`);  }
 
   return (
     <form onSubmit={formatURI}>

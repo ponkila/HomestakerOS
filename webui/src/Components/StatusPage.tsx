@@ -9,7 +9,7 @@ import {
 import { BlockResponse } from '../App'
 import { useLoaderData, useOutletContext } from "react-router-dom";
 
-export const StatusPage = (props: any) => {
+export const StatusPage = () => {
   const loader: any = useLoaderData();
   const [_, s]: any = useOutletContext();
 
@@ -26,8 +26,8 @@ export const StatusPage = (props: any) => {
     <AlertIcon />
     No nodes
   </Alert>
-
-  const backend = props.backend() ? <Alert status='success'>
+  
+  const backend = loader.backend() ? <Alert status='success'>
     <AlertIcon />
     Backend: ok, NixOS building enabled
   </Alert> : <Alert status='warning'>
