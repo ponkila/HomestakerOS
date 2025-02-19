@@ -2,7 +2,7 @@ use serde_json::Error;
 use backend::schema_types::Config;
 
 #[test]
-fn invalid_json() {
+fn test_invalid_json() {
     // In this JSON, the "ssh.authorizedKeys" array is missing a closing bracket.
     let json_str = r#"
     {
@@ -22,7 +22,7 @@ fn invalid_json() {
 }
 
 #[test]
-fn invalid_types() {
+fn test_invalid_types() {
     // In this JSON, the "hostname" field is a number instead of a string.
     let json_str = r#"
     {
@@ -42,7 +42,7 @@ fn invalid_types() {
 }
 
 #[test]
-fn unknown_fields() {
+fn test_unknown_fields() {
     // This JSON contains an extra field "extra" in configuration root,
     // which should be rejected due to #[serde(deny_unknown_fields)].
     let json_str = r#"
@@ -66,7 +66,7 @@ fn unknown_fields() {
 }
 
 #[test]
-fn unknown_nested_fields() {
+fn test_unknown_nested_fields() {
     // This JSON contains an extra field "extra" in the localization block,
     // which should be rejected due to #[serde(deny_unknown_fields)].
     let json_str = r#"
@@ -89,7 +89,7 @@ fn unknown_nested_fields() {
 
 
 #[test]
-fn missing_required_fields() {
+fn test_missing_required_fields() {
     // The "ssh" field is required but missing in this JSON.
     let json_str = r#"
     {
@@ -106,7 +106,7 @@ fn missing_required_fields() {
 }
 
 #[test]
-fn missing_nested_required_fields() {
+fn test_missing_nested_required_fields() {
     // The "ssh.authorizedKeys" field is required but missing in this JSON.
     let json_str = r#"
     {
@@ -126,7 +126,7 @@ fn missing_nested_required_fields() {
 }
 
 #[test]
-fn valid_config() {
+fn test_valid_config() {
     // A minimal valid configuration containing the required fields.
     let json_str = r#"
     {
