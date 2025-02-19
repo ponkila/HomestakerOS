@@ -3,14 +3,11 @@ use actix_files::Files;
 use actix_cors::Cors;
 use clap::{Command, Arg};
 use serde_json::json;
-use std::process::{Command as StdCommand, Stdio};
-use std::path::Path;
-use std::io::{Write, Read, BufReader};
 use std::fs;
 use tempfile::TempDir;
-use tar::Builder;
-use sha2::{Sha256, Digest};
+
 use backend::schema_types::Config;
+use backend::{run_json2nix, write_default_nix, run_nix_build, create_tarball, compute_sha256};
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
@@ -64,69 +61,20 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }));
     }
 
-    // Run json2nix and pipe JSON data into its stdin.
-    let json2nix_output = StdCommand::new("json2nix")
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn();
-
-    let child = match json2nix_output {
-        Ok(mut child) => {
-            match child.stdin.as_mut() {
-                Some(stdin) => {
-                    if let Err(e) = stdin.write_all(json_str.as_bytes()) {
-                        eprintln!("Failed to write to stdin of json2nix: {:?}", e);
-                        return HttpResponse::InternalServerError().json(json!({
-                            "status": "error",
-                            "message": "Failed to pipe JSON to json2nix"
-                        }));
-                    }
-                }
-                None => {
-                    eprintln!("Failed to open stdin for json2nix");
-                    return HttpResponse::InternalServerError().json(json!({
-                        "status": "error",
-                        "message": "Failed to open stdin for json2nix"
-                    }));
-                }
-            }
-            child.wait_with_output()
-        }
-        Err(e) => {
-            eprintln!("Failed to spawn json2nix process: {:?}", e);
+    // Run json2nix.
+    let json2nix_output = match run_json2nix(&json_str) {
+        Ok(out) => out,
+        Err(err) => {
+            eprintln!("Failed to run json2nix: {}", err);
             return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
-                "message": "Failed to spawn json2nix process"
+                "message": err,
             }));
         }
     };
-
-    let output_child = match child {
-        Ok(output) => output,
-        Err(e) => {
-            eprintln!("Command execution failed: {:?}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to execute json2nix"
-            }));
-        }
-    };
-
-    let stdout = String::from_utf8_lossy(&output_child.stdout);
-    let stderr = String::from_utf8_lossy(&output_child.stderr);
-
-    if !output_child.status.success() {
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": stderr
-        }));
-    }
 
     // Prepend boilerplate and write default.nix.
-    let nix_boilerplate = format!("{{ pkgs, lib, config, ... }}: {{ homestakeros = {}; }}", stdout);
-    let default_nix_path = hostname_dir.join("default.nix");
-    if let Err(e) = fs::write(&default_nix_path, nix_boilerplate.as_bytes()) {
+    if let Err(e) = write_default_nix(&hostname_dir, &json2nix_output) {
         eprintln!("Failed to write default.nix: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
@@ -146,40 +94,17 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
 
     // Run nix build.
     let nix_config_dir_str = format!("{}", nix_config_dir.display());
-    let build_arg = format!("path:{}#nixosConfigurations.{}.config.system.build.kexecTree", nix_config_dir_str, hostname);
+    let _build_arg = format!("path:{}#nixosConfigurations.{}.config.system.build.kexecTree", nix_config_dir_str, hostname);
     let out_link = output_dir.join("kexecTree");
-    let build_output = StdCommand::new("nix")
-        .arg("build")
-        .arg(build_arg)
-        .arg("--out-link")
-        .arg(&out_link)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .output();
-
-    let build_output = match build_output {
-        Ok(output) => output,
-        Err(e) => {
-            eprintln!("Failed to execute nix build: {:?}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to execute nix build"
-            }));
-        }
-    };
-
-    let build_stdout = String::from_utf8_lossy(&build_output.stdout);
-    let build_stderr = String::from_utf8_lossy(&build_output.stderr);
-
-    if !build_output.status.success() {
+    if let Err(err) = run_nix_build(&nix_config_dir, &hostname, &out_link) {
+        eprintln!("Failed to run nix build: {}", err);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": build_stderr
+            "message": err,
         }));
     }
 
-    println!("Nix build stdout: {}", build_stdout);
-    println!("Nix build stderr: {}", build_stderr);
+    println!("Nix build completed.");
 
     // Create a tarball for the nixConfig directory.
     let nixconfig_tar = output_dir.join("nixConfig.tar");
@@ -265,29 +190,6 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         "download_links": download_links,
         "status": "ok"
     }))
-}
-
-/// Create a tar archive from a source directory.
-fn create_tarball<P: AsRef<Path>, Q: AsRef<Path>>(source: P, dir_name: &str, tar_path: Q) -> std::io::Result<()> {
-    let tar_file = fs::File::create(tar_path)?;
-    let mut builder = Builder::new(tar_file);
-    builder.append_dir_all(dir_name, source)?;
-    builder.finish()?;
-    Ok(())
-}
-
-/// Compute the SHA-256 hash of a file.
-fn compute_sha256<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
-    let file = fs::File::open(path)?;
-    let mut reader = BufReader::new(file);
-    let mut hasher = Sha256::new();
-    let mut buffer = [0u8; 1024];
-    loop {
-        let n = reader.read(&mut buffer)?;
-        if n == 0 { break; }
-        hasher.update(&buffer[..n]);
-    }
-    Ok(format!("{:x}", hasher.finalize()))
 }
 
 #[actix_web::main]
