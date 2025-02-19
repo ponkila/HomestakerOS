@@ -83,6 +83,7 @@
               nixpkgs-fmt.enable = true;
               deadnix.enable = true;
               statix.enable = true;
+              rustfmt.enable = true;
             };
             settings.global.excludes = [ "*/flake.nix" ];
           };
@@ -117,9 +118,13 @@
 
                 INFO
               '';
-              pre-commit.hooks = {
-                nixpkgs-fmt.enable = true;
-                shellcheck.enable = true;
+              pre-commit = {
+                hooks = {
+                  nixpkgs-fmt.enable = true;
+                  shellcheck.enable = true;
+                  rustfmt.enable = true;
+                };
+                settings.rust.cargoManifestPath = "./packages/backend/Cargo.toml";
               };
               # Workaround for https://github.com/cachix/devenv/issues/760
               containers = pkgs.lib.mkForce { };

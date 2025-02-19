@@ -1,13 +1,13 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
-use actix_files::Files;
 use actix_cors::Cors;
-use clap::{Command, Arg};
+use actix_files::Files;
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use clap::{Arg, Command};
 use serde_json::json;
 use std::fs;
 use tempfile::TempDir;
 
 use backend::schema_types::Config;
-use backend::{run_json2nix, write_default_nix, run_nix_build, create_tarball, compute_sha256};
+use backend::{compute_sha256, create_tarball, run_json2nix, run_nix_build, write_default_nix};
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
@@ -24,7 +24,6 @@ async fn health_check() -> impl Responder {
 
 /// Accepts strongly typed JSON and then processes it.
 async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> impl Responder {
-
     // Serialize the typed config into a JSON string.
     let json_str = match serde_json::to_string(&*config) {
         Ok(s) => s,
@@ -43,7 +42,11 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     // Create a base directory for the nix files.
     let nix_config_dir = output_dir.join("nixConfig");
     if let Err(e) = fs::create_dir_all(&nix_config_dir) {
-        eprintln!("Failed to create nixConfig directory '{}': {:?}", nix_config_dir.display(), e);
+        eprintln!(
+            "Failed to create nixConfig directory '{}': {:?}",
+            nix_config_dir.display(),
+            e
+        );
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": format!("Failed to create directory '{}'", nix_config_dir.display())
@@ -54,7 +57,11 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     let hostname = config.localization.hostname.clone();
     let hostname_dir = nix_config_dir.join("nixosConfigurations").join(&hostname);
     if let Err(e) = fs::create_dir_all(&hostname_dir) {
-        eprintln!("Failed to create hostname directory '{}': {:?}", hostname_dir.display(), e);
+        eprintln!(
+            "Failed to create hostname directory '{}': {:?}",
+            hostname_dir.display(),
+            e
+        );
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": format!("Failed to create directory for hostname '{}'", hostname)
@@ -94,7 +101,10 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
 
     // Run nix build.
     let nix_config_dir_str = format!("{}", nix_config_dir.display());
-    let _build_arg = format!("path:{}#nixosConfigurations.{}.config.system.build.kexecTree", nix_config_dir_str, hostname);
+    let _build_arg = format!(
+        "path:{}#nixosConfigurations.{}.config.system.build.kexecTree",
+        nix_config_dir_str, hostname
+    );
     let out_link = output_dir.join("kexecTree");
     if let Err(err) = run_nix_build(&nix_config_dir, &hostname, &out_link) {
         eprintln!("Failed to run nix build: {}", err);
@@ -239,13 +249,15 @@ async fn main() -> std::io::Result<()> {
                     &err_str
                 };
                 // Remove the "Json deserialize error:" prefix if present
-                let cleaned = truncated.strip_prefix("Json deserialize error: ").unwrap_or(truncated);
+                let cleaned = truncated
+                    .strip_prefix("Json deserialize error: ")
+                    .unwrap_or(truncated);
                 actix_web::error::InternalError::from_response(
                     err,
                     HttpResponse::BadRequest().json(json!({
                         "status": "error",
                         "message": cleaned,
-                    }))
+                    })),
                 )
                 .into()
             }))

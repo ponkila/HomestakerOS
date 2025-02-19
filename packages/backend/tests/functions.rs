@@ -3,7 +3,7 @@ use std::io::Write;
 use tempfile::{tempdir, NamedTempFile};
 
 // Import the helper functions from our library.
-use backend::{compute_sha256, create_tarball, run_json2nix, write_default_nix, run_nix_build};
+use backend::{compute_sha256, create_tarball, run_json2nix, run_nix_build, write_default_nix};
 
 #[test]
 fn test_compute_sha256() {
@@ -54,6 +54,9 @@ fn test_write_default_nix() {
     write_default_nix(&hostname_dir, json2nix_output).unwrap();
     let default_nix_path = hostname_dir.join("default.nix");
     let content = fs::read_to_string(default_nix_path).unwrap();
-    let expected = format!("{{ pkgs, lib, config, ... }}: {{ homestakeros = {}; }}", json2nix_output);
+    let expected = format!(
+        "{{ pkgs, lib, config, ... }}: {{ homestakeros = {}; }}",
+        json2nix_output
+    );
     assert_eq!(content, expected);
 }

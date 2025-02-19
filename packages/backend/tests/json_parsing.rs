@@ -1,5 +1,5 @@
-use serde_json::Error;
 use backend::schema_types::Config;
+use serde_json::Error;
 
 #[test]
 fn test_invalid_json() {
@@ -87,7 +87,6 @@ fn test_unknown_nested_fields() {
     );
 }
 
-
 #[test]
 fn test_missing_required_fields() {
     // The "ssh" field is required but missing in this JSON.
@@ -144,4 +143,3 @@ fn test_valid_config() {
         "Deserialization should succeed with a minimal valid configuration"
     );
 }
-

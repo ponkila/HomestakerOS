@@ -41,7 +41,10 @@ pub struct SsvNode {
     pub data_dir: String,
     #[serde(rename = "privateKeyFile", skip_serializing_if = "Option::is_none")]
     pub private_key_file: Option<String>,
-    #[serde(rename = "privateKeyPasswordFile", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "privateKeyPasswordFile",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub private_key_password_file: Option<String>,
 }
 
@@ -219,7 +222,10 @@ pub struct Mount {
     pub upheld_by: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unit_config: Option<String>,
-    #[serde(rename = "startLimitIntervalSec", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "startLimitIntervalSec",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub start_limit_interval_sec: Option<u64>,
     #[serde(rename = "startLimitBurst", skip_serializing_if = "Option::is_none")]
     pub start_limit_burst: Option<u64>,
