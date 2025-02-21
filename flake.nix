@@ -24,7 +24,7 @@
   };
 
   outputs = { self, ... }@inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } rec {
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.devenv.flakeModule
@@ -62,7 +62,11 @@
         in
         {
           # Custom packages and entrypoint aliases -> 'nix run' or 'nix build'
-          inherit packages;
+          packages =
+            (with flake.nixosConfigurations; {
+              "homestakeros-backend" = homestakeros-backend.config.system.build.kexecTree;
+            })
+            // packages;
 
           # Overlays
           _module.args.pkgs = import inputs.nixpkgs {
@@ -134,7 +138,6 @@
 
       flake =
         let
-
           # Function to format module options
           parseOpts = options:
             inputs.nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! inputs.nixpkgs.lib.options.isOption v)
@@ -158,6 +161,37 @@
 
         in
         {
+          # NixOS configuration entrypoints
+          nixosConfigurations."homestakeros-backend" = inputs.nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = { inherit inputs; };
+            modules = [
+              inputs.ponkila.nixosModules.base
+              inputs.ponkila.nixosModules.kexecTree
+              self.nixosModules.backend
+              self.nixosModules.homestakeros
+              {
+                homestakeros = {
+                  localization = {
+                    hostname = "homestakeros-backend";
+                    timezone = "Europe/Helsinki";
+                  };
+                  ssh = {
+                    authorizedKeys = [
+                      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAILn/9IHTGC1sLxnPnLbtJpvF7HgXQ8xNkRwSLq8ay8eJAAAADHNzaDpzdGFybGFicw== ssh:starlabs"
+                      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOdsfK46X5IhxxEy81am6A8YnHo2rcF2qZ75cHOKG7ToAAAACHNzaDprYXJp ssh:kari"
+                    ];
+                  };
+                };
+                services.homestakeros-backend = {
+                  enable = true;
+                  domain = "buidl.homestakeros.com";
+                };
+                system.stateVersion = "24.11";
+              }
+            ];
+          };
+
           # Format modules
           nixosModules = {
             homestakeros.imports = [
