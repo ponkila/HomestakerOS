@@ -14,7 +14,7 @@ in
       };
 
       domain = lib.mkOption {
-        type = lib.nullOr lib.types.str;
+        type = lib.types.nullOr lib.types.str;
         default = null;
         description = ''
           If non-null, enables a Caddy reverse proxy with automatic SSL via ACME/Let's Encrypt.
