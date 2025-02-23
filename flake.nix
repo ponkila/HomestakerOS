@@ -187,6 +187,32 @@
                   enable = true;
                   domain = "buidl.homestakeros.com";
                 };
+                fileSystems."/mnt/ubuntu-root" = {
+                  device = "/dev/disk/by-uuid/17974942-c81d-4bc4-898c-792f95be67ec";
+                  fsType = "ext4";
+                  neededForBoot = true;
+                };
+                systemd.services.nix-remount = {
+                  path = [ "/run/wrappers" ];
+                  enable = true;
+                  description = "Mount /nix/.rw-store and /tmp to disk";
+                  serviceConfig = {
+                    Type = "oneshot";
+                  };
+                  preStart = ''
+                    /run/wrappers/bin/mount -t none /mnt/ubuntu-root/remount /nix/.rw-store -o bind
+
+                    mkdir -p /nix/.rw-store/work
+                    mkdir -p /nix/.rw-store/store
+                    mkdir -p /nix/.rw-store/tmp
+                    chmod 1777 /nix/.rw-store/tmp
+                  '';
+                  script = ''
+                    /run/wrappers/bin/mount -t overlay overlay -o lowerdir=/nix/.ro-store:/nix/store,upperdir=/nix/.rw-store/store,workdir=/nix/.rw-store/work /nix/store
+                    /run/wrappers/bin/mount --bind /nix/.rw-store/tmp /tmp
+                  '';
+                  wantedBy = [ "multi-user.target" ];
+                };
                 system.stateVersion = "24.11";
               }
             ];
