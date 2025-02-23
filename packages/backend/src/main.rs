@@ -224,24 +224,11 @@ async fn main() -> std::io::Result<()> {
                 .default_value("8081")
                 .help("Port to bind the server"),
         )
-        .arg(
-            Arg::new("domain")
-                .short('d')
-                .long("domain")
-                .value_name("DOMAIN")
-                .help("Optional domain for reverse proxy (e.g., example.com)"),
-        )
         .get_matches();
 
     let addr = matches.get_one::<String>("addr").unwrap();
     let port = matches.get_one::<String>("port").unwrap();
-    let listen = format!("{}:{}", addr, port);
-    let domain = matches.get_one::<String>("domain");
-    let base_url = if let Some(domain) = domain {
-        format!("https://{}", domain)
-    } else {
-        format!("http://{}", listen)
-    };
+    let base_url = format!("http://{}:{}", addr, port);
 
     println!("Running on: {}", base_url);
     let temp_dir = TempDir::new().expect("Failed to create temporary directory");
@@ -283,7 +270,7 @@ async fn main() -> std::io::Result<()> {
                     .show_files_listing(),
             )
     })
-    .bind(&listen)?
+    .bind(format!("{}:{}", addr, port))?
     .run()
     .await
 }

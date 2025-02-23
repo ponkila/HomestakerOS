@@ -36,7 +36,7 @@ in
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
-        ExecStart = "${pkgs.backend}/bin/backend --port ${toString cfg.port} ${if cfg.domain != null then "--domain ${cfg.domain}" else ""}";
+        ExecStart = "${pkgs.backend}/bin/backend --port ${toString cfg.port}";
         Restart = "always";
         RestartSec = "5";
       };
