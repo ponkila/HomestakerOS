@@ -189,11 +189,11 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }));
     }
 
-    // Return download links.
+    // Return relative download paths.
     let download_links = vec![
-        format!("{}/result/{}", data.base_url, "nixConfig.tar"),
-        format!("{}/result/{}", data.base_url, "kexecTree.tar"),
-        format!("{}/result/{}", data.base_url, "verify.txt"),
+        format!("/result/{}", "nixConfig.tar"),
+        format!("/result/{}", "kexecTree.tar"),
+        format!("/result/{}", "verify.txt"),
     ];
 
     HttpResponse::Ok().json(json!({
