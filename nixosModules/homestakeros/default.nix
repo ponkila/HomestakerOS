@@ -318,7 +318,7 @@ in
           # ws for ssv
           "--ws"
         ]
-        ++ lib.optional (cfg.execution.erigon.extraOptions != null) cfg.execution.erigon.extraOptions;
+        ++ (if cfg.execution.erigon.extraOptions != null then cfg.execution.erigon.extraOptions else [ ]);
         allowedPorts = [ 30303 30304 42069 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -360,7 +360,7 @@ in
           "--ws.port=8545"
           "--ws"
         ]
-        ++ lib.optional (cfg.execution.geth.extraOptions != null) cfg.execution.geth.extraOptions;
+        ++ (if cfg.execution.geth.extraOptions != null then cfg.execution.geth.extraOptions else [ ]);
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -396,7 +396,7 @@ in
           "--Init.WebSocketsEnabled true"
           "--JsonRpc.WebSocketsPort 8545"
         ]
-        ++ lib.optional (cfg.execution.nethermind.extraOptions != null) cfg.execution.nethermind.extraOptions;
+        ++ (if cfg.execution.nethermind.extraOptions != null then cfg.execution.nethermind.extraOptions else [ ]);
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -439,7 +439,7 @@ in
           "--rpc-ws-host=${parsedEndpoint.addr}"
           "--rpc-ws-port=8546"
         ]
-        ++ lib.optional (cfg.execution.besu.extraOptions != null) cfg.execution.besu.extraOptions;
+        ++ (if cfg.execution.besu.extraOptions != null then cfg.execution.besu.extraOptions else [ ]);
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -468,7 +468,7 @@ in
             ]}"
           "-addr ${parsedEndpoint.addr}:${parsedEndpoint.port}"
         ]
-        ++ lib.optional (cfg.addons.mev-boost.extraOptions != null) cfg.addons.mev-boost.extraOptions;
+        ++ (if cfg.addons.mev-boost.extraOptions != null then cfg.addons.mev-boost.extraOptions else [ ]);
         allowedPorts = [ ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -502,11 +502,11 @@ in
             if cfg.consensus.lighthouse.slasher.enable
             then
               "--slasher \\\n\t"
-              + "--slasher-history-length "
-              + (toString cfg.consensus.lighthouse.slasher.historyLength)
-              + " \\\n\t"
-              + "--slasher-max-db-size "
-              + (toString cfg.consensus.lighthouse.slasher.maxDatabaseSize)
+                + "--slasher-history-length "
+                + (toString cfg.consensus.lighthouse.slasher.historyLength)
+                + " \\\n\t"
+                + "--slasher-max-db-size "
+                + (toString cfg.consensus.lighthouse.slasher.maxDatabaseSize)
             else ""
           )
           (
@@ -517,7 +517,7 @@ in
           "--metrics"
           "--checkpoint-sync-url \"https://beaconstate.info\""
         ]
-        ++ lib.optional (cfg.consensus.lighthouse.extraOptions != null) cfg.consensus.lighthouse.extraOptions;
+        ++ (if cfg.consensus.lighthouse.extraOptions != null then cfg.consensus.lighthouse.extraOptions else [ ]);
         allowedPorts = [ 9000 9001 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -553,14 +553,14 @@ in
             if cfg.consensus.prysm.slasher.enable
             then
               "--historical-slasher-node \\\n\t"
-              + "--slasher-datadir ${cfg.consensus.prysm.dataDir}/beacon/slasher_db"
+                + "--slasher-datadir ${cfg.consensus.prysm.dataDir}/beacon/slasher_db"
             else ""
           )
           "--accept-terms-of-use"
           "--checkpoint-sync-url=https://beaconstate.info"
           "--genesis-beacon-api-url=https://beaconstate.info"
         ]
-        ++ lib.optional (cfg.consensus.prysm.extraOptions != null) cfg.consensus.prysm.extraOptions;
+        ++ (if cfg.consensus.prysm.extraOptions != null then cfg.consensus.prysm.extraOptions else [ ]);
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -595,7 +595,7 @@ in
           )
           "--metrics-enabled=true"
         ]
-        ++ lib.optional (cfg.consensus.teku.extraOptions != null) cfg.consensus.teku.extraOptions;
+        ++ (if cfg.consensus.teku.extraOptions != null then cfg.consensus.teku.extraOptions else [ ]);
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -623,12 +623,12 @@ in
             if cfg.addons.mev-boost.enable
             then
               "--payload-builder=true \\\n\t"
-              + "--payload-builder-url=${cfg.addons.mev-boost.endpoint}"
+                + "--payload-builder-url=${cfg.addons.mev-boost.endpoint}"
             else ""
           )
           "--metrics=true"
         ]
-        ++ lib.optional (cfg.consensus.nimbus.extraOptions != null) cfg.consensus.nimbus.extraOptions;
+        ++ (if cfg.consensus.nimbus.extraOptions != null then cfg.consensus.nimbus.extraOptions else [ ]);
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
