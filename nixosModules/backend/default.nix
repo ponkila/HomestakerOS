@@ -5,12 +5,12 @@ in
 {
   options = {
     services.homestakeros-backend = {
-      enable = lib.mkEnableOption "Whether to enable HomestakerOS backend.";
+      enable = lib.mkEnableOption "Whether to enable the HomestakerOS backend.";
 
       port = lib.mkOption {
         type = lib.types.int;
         default = 8081;
-        description = "The port on which to listen.";
+        description = "The port on which the backend will listen.";
       };
 
       reverseProxy = lib.mkOption {
@@ -22,7 +22,7 @@ in
       openFirewall = lib.mkOption {
         type = lib.types.bool;
         default = true;
-        description = "Open the firewall port(s).";
+        description = "Whether to open the firewall ports when the service is enabled.";
       };
     };
   };
