@@ -185,7 +185,7 @@
                 };
                 services.homestakeros-backend = {
                   enable = true;
-                  domain = "buidl.homestakeros.com";
+                  reverseProxy = "caddy";
                 };
                 fileSystems."/mnt/ubuntu-root" = {
                   device = "/dev/disk/by-uuid/17974942-c81d-4bc4-898c-792f95be67ec";

@@ -13,13 +13,10 @@ in
         description = "The port on which to listen.";
       };
 
-      domain = lib.mkOption {
-        type = lib.types.nullOr lib.types.str;
-        default = null;
-        description = ''
-          If non-null, enables a Caddy reverse proxy with automatic SSL via ACME/Let's Encrypt.
-          A DNS record (A, AAAA, or CNAME) must exist for the specified domain.
-        '';
+      reverseProxy = lib.mkOption {
+        type = lib.types.enum [ "none" "nginx" ];
+        default = "none";
+        description = "Which reverse proxy to use. Set to 'nginx' to enable the Nginx reverse proxy.";
       };
 
       openFirewall = lib.mkOption {
@@ -42,31 +39,22 @@ in
       };
     };
 
-    # If a domain is provided, enable Caddy as a reverse proxy
-    services.caddy = lib.mkIf (cfg.domain != null) {
+    # Reverse proxy using Nginx
+    services.nginx = lib.mkIf (cfg.reverseProxy == "nginx") {
       enable = true;
-      virtualHosts."${cfg.domain}" = {
-        useACMEHost = cfg.domain;
-        extraConfig = ''
-          reverse_proxy http://127.0.0.1:${toString cfg.port}
-        '';
-      };
-    };
-
-    # If a domain is provided, configure ACME certificate
-    security.acme = lib.mkIf (cfg.domain != null) {
-      acceptTerms = true;
-      certs."${cfg.domain}" = {
-        email = "homestakeros@ponkila.com";
-        listenHTTP = ":1360";
-        reloadServices = [ "caddy.service" ];
-
-        # WARN: Using the staging environment to avoid hitting rate limits while testing
-        server = "https://acme-staging-v02.api.letsencrypt.org/directory";
+      virtualHosts."localhost" = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString cfg.port}";
+        };
       };
     };
 
     # Open the required firewall ports
-    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall [ 80 443 cfg.port ];
+    networking.firewall.allowedTCPPorts = lib.mkIf cfg.openFirewall (
+      if cfg.reverseProxy != "none" then
+        [ cfg.port 80 ]
+      else
+        [ cfg.port ]
+    );
   };
 }
