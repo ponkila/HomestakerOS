@@ -20,6 +20,14 @@ import {
   NumberDecrementStepper,
   Tooltip,
   Select,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  VStack,
+  Link,
+  Spinner,
+  Alert,
+  Text
 } from '@chakra-ui/react'
 import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
@@ -28,6 +36,7 @@ import { useLoaderData, useOutletContext } from "react-router-dom";
 import { useBackend } from "../Context/BackendContext";
 
 let uuid = () => self.crypto.randomUUID();
+
 
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
   const { name, children } = props
@@ -169,7 +178,9 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
 }
 
 export const ConfigurationForm = () => {
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [downloadLinks, setDownloadLinks] = useState<string[]>([]);
   const loader: any = useLoaderData();
   const [_, s]: any = useOutletContext();
 
@@ -276,8 +287,9 @@ export const ConfigurationForm = () => {
     return obj
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>, backendUrl : String) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, backendUrl: String) => {
     e.preventDefault()
+    setDownloadLinks([])
     const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
@@ -330,17 +342,42 @@ export const ConfigurationForm = () => {
         jp.apply(result, key, () => value)
       }
     })
-    console.log(JSON.stringify(result, null, 2))
-    fetch(`${backendUrl}/api/nixosConfig`, {
-      method: 'POST',
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(result),
-      mode: 'cors',
-    })
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${backendUrl}/nixosConfig`, {
+        method: 'POST',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(result),
+        mode: 'cors',
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const responseData = await response.json();
+      if (responseData.status === "ok" && responseData.download_links) {
+        // Links are relative so we add the backend url as prefix
+        let links: string[] = responseData.download_links;
+        links.forEach((d, i) => {
+          links[i] = `${backendUrl}${d}`;
+        });
+
+        setDownloadLinks(links);
+      } else {
+        setError("Error: No download links found.");
+      }
+
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+
   }
 
   const templates = () => {
@@ -385,9 +422,44 @@ export const ConfigurationForm = () => {
           ))}
         </Select>
         {processNode([root], structuredClone(props.schema), chosenJSON)}
+        {isLoading && (
+          <VStack spacing={2} align="center">
+            <Spinner size="xl" />
+            <Text fontSize="xl" fontWeight="bold" color="gray.600">
+              BUIDL in progress!
+            </Text>
+          </VStack>
+        )}
+        <VStack spacing={4} align="stretch" maxWidth="600px" margin="auto" mb={10}>
+          {error && (
+            <Alert status="error">
+              <AlertIcon />
+              <AlertTitle>Error!</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {downloadLinks.length > 0 && (
+            <Box>
+              <Heading as="h3" size="md" mb={2}>
+                Download Links:
+              </Heading>
+              <VStack spacing={2} align="start">
+                {downloadLinks.map((link, index) => (
+                  <Box key={index} p={2} borderWidth={1} borderRadius="md" width="full">
+                    <Link href={link} download isExternal>
+                      {link.split("/").pop()}
+                    </Link>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          )}
+        </VStack>
         <Button w="100%" type="submit">
           #BUIDL
         </Button>
+
       </form>
     )
   }
