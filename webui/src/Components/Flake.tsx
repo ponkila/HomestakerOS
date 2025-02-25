@@ -10,7 +10,6 @@ export const FlakeSection = () => {
       <HStack spacing={4}>  {/* Add spacing between radio buttons */}
         <Radio value="0">Flake</Radio>
         <Radio value="1">URI</Radio>
-        <Radio value="2">Demo</Radio>
       </HStack>
     </RadioGroup>
   );
