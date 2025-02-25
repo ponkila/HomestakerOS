@@ -24,7 +24,7 @@
   };
 
   outputs = { self, ... }@inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } rec {
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
       imports = [
         inputs.devenv.flakeModule
@@ -62,7 +62,11 @@
         in
         {
           # Custom packages and entrypoint aliases -> 'nix run' or 'nix build'
-          inherit packages;
+          packages =
+            (with flake.nixosConfigurations; {
+              "homestakeros-backend" = homestakeros-backend.config.system.build.kexecTree;
+            })
+            // packages;
 
           # Overlays
           _module.args.pkgs = import inputs.nixpkgs {
@@ -134,7 +138,6 @@
 
       flake =
         let
-
           # Function to format module options
           parseOpts = options:
             inputs.nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! inputs.nixpkgs.lib.options.isOption v)
@@ -158,11 +161,72 @@
 
         in
         {
+          # NixOS configuration entrypoints
+          nixosConfigurations."homestakeros-backend" = inputs.nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = { inherit inputs; };
+            modules = [
+              inputs.ponkila.nixosModules.base
+              inputs.ponkila.nixosModules.kexecTree
+              self.nixosModules.backend
+              self.nixosModules.homestakeros
+              {
+                homestakeros = {
+                  localization = {
+                    hostname = "homestakeros-backend";
+                    timezone = "Europe/Helsinki";
+                  };
+                  ssh = {
+                    authorizedKeys = [
+                      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAILn/9IHTGC1sLxnPnLbtJpvF7HgXQ8xNkRwSLq8ay8eJAAAADHNzaDpzdGFybGFicw== ssh:starlabs"
+                      "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIOdsfK46X5IhxxEy81am6A8YnHo2rcF2qZ75cHOKG7ToAAAACHNzaDprYXJp ssh:kari"
+                    ];
+                  };
+                };
+                services.homestakeros-backend = {
+                  enable = true;
+                  reverseProxy = "nginx";
+                };
+                fileSystems."/mnt/ubuntu-root" = {
+                  device = "/dev/disk/by-uuid/17974942-c81d-4bc4-898c-792f95be67ec";
+                  fsType = "ext4";
+                  neededForBoot = true;
+                };
+                systemd.services.nix-remount = {
+                  path = [ "/run/wrappers" ];
+                  enable = true;
+                  description = "Mount /nix/.rw-store and /tmp to disk";
+                  serviceConfig = {
+                    Type = "oneshot";
+                  };
+                  preStart = ''
+                    /run/wrappers/bin/mount -t none /mnt/ubuntu-root/remount /nix/.rw-store -o bind
+
+                    mkdir -p /nix/.rw-store/work
+                    mkdir -p /nix/.rw-store/store
+                    mkdir -p /nix/.rw-store/tmp
+                    chmod 1777 /nix/.rw-store/tmp
+                  '';
+                  script = ''
+                    /run/wrappers/bin/mount -t overlay overlay -o lowerdir=/nix/.ro-store:/nix/store,upperdir=/nix/.rw-store/store,workdir=/nix/.rw-store/work /nix/store
+                    /run/wrappers/bin/mount --bind /nix/.rw-store/tmp /tmp
+                  '';
+                  wantedBy = [ "multi-user.target" ];
+                };
+                system.stateVersion = "24.11";
+              }
+            ];
+          };
+
           # Format modules
           nixosModules = {
             homestakeros.imports = [
               ./nixosModules/homestakeros
             ];
+            backend = {
+              imports = [ ./nixosModules/backend ];
+              nixpkgs.overlays = [ self.overlays.default ];
+            };
           };
           schema = self.exports.homestakeros;
 
