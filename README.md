@@ -20,27 +20,23 @@ It also offers a dashboard where you can inspect and manage the entire infrastru
     git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS
     ```
 
-3. **Set Up a Development Environment**
-
-    - With Nix: `nix develop . --impure`
-    - With [direnv](https://direnv.net/): `direnv allow`
-
-4. **Start the Web UI**
+3. **Start the backend**
 
     ```
-    server
+    nix run .#backend
     ```
 
-5. **Open a Command Runner**
+4. **Start the frontend**
 
     ```
-    tail -f pipe | sh
+    direnv allow
+    cd webui
+    npm run dev -- --host 0.0.0.0
     ```
-    The frontend runs its commands through this, leave it open for functionality.
 
-6. **Check it out**
+5. **Check it out**
 
-    Go to [http://localhost:8081](http://localhost:8081) to start using the Web UI.
+    Go to [http://localhost:5173](http://localhost:5173) to start using the Web UI.
 
 ## 🌟 Inspiration
 
