@@ -45,6 +45,11 @@ in
       virtualHosts."localhost" = {
         locations."/" = {
           proxyPass = "http://127.0.0.1:${toString cfg.port}";
+          extraConfig = ''
+            proxy_connect_timeout 3600s;
+            proxy_send_timeout 3600s;
+            proxy_read_timeout 3600s;
+          '';
         };
       };
     };
