@@ -1,4 +1,5 @@
 pub mod schema_types;
+pub mod workspace;
 
 use sha2::{Digest, Sha256};
 use std::fs;
