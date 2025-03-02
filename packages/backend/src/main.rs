@@ -32,7 +32,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
             eprintln!("JSON Serialization Error: {:?}", e);
             return HttpResponse::BadRequest().json(json!({
                 "status": "error",
-                "message": e.to_string()
+                "message": "Failed to serialize JSON"
             }));
         }
     };
@@ -50,7 +50,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
             eprintln!("Failed to create workspace: {:?}", e);
             return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
-                "message": format!("Failed to create workspace: {:?}", e)
+                "message": "Failed to create workspace"
             }));
         }
     };
@@ -58,11 +58,11 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     // Run json2nix.
     let json2nix_output = match run_json2nix(&json_str) {
         Ok(out) => out,
-        Err(err) => {
-            eprintln!("Failed to run json2nix: {}", err);
+        Err(e) => {
+            eprintln!("Failed to run json2nix: {}", e);
             return HttpResponse::InternalServerError().json(json!({
                 "status": "error",
-                "message": err,
+                "message": "Failed to run json2nix"
             }));
         }
     };
@@ -87,11 +87,11 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
 
     // Run nix build.
-    if let Err(err) = run_nix_build(&workspace.nix_config_dir, &hostname, &workspace.out_link) {
-        eprintln!("Failed to run nix build: {}", err);
+    if let Err(e) = run_nix_build(&workspace.nix_config_dir, &hostname, &workspace.out_link) {
+        eprintln!("Failed to run nix build: {}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": err,
+            "message": "Failed to run nix build"
         }));
     }
     println!("Nix build completed.");
@@ -130,6 +130,10 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     // Remove the original directories.
     if let Err(e) = workspace.cleanup() {
         eprintln!("Failed to cleanup workspace: {:?}", e);
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": "Failed to cleanup workspace"
+        }));
     }
 
     // Compute SHA-256 hashes.
@@ -178,27 +182,31 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     let _ = fs::create_dir_all(&builds_dir);
     let build_dir = builds_dir.join(&build_id);
     if let Err(e) = fs::create_dir_all(&build_dir) {
+        eprintln!("Failed to create build subfolder: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": format!("Failed to create build subfolder: {:?}", e)
+            "message": "Failed to create build subfolder"
         }));
     }
     if let Err(e) = fs::rename(nixconfig_tar, build_dir.join("nixConfig.tar")) {
+        eprintln!("Failed to move nixConfig.tar: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": format!("Failed to move nixConfig.tar: {:?}", e)
+            "message": "Failed to move nixConfig.tar"
         }));
     }
     if let Err(e) = fs::rename(kexec_tar, build_dir.join("kexecTree.tar")) {
+        eprintln!("Failed to move kexecTree.tar: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": format!("Failed to move kexecTree.tar: {:?}", e)
+            "message": "Failed to move kexecTree.tar"
         }));
     }
     if let Err(e) = fs::rename(verify_path, build_dir.join("verify.txt")) {
+        eprintln!("Failed to move verify.txt: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": format!("Failed to move verify.txt: {:?}", e)
+            "message": "Failed to move verify.txt"
         }));
     }
 
@@ -259,28 +267,6 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
-            // Custom JSON error handler that refactors the original error message
-            .app_data(web::JsonConfig::default().error_handler(|err, _req| {
-                let err_str = err.to_string();
-                // Truncate at " at line"
-                let truncated = if let Some(pos) = err_str.find(" at line") {
-                    &err_str[..pos]
-                } else {
-                    &err_str
-                };
-                // Remove the "Json deserialize error:" prefix if present
-                let cleaned = truncated
-                    .strip_prefix("Json deserialize error: ")
-                    .unwrap_or(truncated);
-                actix_web::error::InternalError::from_response(
-                    err,
-                    HttpResponse::BadRequest().json(json!({
-                        "status": "error",
-                        "message": cleaned,
-                    })),
-                )
-                .into()
-            }))
             .wrap(Cors::permissive())
             .route("/", web::get().to(health_check))
             .route("/nixosConfig", web::post().to(nixos_config))
