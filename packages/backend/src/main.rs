@@ -172,10 +172,8 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
 
     // Compute a build ID from the two artifact hashes.
     use sha2::{Digest, Sha256};
-    let build_id = format!(
-        "{:x}",
-        Sha256::digest(format!("{}{}", nix_hash, kexec_hash).as_bytes())
-    );
+    let combined_hashes = [nix_hash, kexec_hash].concat();
+    let build_id = format!("{:x}", Sha256::digest(combined_hashes.as_bytes()));
 
     // Move final artifacts into a build-specific subfolder.
     let builds_dir = output_dir.join("builds");
@@ -254,7 +252,7 @@ async fn main() -> std::io::Result<()> {
 
     let addr = matches.get_one::<String>("addr").unwrap();
     let port = matches.get_one::<String>("port").unwrap();
-    let base_url = format!("http://{}:{}", addr, port);
+    let base_url = "http://".to_string() + addr + ":" + port;
 
     println!("Running on: {}", base_url);
     let temp_dir = TempDir::new().expect("Failed to create temporary directory");
@@ -276,7 +274,7 @@ async fn main() -> std::io::Result<()> {
                     .show_files_listing(),
             )
     })
-    .bind(format!("{}:{}", addr, port))?
+    .bind(addr.to_string() + ":" + port)?
     .run()
     .await
 }

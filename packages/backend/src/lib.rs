@@ -38,17 +38,15 @@ pub fn run_json2nix(json_str: &str) -> Result<String, String> {
 
 /// Writes the default.nix file with the provided json2nix output.
 pub fn write_default_nix(hostname_dir: &Path, json2nix_output: &str) -> std::io::Result<()> {
-    let nix_boilerplate = format!(
-        "{{ pkgs, lib, config, ... }}: {{ homestakeros = {}; }}",
-        json2nix_output
-    );
+    let nix_boilerplate =
+        String::from("{ pkgs, lib, config, ... }: { homestakeros = ") + json2nix_output + "; }";
     let default_nix_path = hostname_dir.join("default.nix");
     fs::write(default_nix_path, nix_boilerplate.as_bytes())
 }
 
 /// Runs the `nix build` command and returns an error string if it fails.
 pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> Result<(), String> {
-    let nix_config_dir_str = format!("{}", nix_config_dir.display());
+    let nix_config_dir_str = nix_config_dir.display().to_string();
     let build_arg = format!(
         "path:{}#nixosConfigurations.{}.config.system.build.kexecTree",
         nix_config_dir_str, hostname
