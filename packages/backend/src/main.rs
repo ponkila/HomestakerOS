@@ -7,6 +7,7 @@ use std::fs;
 use tempfile::TempDir;
 
 use backend::schema_types::Config;
+use backend::workspace::BuildWorkspace;
 use backend::{compute_sha256, create_tarball, run_json2nix, run_nix_build, write_default_nix};
 
 // Embed the flake files at compile time.
@@ -39,34 +40,20 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     // Use the provided output directory.
     let output_dir = data.temp_dir.path();
 
-    // Create a base directory for the nix files.
-    let nix_config_dir = output_dir.join("nixConfig");
-    if let Err(e) = fs::create_dir_all(&nix_config_dir) {
-        eprintln!(
-            "Failed to create nixConfig directory '{}': {:?}",
-            nix_config_dir.display(),
-            e
-        );
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": format!("Failed to create directory '{}'", nix_config_dir.display())
-        }));
-    }
-
-    // Create a hostname-specific directory.
+    // Extract hostname from the config.
     let hostname = config.localization.hostname.clone();
-    let hostname_dir = nix_config_dir.join("nixosConfigurations").join(&hostname);
-    if let Err(e) = fs::create_dir_all(&hostname_dir) {
-        eprintln!(
-            "Failed to create hostname directory '{}': {:?}",
-            hostname_dir.display(),
-            e
-        );
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": format!("Failed to create directory for hostname '{}'", hostname)
-        }));
-    }
+
+    // Create a unique build workspace.
+    let workspace = match BuildWorkspace::new(output_dir, &hostname) {
+        Ok(ws) => ws,
+        Err(e) => {
+            eprintln!("Failed to create workspace: {:?}", e);
+            return HttpResponse::InternalServerError().json(json!({
+                "status": "error",
+                "message": format!("Failed to create workspace: {:?}", e)
+            }));
+        }
+    };
 
     // Run json2nix.
     let json2nix_output = match run_json2nix(&json_str) {
@@ -81,7 +68,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     };
 
     // Prepend boilerplate and write default.nix.
-    if let Err(e) = write_default_nix(&hostname_dir, &json2nix_output) {
+    if let Err(e) = write_default_nix(&workspace.hostname_dir, &json2nix_output) {
         eprintln!("Failed to write default.nix: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
@@ -90,7 +77,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
 
     // Write the embedded flake file.
-    let flake_nix_path = nix_config_dir.join("flake.nix");
+    let flake_nix_path = workspace.nix_config_dir.join("flake.nix");
     if let Err(e) = fs::write(&flake_nix_path, FLAKE_NIX) {
         eprintln!("Failed to write flake.nix: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
@@ -100,25 +87,18 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
 
     // Run nix build.
-    let nix_config_dir_str = format!("{}", nix_config_dir.display());
-    let _build_arg = format!(
-        "path:{}#nixosConfigurations.{}.config.system.build.kexecTree",
-        nix_config_dir_str, hostname
-    );
-    let out_link = output_dir.join("kexecTree");
-    if let Err(err) = run_nix_build(&nix_config_dir, &hostname, &out_link) {
+    if let Err(err) = run_nix_build(&workspace.nix_config_dir, &hostname, &workspace.out_link) {
         eprintln!("Failed to run nix build: {}", err);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
             "message": err,
         }));
     }
-
     println!("Nix build completed.");
 
     // Create a tarball for the nixConfig directory.
-    let nixconfig_tar = output_dir.join("nixConfig.tar");
-    if let Err(e) = create_tarball(&nix_config_dir, "nixConfig", &nixconfig_tar) {
+    let nixconfig_tar = workspace.working_dir.join("nixConfig.tar");
+    if let Err(e) = create_tarball(&workspace.nix_config_dir, "nixConfig", &nixconfig_tar) {
         eprintln!("Failed to create nixConfig.tar: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
@@ -127,7 +107,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
 
     // Create a tarball for kexecTree (resolve symlinks).
-    let kexec_tree_real = match fs::canonicalize(&out_link) {
+    let kexec_tree_real = match fs::canonicalize(&workspace.out_link) {
         Ok(p) => p,
         Err(e) => {
             eprintln!("Failed to resolve kexecTree symlink: {:?}", e);
@@ -138,7 +118,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }
     };
 
-    let kexec_tar = output_dir.join("kexecTree.tar");
+    let kexec_tar = workspace.working_dir.join("kexecTree.tar");
     if let Err(e) = create_tarball(&kexec_tree_real, "kexecTree", &kexec_tar) {
         eprintln!("Failed to create kexecTree.tar: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
@@ -148,11 +128,8 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
 
     // Remove the original directories.
-    if let Err(e) = fs::remove_dir_all(&nix_config_dir) {
-        eprintln!("Failed to remove nixConfig directory: {:?}", e);
-    }
-    if let Err(e) = fs::remove_file(&out_link) {
-        eprintln!("Failed to remove kexecTree symlink: {:?}", e);
+    if let Err(e) = workspace.cleanup() {
+        eprintln!("Failed to cleanup workspace: {:?}", e);
     }
 
     // Compute SHA-256 hashes.
@@ -180,7 +157,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
 
     // Write the hashes to verify.txt.
     let verify_txt = format!("nixConfig.tar {}\nkexecTree.tar {}\n", nix_hash, kexec_hash);
-    let verify_path = output_dir.join("verify.txt");
+    let verify_path = workspace.working_dir.join("verify.txt");
     if let Err(e) = fs::write(&verify_path, verify_txt.as_bytes()) {
         eprintln!("Failed to write verify.txt: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
@@ -189,11 +166,52 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }));
     }
 
-    // Return download links.
+    // Compute a build ID from the two artifact hashes.
+    use sha2::{Digest, Sha256};
+    let build_id = format!(
+        "{:x}",
+        Sha256::digest(format!("{}{}", nix_hash, kexec_hash).as_bytes())
+    );
+
+    // Move final artifacts into a build-specific subfolder.
+    let builds_dir = output_dir.join("builds");
+    let _ = fs::create_dir_all(&builds_dir);
+    let build_dir = builds_dir.join(&build_id);
+    if let Err(e) = fs::create_dir_all(&build_dir) {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to create build subfolder: {:?}", e)
+        }));
+    }
+    if let Err(e) = fs::rename(nixconfig_tar, build_dir.join("nixConfig.tar")) {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to move nixConfig.tar: {:?}", e)
+        }));
+    }
+    if let Err(e) = fs::rename(kexec_tar, build_dir.join("kexecTree.tar")) {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to move kexecTree.tar: {:?}", e)
+        }));
+    }
+    if let Err(e) = fs::rename(verify_path, build_dir.join("verify.txt")) {
+        return HttpResponse::InternalServerError().json(json!({
+            "status": "error",
+            "message": format!("Failed to move verify.txt: {:?}", e)
+        }));
+    }
+
+    // Clean up the working directory.
+    if let Err(e) = fs::remove_dir_all(&workspace.working_dir) {
+        eprintln!("Warning: Failed to remove working directory: {:?}", e);
+    }
+
+    // Return download links pointing to the new build-specific folder.
     let download_links = vec![
-        format!("{}/result/{}", data.base_url, "nixConfig.tar"),
-        format!("{}/result/{}", data.base_url, "kexecTree.tar"),
-        format!("{}/result/{}", data.base_url, "verify.txt"),
+        format!("/builds/{}/nixConfig.tar", build_id),
+        format!("/builds/{}/kexecTree.tar", build_id),
+        format!("/builds/{}/verify.txt", build_id),
     ];
 
     HttpResponse::Ok().json(json!({
@@ -233,6 +251,8 @@ async fn main() -> std::io::Result<()> {
     println!("Running on: {}", base_url);
     let temp_dir = TempDir::new().expect("Failed to create temporary directory");
     println!("Using temporary directory: {}", temp_dir.path().display());
+    // Create a dedicated folder for final build artifacts.
+    fs::create_dir_all(temp_dir.path().join("builds"))?;
 
     let app_state = web::Data::new(AppState { temp_dir, base_url });
 
@@ -265,7 +285,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(health_check))
             .route("/nixosConfig", web::post().to(nixos_config))
             .service(
-                Files::new("/result", app_state.temp_dir.path())
+                Files::new("/builds", app_state.temp_dir.path().join("builds"))
                     .prefer_utf8(true)
                     .show_files_listing(),
             )
