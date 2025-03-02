@@ -4,10 +4,9 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use clap::{Arg, Command};
 use serde_json::json;
 use std::fs;
-use tempfile::TempDir;
 
 use backend::schema_types::Config;
-use backend::workspace::BuildWorkspace;
+use backend::workspace::Workspace;
 use backend::{compute_sha256, create_tarball, run_json2nix, run_nix_build, write_default_nix};
 
 // Embed the flake files at compile time.
@@ -15,7 +14,7 @@ const FLAKE_NIX: &str = include_str!("static/flake.nix");
 
 /// Application state.
 struct AppState {
-    temp_dir: TempDir,
+    workspace: Workspace,
     base_url: String,
 }
 
@@ -37,14 +36,11 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }
     };
 
-    // Use the provided output directory.
-    let output_dir = data.temp_dir.path();
-
     // Extract hostname from the config.
     let hostname = config.localization.hostname.clone();
 
     // Create a unique build workspace.
-    let workspace = match BuildWorkspace::new(output_dir, &hostname) {
+    let workspace = match data.workspace.new_build_workspace(&hostname) {
         Ok(ws) => ws,
         Err(e) => {
             eprintln!("Failed to create workspace: {:?}", e);
@@ -127,15 +123,6 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }));
     }
 
-    // Remove the original directories.
-    if let Err(e) = workspace.cleanup() {
-        eprintln!("Failed to cleanup workspace: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to cleanup workspace"
-        }));
-    }
-
     // Compute SHA-256 hashes.
     let nix_hash = match compute_sha256(&nixconfig_tar) {
         Ok(h) => h,
@@ -170,13 +157,9 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         }));
     }
 
-    // Compute a build ID from the two artifact hashes.
-    use sha2::{Digest, Sha256};
-    let combined_hashes = [nix_hash, kexec_hash].concat();
-    let build_id = format!("{:x}", Sha256::digest(combined_hashes.as_bytes()));
-
-    // Move final artifacts into a build-specific subfolder.
-    let builds_dir = output_dir.join("builds");
+    // Move final artifacts into a build-specific subfolder within the top-level
+    let build_id = workspace.uuid.clone();
+    let builds_dir = data.workspace.base_dir.path().join("builds");
     let _ = fs::create_dir_all(&builds_dir);
     let build_dir = builds_dir.join(&build_id);
     if let Err(e) = fs::create_dir_all(&build_dir) {
@@ -206,11 +189,6 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
             "status": "error",
             "message": "Failed to move verify.txt"
         }));
-    }
-
-    // Clean up the working directory.
-    if let Err(e) = fs::remove_dir_all(&workspace.working_dir) {
-        eprintln!("Warning: Failed to remove working directory: {:?}", e);
     }
 
     // Return download links pointing to the new build-specific folder.
@@ -255,12 +233,18 @@ async fn main() -> std::io::Result<()> {
     let base_url = "http://".to_string() + addr + ":" + port;
 
     println!("Running on: {}", base_url);
-    let temp_dir = TempDir::new().expect("Failed to create temporary directory");
-    println!("Using temporary directory: {}", temp_dir.path().display());
-    // Create a dedicated folder for final build artifacts.
-    fs::create_dir_all(temp_dir.path().join("builds"))?;
 
-    let app_state = web::Data::new(AppState { temp_dir, base_url });
+    // Create a Workspace singleton.
+    let workspace = Workspace::new().expect("Failed to create workspace");
+    println!(
+        "Using temporary directory: {}",
+        workspace.base_dir.path().display()
+    );
+
+    let app_state = web::Data::new(AppState {
+        workspace,
+        base_url,
+    });
 
     HttpServer::new(move || {
         App::new()
@@ -269,9 +253,12 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(health_check))
             .route("/nixosConfig", web::post().to(nixos_config))
             .service(
-                Files::new("/builds", app_state.temp_dir.path().join("builds"))
-                    .prefer_utf8(true)
-                    .show_files_listing(),
+                Files::new(
+                    "/builds",
+                    app_state.workspace.base_dir.path().join("builds"),
+                )
+                .prefer_utf8(true)
+                .show_files_listing(),
             )
     })
     .bind(addr.to_string() + ":" + port)?
