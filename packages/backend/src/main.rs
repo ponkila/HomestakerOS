@@ -7,10 +7,13 @@ use std::fs;
 
 use backend::schema_types::Config;
 use backend::workspace::Workspace;
-use backend::{compute_sha256, create_tarball, run_json2nix, run_nix_build, write_default_nix};
+use backend::{process_artifacts, run_json2nix, run_nix_build, write_default_nix};
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
+
+// A static array of allowed filenames in the build output.
+const WHITELIST: &[&str] = &["bzImage", "initrd.zst", "kexec-boot"];
 
 /// Application state.
 struct AppState {
@@ -92,115 +95,36 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
     println!("Nix build completed.");
 
-    // Create a tarball for the nixConfig directory.
-    let nixconfig_tar = workspace.working_dir.join("nixConfig.tar");
-    if let Err(e) = create_tarball(&workspace.nix_config_dir, "nixConfig", &nixconfig_tar) {
-        eprintln!("Failed to create nixConfig.tar: {:?}", e);
+    // Create /build/<uuid> directory.
+    let build_id = &workspace.uuid;
+    let final_build_dir = data.workspace.base_dir.path().join("builds").join(build_id);
+
+    if let Err(e) = fs::create_dir_all(&final_build_dir) {
+        eprintln!("Failed to create final build dir: {:?}", e);
         return HttpResponse::InternalServerError().json(json!({
             "status": "error",
-            "message": "Failed to create nixConfig.tar"
+            "message": "Failed to create /builds/<uuid>"
         }));
     }
 
-    // Create a tarball for kexecTree (resolve symlinks).
-    let kexec_tree_real = match fs::canonicalize(&workspace.out_link) {
-        Ok(p) => p,
-        Err(e) => {
-            eprintln!("Failed to resolve kexecTree symlink: {:?}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to resolve kexecTree"
-            }));
-        }
-    };
+    // Copy whitelisted results, and compute their SHA256's.
+    let artifacts_info =
+        match process_artifacts(&workspace.out_link, &final_build_dir, build_id, WHITELIST) {
+            Ok(info) => info,
+            Err(e) => {
+                eprintln!("Failed to process artifacts: {}", e);
+                return HttpResponse::InternalServerError().json(json!({
+                    "status": "error",
+                    "message": "Failed to process artifacts"
+                }));
+            }
+        };
 
-    let kexec_tar = workspace.working_dir.join("kexecTree.tar");
-    if let Err(e) = create_tarball(&kexec_tree_real, "kexecTree", &kexec_tar) {
-        eprintln!("Failed to create kexecTree.tar: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to create kexecTree.tar"
-        }));
-    }
-
-    // Compute SHA-256 hashes.
-    let nix_hash = match compute_sha256(&nixconfig_tar) {
-        Ok(h) => h,
-        Err(e) => {
-            eprintln!("Failed to compute SHA256 for nixConfig.tar: {:?}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to compute SHA256 for nixConfig.tar"
-            }));
-        }
-    };
-
-    let kexec_hash = match compute_sha256(&kexec_tar) {
-        Ok(h) => h,
-        Err(e) => {
-            eprintln!("Failed to compute SHA256 for kexecTree.tar: {:?}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to compute SHA256 for kexecTree.tar"
-            }));
-        }
-    };
-
-    // Write the hashes to verify.txt.
-    let verify_txt = format!("nixConfig.tar {}\nkexecTree.tar {}\n", nix_hash, kexec_hash);
-    let verify_path = workspace.working_dir.join("verify.txt");
-    if let Err(e) = fs::write(&verify_path, verify_txt.as_bytes()) {
-        eprintln!("Failed to write verify.txt: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to write verify.txt"
-        }));
-    }
-
-    // Move final artifacts into a build-specific subfolder within the top-level
-    let build_id = workspace.uuid.clone();
-    let builds_dir = data.workspace.base_dir.path().join("builds");
-    let _ = fs::create_dir_all(&builds_dir);
-    let build_dir = builds_dir.join(&build_id);
-    if let Err(e) = fs::create_dir_all(&build_dir) {
-        eprintln!("Failed to create build subfolder: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to create build subfolder"
-        }));
-    }
-    if let Err(e) = fs::rename(nixconfig_tar, build_dir.join("nixConfig.tar")) {
-        eprintln!("Failed to move nixConfig.tar: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to move nixConfig.tar"
-        }));
-    }
-    if let Err(e) = fs::rename(kexec_tar, build_dir.join("kexecTree.tar")) {
-        eprintln!("Failed to move kexecTree.tar: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to move kexecTree.tar"
-        }));
-    }
-    if let Err(e) = fs::rename(verify_path, build_dir.join("verify.txt")) {
-        eprintln!("Failed to move verify.txt: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to move verify.txt"
-        }));
-    }
-
-    // Return download links pointing to the new build-specific folder.
-    let download_links = vec![
-        format!("/builds/{}/nixConfig.tar", build_id),
-        format!("/builds/{}/kexecTree.tar", build_id),
-        format!("/builds/{}/verify.txt", build_id),
-    ];
-
+    // Return artifacts in JSON
     HttpResponse::Ok().json(json!({
-        "download_links": download_links,
-        "status": "ok"
+        "status": "ok",
+        "build_id": build_id,
+        "artifacts": artifacts_info
     }))
 }
 

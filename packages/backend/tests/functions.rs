@@ -3,7 +3,7 @@ use std::io::Write;
 use tempfile::{tempdir, NamedTempFile};
 
 // Import the helper functions from our library.
-use backend::{compute_sha256, create_tarball, write_default_nix};
+use backend::{compute_sha256, write_default_nix};
 
 #[test]
 fn test_compute_sha256() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,45 +19,58 @@ fn test_compute_sha256() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn test_create_tarball() -> Result<(), Box<dyn std::error::Error>> {
-    let dir = tempdir()?;
-    let file_path = dir.path().join("test.txt");
-    fs::write(&file_path, "content")?;
-
-    // Create a separate temporary directory for the tar file.
-    let tar_dir = tempdir()?;
-    let tar_path = tar_dir.path().join("archive.tar");
-
-    // Create a tarball from the source directory.
-    create_tarball(dir.path(), "testdir", &tar_path)?;
-
-    // Open the tarball and verify it contains "test.txt".
-    let tar_file = fs::File::open(&tar_path)?;
-    let mut archive = tar::Archive::new(tar_file);
-    let mut found = false;
-    for entry in archive.entries()? {
-        let entry = entry?;
-        let path = entry.path()?;
-        if path.to_string_lossy().contains("test.txt") {
-            found = true;
-            break;
-        }
-    }
-    assert!(found, "Tarball should contain test.txt");
-    Ok(())
-}
-
-#[test]
 fn test_write_default_nix() -> Result<(), Box<dyn std::error::Error>> {
     let dir = tempdir()?;
     let hostname_dir = dir.path().join("hostname");
     fs::create_dir_all(&hostname_dir)?;
+
     let json2nix_output = "dummy_output";
     write_default_nix(&hostname_dir, json2nix_output)?;
+
     let default_nix_path = hostname_dir.join("default.nix");
     let content = fs::read_to_string(default_nix_path)?;
     let expected =
         "{ pkgs, lib, config, ... }: { homestakeros = ".to_string() + json2nix_output + "; }";
+
     assert_eq!(content, expected);
+    Ok(())
+}
+
+#[test]
+fn test_process_artifacts() -> Result<(), Box<dyn std::error::Error>> {
+    let whitelist = ["bzImage", "initrd.zst", "kexec-boot"];
+    let build_id = "test_build";
+
+    // Create temporary directories and files to simulate out_link.
+    let out_dir = tempdir()?;
+    let final_dir = tempdir()?;
+
+    let whitelisted_path = out_dir.path().join("bzImage");
+    fs::write(&whitelisted_path, "artifact content")?;
+
+    let non_whitelisted_path = out_dir.path().join("ignored.txt");
+    fs::write(&non_whitelisted_path, "should be ignored")?;
+
+    // Call process_artifacts function.
+    let artifacts_info =
+        backend::process_artifacts(out_dir.path(), final_dir.path(), build_id, &whitelist)
+            .map_err(|e| format!("process_artifacts failed: {}", e))?;
+
+    // Check that only the bzImage got processed.
+    let artifact = &artifacts_info[0];
+    assert_eq!(artifacts_info.len(), 1);
+    assert_eq!(artifact["file"], "bzImage");
+
+    let copied_file_path = final_dir.path().join("bzImage");
+    assert!(copied_file_path.exists());
+
+    // Verify the SHA256.
+    let expected_sha = backend::compute_sha256(&copied_file_path)?;
+    assert_eq!(artifact["sha256"], expected_sha);
+
+    // Verify the download URL.
+    let expected_url = "/builds/".to_string() + build_id + "/" + "bzImage";
+    assert_eq!(artifact["download_url"], expected_url);
+
     Ok(())
 }

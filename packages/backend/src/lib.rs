@@ -1,12 +1,12 @@
 pub mod schema_types;
 pub mod workspace;
 
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
 use std::process::{Command as StdCommand, Stdio};
-use tar::Builder;
 
 /// Runs the `json2nix` command by piping in the JSON string and returns the command's stdout.
 pub fn run_json2nix(json_str: &str) -> Result<String, String> {
@@ -72,19 +72,7 @@ pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> 
         "Nix build stderr: {}",
         String::from_utf8_lossy(&output.stderr)
     );
-    Ok(())
-}
 
-/// Create a tar archive from a source directory.
-pub fn create_tarball<P: AsRef<Path>, Q: AsRef<Path>>(
-    source: P,
-    dir_name: &str,
-    tar_path: Q,
-) -> std::io::Result<()> {
-    let tar_file = fs::File::create(tar_path)?;
-    let mut builder = Builder::new(tar_file);
-    builder.append_dir_all(dir_name, source)?;
-    builder.finish()?;
     Ok(())
 }
 
@@ -102,4 +90,71 @@ pub fn compute_sha256<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
         hasher.update(&buffer[..n]);
     }
     Ok(format!("{:x}", hasher.finalize()))
+}
+
+/// Processes build artifacts
+pub fn process_artifacts(
+    out_link: &std::path::Path,
+    final_build_dir: &std::path::Path,
+    build_id: &str,
+    whitelist: &[&str],
+) -> Result<Vec<Value>, String> {
+    let mut artifacts_info = Vec::new();
+    let entries =
+        fs::read_dir(out_link).map_err(|e| format!("Failed to read out_link dir: {:?}", e))?;
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("Failed to get directory entry: {:?}", e))?;
+        let path = entry.path();
+        if path.is_file() {
+            match path.file_name() {
+                Some(filename_osstr) => {
+                    let filename = filename_osstr.to_string_lossy().to_string();
+
+                    // Filter by whitelist
+                    if !whitelist.contains(&filename.as_str()) {
+                        println!("Skipping file not in whitelist: {}", filename);
+                        continue;
+                    }
+
+                    // Resolve symlinks, and copy real files
+                    match fs::canonicalize(&path) {
+                        Ok(real_path) => {
+                            let dest_file = final_build_dir.join(&filename);
+
+                            if let Err(e) = fs::copy(&real_path, &dest_file) {
+                                eprintln!(
+                                    "Failed to copy {:?} to {:?}: {:?}",
+                                    real_path, dest_file, e
+                                );
+                                continue;
+                            }
+
+                            // Compute SHA256
+                            match compute_sha256(&dest_file) {
+                                Ok(sha) => {
+                                    let download_url =
+                                        "/builds/".to_string() + build_id + "/" + &filename;
+                                    artifacts_info.push(json!({
+                                        "file": filename,
+                                        "sha256": sha,
+                                        "download_url": download_url
+                                    }));
+                                }
+                                Err(e) => {
+                                    eprintln!("Failed to compute sha for {:?}: {:?}", dest_file, e);
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Failed to canonicalize {:?}: {:?}", path, e);
+                        }
+                    }
+                }
+                None => {
+                    eprintln!("Could not get file_name for {:?}", path);
+                }
+            }
+        }
+    }
+    Ok(artifacts_info)
 }
