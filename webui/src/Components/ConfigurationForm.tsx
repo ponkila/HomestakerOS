@@ -344,6 +344,7 @@ export const ConfigurationForm = () => {
 
     setIsLoading(true);
     setError(null);
+    console.log(props.schema)
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
