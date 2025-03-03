@@ -344,7 +344,7 @@ export const ConfigurationForm = () => {
 
     setIsLoading(true);
     setError(null);
-    console.log(props.schema)
+    
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -388,8 +388,8 @@ export const ConfigurationForm = () => {
     joined.push(props.schema)
     joined.push(...props.nodes)
 
-    const options = [<option value="0">New node template</option>]
-    const extOpt = props.nodes.map((v: any, i: number) => (<option key={i} value={i + (options.length)}>{v.localization.hostname}</option>))
+    const options = [<option key={0} value="0">New node template</option>]
+    const extOpt = props.nodes.map((v: any, i: number) => (<option key={i + 1} value={i + (options.length)}>{v.localization.hostname}</option>))
     const jopt = new Array()
     jopt.push(...options)
     jopt.push(...extOpt)
@@ -415,11 +415,7 @@ export const ConfigurationForm = () => {
           </OrderedList>
         </Box>
         <Select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
-          {jopt.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {jopt}
         </Select>
         {processNode([root], structuredClone(props.schema), chosenJSON)}
         {isLoading && (
