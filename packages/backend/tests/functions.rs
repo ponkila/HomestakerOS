@@ -20,18 +20,22 @@ fn test_compute_sha256() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn test_write_default_nix() -> Result<(), Box<dyn std::error::Error>> {
+    // Create a temporary directory and a subdirectory.
     let dir = tempdir()?;
     let hostname_dir = dir.path().join("hostname");
     fs::create_dir_all(&hostname_dir)?;
 
+    // Write default.nix with dummy json2nix output.
     let json2nix_output = "dummy_output";
     write_default_nix(&hostname_dir, json2nix_output)?;
 
+    // Read the generated default.nix content.
     let default_nix_path = hostname_dir.join("default.nix");
     let content = fs::read_to_string(default_nix_path)?;
+
+    // Build expected content and compare.
     let expected =
         "{ pkgs, lib, config, ... }: { homestakeros = ".to_string() + json2nix_output + "; }";
-
     assert_eq!(content, expected);
     Ok(())
 }
