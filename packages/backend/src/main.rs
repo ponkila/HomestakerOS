@@ -95,21 +95,13 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     }
     println!("Nix build completed.");
 
-    // Create /build/<uuid> directory.
+    // Retrieve the build id and pre-created output directory.
     let build_id = &workspace.uuid;
-    let final_build_dir = data.workspace.base_dir.path().join("builds").join(build_id);
-
-    if let Err(e) = fs::create_dir_all(&final_build_dir) {
-        eprintln!("Failed to create final build dir: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to create /builds/<uuid>"
-        }));
-    }
+    let output_dir = workspace.output_dir.clone();
 
     // Copy whitelisted results, and compute their SHA256's.
     let artifacts_info =
-        match process_artifacts(&workspace.out_link, &final_build_dir, build_id, WHITELIST) {
+        match process_artifacts(&workspace.out_link, &output_dir, build_id, WHITELIST) {
             Ok(info) => info,
             Err(e) => {
                 eprintln!("Failed to process artifacts: {}", e);
