@@ -1,6 +1,7 @@
 pub mod schema_types;
 pub mod workspace;
 
+use actix_web::HttpResponse;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::fs;
@@ -157,4 +158,13 @@ pub fn process_artifacts(
         }
     }
     Ok(artifacts_info)
+}
+
+/// Logs the error and returns a standardized HTTP error response.
+pub fn handle_error<E: std::fmt::Debug>(desc: &str, error: E) -> HttpResponse {
+    println!("{}: {:?}", desc, error);
+    HttpResponse::InternalServerError().json(json!({
+        "status": "error",
+        "message": desc
+    }))
 }

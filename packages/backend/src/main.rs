@@ -7,7 +7,7 @@ use std::fs;
 
 use backend::schema_types::Config;
 use backend::workspace::Workspace;
-use backend::{process_artifacts, run_json2nix, run_nix_build, write_default_nix};
+use backend::{handle_error, process_artifacts, run_json2nix, run_nix_build, write_default_nix};
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
@@ -30,13 +30,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     // Serialize the typed config into a JSON string.
     let json_str = match serde_json::to_string(&*config) {
         Ok(s) => s,
-        Err(e) => {
-            eprintln!("JSON Serialization Error: {:?}", e);
-            return HttpResponse::BadRequest().json(json!({
-                "status": "error",
-                "message": "Failed to serialize JSON"
-            }));
-        }
+        Err(e) => return handle_error("Failed to serialize JSON", e),
     };
 
     // Extract hostname from the config.
@@ -45,53 +39,29 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     // Create a unique build workspace.
     let workspace = match data.workspace.new_build_workspace(&hostname) {
         Ok(ws) => ws,
-        Err(e) => {
-            eprintln!("Failed to create workspace: {:?}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to create workspace"
-            }));
-        }
+        Err(e) => return handle_error("Failed to create workspace", e),
     };
 
     // Run json2nix.
     let json2nix_output = match run_json2nix(&json_str) {
         Ok(out) => out,
-        Err(e) => {
-            eprintln!("Failed to run json2nix: {}", e);
-            return HttpResponse::InternalServerError().json(json!({
-                "status": "error",
-                "message": "Failed to run json2nix"
-            }));
-        }
+        Err(e) => return handle_error("Failed to run json2nix", e),
     };
 
     // Prepend boilerplate and write default.nix.
     if let Err(e) = write_default_nix(&workspace.hostname_dir, &json2nix_output) {
-        eprintln!("Failed to write default.nix: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to write default.nix file"
-        }));
+        return handle_error("Failed to write default.nix file", e);
     }
 
     // Write the embedded flake file.
     let flake_nix_path = workspace.nix_config_dir.join("flake.nix");
     if let Err(e) = fs::write(&flake_nix_path, FLAKE_NIX) {
-        eprintln!("Failed to write flake.nix: {:?}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to write flake.nix"
-        }));
+        return handle_error("Failed to write flake.nix", e);
     }
 
     // Run nix build.
     if let Err(e) = run_nix_build(&workspace.nix_config_dir, &hostname, &workspace.out_link) {
-        eprintln!("Failed to run nix build: {}", e);
-        return HttpResponse::InternalServerError().json(json!({
-            "status": "error",
-            "message": "Failed to run nix build"
-        }));
+        return handle_error("Failed to run nix build", e);
     }
     println!("Nix build completed.");
 
@@ -103,13 +73,7 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
     let artifacts_info =
         match process_artifacts(&workspace.out_link, &output_dir, build_id, WHITELIST) {
             Ok(info) => info,
-            Err(e) => {
-                eprintln!("Failed to process artifacts: {}", e);
-                return HttpResponse::InternalServerError().json(json!({
-                    "status": "error",
-                    "message": "Failed to process artifacts"
-                }));
-            }
+            Err(e) => return handle_error("Failed to process artifacts", e),
         };
 
     // Return artifacts in JSON

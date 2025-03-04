@@ -78,3 +78,29 @@ fn test_process_artifacts() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[actix_web::test]
+async fn test_handle_error() {
+    // Define a sample error description and a dummy error detail.
+    let desc = "Test error occurred";
+    let dummy_error = "dummy error detail";
+
+    // Call the helper function.
+    let response = backend::handle_error(desc, dummy_error);
+
+    // Verify that the response status code is 500 (Internal Server Error).
+    assert_eq!(
+        response.status(),
+        actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
+    );
+
+    // Extract the body from the response.
+    let body = actix_web::body::to_bytes(response.into_body())
+        .await
+        .unwrap();
+    let json_val: serde_json::Value = serde_json::from_slice(&body).unwrap();
+
+    // Verify the JSON content.
+    assert_eq!(json_val["status"], "error");
+    assert_eq!(json_val["message"], desc);
+}
