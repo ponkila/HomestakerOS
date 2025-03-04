@@ -4,11 +4,13 @@ use std::path::PathBuf;
 use tempfile::TempDir;
 use uuid::Uuid;
 
+/// Top-level workspace.
 pub struct Workspace {
     pub base_dir: TempDir,
 }
 
-pub struct BuildWorkspace {
+/// A build-specific workspace.
+pub struct Build {
     pub uuid: String,
     pub working_dir: PathBuf,
     pub nix_config_dir: PathBuf,
@@ -19,6 +21,10 @@ pub struct BuildWorkspace {
 
 impl Workspace {
     /// Create a new top-level workspace.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if a temporary directory cannot be created or if the builds directory cannot be created.
     pub fn new() -> io::Result<Self> {
         let base_dir = TempDir::new()?;
         fs::create_dir_all(base_dir.path().join("builds"))?;
@@ -26,7 +32,11 @@ impl Workspace {
     }
 
     /// Create a new build-specific workspace.
-    pub fn new_build_workspace(&self, hostname: &str) -> io::Result<BuildWorkspace> {
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if any of the required directories cannot be created.
+    pub fn new_build_workspace(&self, hostname: &str) -> io::Result<Build> {
         let build_uuid = Uuid::new_v4().to_string();
         let dir_name = "build_work_".to_string() + &build_uuid;
         let working_dir = self.base_dir.path().join(dir_name);
@@ -45,7 +55,7 @@ impl Workspace {
         let output_dir = self.base_dir.path().join("builds").join(&build_uuid);
         fs::create_dir_all(&output_dir)?;
 
-        Ok(BuildWorkspace {
+        Ok(Build {
             uuid: build_uuid,
             working_dir,
             nix_config_dir,
@@ -56,12 +66,12 @@ impl Workspace {
     }
 }
 
-/// Automatic partial cleanup
-impl Drop for BuildWorkspace {
+/// Automatic partial cleanup.
+impl Drop for Build {
     fn drop(&mut self) {
         if self.working_dir.exists() {
             if let Err(e) = fs::remove_dir_all(&self.working_dir) {
-                eprintln!("Warning: Failed to remove working_dir: {:?}", e);
+                eprintln!("Warning: Failed to remove working_dir: {e:?}");
             }
         }
     }

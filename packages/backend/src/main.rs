@@ -112,7 +112,7 @@ async fn main() -> std::io::Result<()> {
     let port = matches.get_one::<String>("port").unwrap();
     let base_url = "http://".to_string() + addr + ":" + port;
 
-    println!("Running on: {}", base_url);
+    println!("Running on: {base_url}");
 
     // Create a Workspace singleton.
     let workspace = Workspace::new().expect("Failed to create workspace");

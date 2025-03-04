@@ -10,13 +10,17 @@ use std::path::Path;
 use std::process::{Command as StdCommand, Stdio};
 
 /// Runs the `json2nix` command by piping in the JSON string and returns the command's stdout.
+///
+/// # Errors
+///
+/// Returns an error if spawning the process, writing to its stdin, or waiting for its output fails.
 pub fn run_json2nix(json_str: &str) -> Result<String, String> {
     let mut child = StdCommand::new("json2nix")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .map_err(|e| format!("Failed to spawn json2nix process: {:?}", e))?;
+        .map_err(|e| format!("Failed to spawn json2nix process: {e:?}"))?;
 
     {
         let stdin = child
@@ -25,11 +29,11 @@ pub fn run_json2nix(json_str: &str) -> Result<String, String> {
             .ok_or_else(|| "Failed to open stdin for json2nix".to_string())?;
         stdin
             .write_all(json_str.as_bytes())
-            .map_err(|e| format!("Failed to write to stdin of json2nix: {:?}", e))?;
+            .map_err(|e| format!("Failed to write to stdin of json2nix: {e:?}"))?;
     }
     let output = child
         .wait_with_output()
-        .map_err(|e| format!("Command execution failed: {:?}", e))?;
+        .map_err(|e| format!("Command execution failed: {e:?}"))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
         return Err(stderr);
@@ -38,6 +42,10 @@ pub fn run_json2nix(json_str: &str) -> Result<String, String> {
 }
 
 /// Writes the default.nix file with the provided json2nix output.
+///
+/// # Errors
+///
+/// Returns an error if writing to the file fails.
 pub fn write_default_nix(hostname_dir: &Path, json2nix_output: &str) -> std::io::Result<()> {
     let nix_boilerplate =
         String::from("{ pkgs, lib, config, ... }: { homestakeros = ") + json2nix_output + "; }";
@@ -46,11 +54,14 @@ pub fn write_default_nix(hostname_dir: &Path, json2nix_output: &str) -> std::io:
 }
 
 /// Runs the `nix build` command and returns an error string if it fails.
+///
+/// # Errors
+///
+/// Returns an error if executing the command fails or if the build does not succeed.
 pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> Result<(), String> {
     let nix_config_dir_str = nix_config_dir.display().to_string();
     let build_arg = format!(
-        "path:{}#nixosConfigurations.{}.config.system.build.kexecTree",
-        nix_config_dir_str, hostname
+        "path:{nix_config_dir_str}#nixosConfigurations.{hostname}.config.system.build.kexecTree"
     );
     let output = StdCommand::new("nix")
         .arg("build")
@@ -62,7 +73,7 @@ pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> 
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
-        .map_err(|e| format!("Failed to execute nix build: {:?}", e))?;
+        .map_err(|e| format!("Failed to execute nix build: {e:?}"))?;
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
         return Err(stderr);
@@ -79,7 +90,11 @@ pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> 
     Ok(())
 }
 
-/// Compute the SHA-256 hash of a file.
+/// Computes the SHA-256 hash of a file.
+///
+/// # Errors
+///
+/// Returns an error if the file cannot be opened or read.
 pub fn compute_sha256<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
     let file = fs::File::open(path)?;
     let mut reader = BufReader::new(file);
@@ -95,7 +110,11 @@ pub fn compute_sha256<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
     Ok(format!("{:x}", hasher.finalize()))
 }
 
-/// Processes build artifacts
+/// Processes build artifacts.
+///
+/// # Errors
+///
+/// Returns an error if reading the output directory fails or if a directory entry cannot be processed.
 pub fn process_artifacts(
     out_link: &std::path::Path,
     final_build_dir: &std::path::Path,
@@ -104,9 +123,9 @@ pub fn process_artifacts(
 ) -> Result<Vec<Value>, String> {
     let mut artifacts_info = Vec::new();
     let entries =
-        fs::read_dir(out_link).map_err(|e| format!("Failed to read out_link dir: {:?}", e))?;
+        fs::read_dir(out_link).map_err(|e| format!("Failed to read out_link dir: {e:?}"))?;
     for entry in entries {
-        let entry = entry.map_err(|e| format!("Failed to get directory entry: {:?}", e))?;
+        let entry = entry.map_err(|e| format!("Failed to get directory entry: {e:?}"))?;
         let path = entry.path();
         if path.is_file() {
             match path.file_name() {
@@ -115,7 +134,7 @@ pub fn process_artifacts(
 
                     // Filter by whitelist
                     if !whitelist.contains(&filename.as_str()) {
-                        println!("Skipping file not in whitelist: {}", filename);
+                        println!("Skipping file not in whitelist: {filename}");
                         continue;
                     }
 
@@ -125,10 +144,7 @@ pub fn process_artifacts(
                             let dest_file = final_build_dir.join(&filename);
 
                             if let Err(e) = fs::copy(&real_path, &dest_file) {
-                                eprintln!(
-                                    "Failed to copy {:?} to {:?}: {:?}",
-                                    real_path, dest_file, e
-                                );
+                                eprintln!("Failed to copy {real_path:?} to {dest_file:?}: {e:?}");
                                 continue;
                             }
 
@@ -144,17 +160,17 @@ pub fn process_artifacts(
                                     }));
                                 }
                                 Err(e) => {
-                                    eprintln!("Failed to compute sha for {:?}: {:?}", dest_file, e);
+                                    eprintln!("Failed to compute sha for {dest_file:?}: {e:?}");
                                 }
                             }
                         }
                         Err(e) => {
-                            eprintln!("Failed to canonicalize {:?}: {:?}", path, e);
+                            eprintln!("Failed to canonicalize {path:?}: {e:?}");
                         }
                     }
                 }
                 None => {
-                    eprintln!("Could not get file_name for {:?}", path);
+                    eprintln!("Could not get file_name for {path:?}");
                 }
             }
         }
@@ -164,7 +180,7 @@ pub fn process_artifacts(
 
 /// Logs the error and returns a standardized HTTP error response.
 pub fn handle_error<E: std::fmt::Debug>(desc: &str, error: E) -> HttpResponse {
-    println!("{}: {:?}", desc, error);
+    println!("{desc}: {error:?}");
     HttpResponse::InternalServerError().json(json!({
         "status": "error",
         "message": desc

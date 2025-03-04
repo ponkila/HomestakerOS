@@ -109,7 +109,7 @@
               ];
               languages.rust = {
                 enable = true;
-                components = [ "cargo" ];
+                components = [ "cargo" "clippy" ];
               };
               env = {
                 NIX_CONFIG = ''
@@ -139,6 +139,12 @@
                       nixpkgs-fmt.enable = true;
                       shellcheck.enable = true;
                       rustfmt.enable = true;
+                      pedantic-clippy = {
+                        enable = true;
+                        entry = "cargo clippy --manifest-path ${cargoTomlPath} -- -D clippy::pedantic";
+                        files = "\\.rs$";
+                        pass_filenames = false;
+                      };
                       cargo-test = {
                         enable = true;
                         entry = "cargo test --manifest-path ${cargoTomlPath} --all-features";
