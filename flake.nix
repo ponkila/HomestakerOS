@@ -103,6 +103,7 @@
                 typescript
                 yarn
                 yarn2nix
+                cargo-tarpaulin
                 # Cargo test deps
                 nix
                 json2nix
