@@ -3,7 +3,7 @@ use std::io::Write;
 use tempfile::{tempdir, NamedTempFile};
 
 // Import the helper functions from our library.
-use backend::{compute_sha256, write_default_nix};
+use backend::{compute_sha256, run_json2nix, run_nix_build, write_default_nix};
 
 #[test]
 fn test_compute_sha256() -> Result<(), Box<dyn std::error::Error>> {
@@ -103,4 +103,63 @@ async fn test_handle_error() {
     // Verify the JSON content.
     assert_eq!(json_val["status"], "error");
     assert_eq!(json_val["message"], desc);
+}
+
+#[test]
+fn test_run_json2nix() {
+    let input = r#"{"networking": { "hostName": "nixos", "firewall": {"enable":true, "allowedTCPPorts": [ 80, 443 ]} }}"#;
+    let result = run_json2nix(input);
+    match result {
+        Ok(output) => {
+            let expected = r#"{ networking = { firewall = { allowedTCPPorts = [ 80 443 ]; enable = true; }; hostName = "nixos"; }; }"#;
+            assert_eq!(output.trim(), expected.trim());
+        }
+        Err(err) => {
+            panic!("json2nix failed with error: {}", err);
+        }
+    }
+}
+
+#[test]
+fn test_run_nix_build() -> Result<(), Box<dyn std::error::Error>> {
+    // Create temporary directories and files to simulate flake setup.
+    let tmp_dir = tempdir()?;
+    let nix_config_dir = tmp_dir.path().join("nixConfig");
+    fs::create_dir_all(&nix_config_dir)?;
+
+    let flake_contents = include_str!("../src/static/flake.nix");
+    fs::write(nix_config_dir.join("flake.nix"), flake_contents)?;
+
+    let hostname = "testi";
+    let hostname_dir = nix_config_dir.join("nixosConfigurations").join(hostname);
+    fs::create_dir_all(&hostname_dir)?;
+
+    let default_nix_content = r#"
+{ pkgs, lib, config, ... }:
+{
+  homestakeros = {
+    localization = {
+      hostname = "testi";
+    };
+    ssh = {
+      authorizedKeys = [ "testi" ];
+    };
+  };
+}
+"#;
+    fs::write(hostname_dir.join("default.nix"), default_nix_content)?;
+
+    // Now call run_nix_build.
+    let out_link = tmp_dir.path().join("result");
+    run_nix_build(&nix_config_dir, hostname, &out_link)
+        .map_err(|e| format!("run_nix_build failed: {}", e))?;
+
+    // Verify that the out_link ("result" symlink) was created by nix build.
+    assert!(
+        out_link.exists(),
+        "Expected out_link path {} to exist, but it does not.",
+        out_link.display()
+    );
+
+    Ok(())
 }

@@ -57,6 +57,8 @@ pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> 
         .arg(build_arg)
         .arg("--out-link")
         .arg(out_link)
+        .arg("--extra-experimental-features")
+        .arg("nix-command")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
