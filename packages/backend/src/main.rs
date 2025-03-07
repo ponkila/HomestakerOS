@@ -29,11 +29,21 @@ async fn health_check() -> impl Responder {
 }
 
 /// Accepts strongly typed JSON and then processes it.
-async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> impl Responder {
+async fn nixos_config(req_body: String, data: web::Data<AppState>) -> impl Responder {
+    // Parse the request body manually; we can catch errors ourselves.
+    let config: Config = match serde_json::from_str(&req_body) {
+        Ok(cfg) => cfg,
+        Err(e) => {
+            return handle_error("Failed to parse JSON", e);
+        }
+    };
+
     // Serialize the typed config into a JSON string.
-    let json_str = match serde_json::to_string(&*config) {
+    let json_str = match serde_json::to_string(&config) {
         Ok(s) => s,
-        Err(e) => return handle_error("Failed to serialize JSON", e),
+        Err(e) => {
+            return handle_error("Failed to serialize JSON", e);
+        }
     };
 
     // Validate that required fields are not empty.

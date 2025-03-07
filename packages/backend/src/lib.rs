@@ -163,11 +163,12 @@ pub fn process_artifacts(
 }
 
 /// Logs the error and returns a standardized HTTP error response.
-pub fn handle_error<E: std::fmt::Debug>(desc: &str, error: E) -> HttpResponse {
-    println!("{desc}: {error:?}");
+pub fn handle_error<E: std::fmt::Display>(desc: &str, error: E) -> HttpResponse {
+    println!("{desc}: {error}");
     HttpResponse::InternalServerError().json(json!({
         "status": "error",
-        "message": desc
+        "message": desc,
+        "error": error.to_string()
     }))
 }
 

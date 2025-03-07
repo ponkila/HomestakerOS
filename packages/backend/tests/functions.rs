@@ -103,6 +103,7 @@ async fn test_handle_error() {
     // Verify the JSON content.
     assert_eq!(json_val["status"], "error");
     assert_eq!(json_val["message"], desc);
+    assert_eq!(json_val["error"], dummy_error);
 }
 
 #[test]
