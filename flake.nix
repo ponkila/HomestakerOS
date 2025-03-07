@@ -103,7 +103,15 @@
                 typescript
                 yarn
                 yarn2nix
+                cargo-tarpaulin
+                # Cargo test deps
+                nix
+                json2nix
               ];
+              languages.rust = {
+                enable = true;
+                components = [ "cargo" "clippy" ];
+              };
               env = {
                 NIX_CONFIG = ''
                   accept-flake-config = true
@@ -122,14 +130,31 @@
 
                 INFO
               '';
-              pre-commit = {
-                hooks = {
-                  nixpkgs-fmt.enable = true;
-                  shellcheck.enable = true;
-                  rustfmt.enable = true;
+              pre-commit =
+                let
+                  cargoTomlPath = "./packages/backend/Cargo.toml";
+                in
+                {
+                  hooks =
+                    {
+                      nixpkgs-fmt.enable = true;
+                      shellcheck.enable = true;
+                      rustfmt.enable = true;
+                      pedantic-clippy = {
+                        enable = true;
+                        entry = "cargo clippy --manifest-path ${cargoTomlPath} -- -D clippy::pedantic";
+                        files = "\\.rs$";
+                        pass_filenames = false;
+                      };
+                      cargo-test = {
+                        enable = true;
+                        entry = "cargo test --manifest-path ${cargoTomlPath} --all-features";
+                        files = "\\.rs$";
+                        pass_filenames = false;
+                      };
+                    };
+                  settings.rust.cargoManifestPath = cargoTomlPath;
                 };
-                settings.rust.cargoManifestPath = "./packages/backend/Cargo.toml";
-              };
               # Workaround for https://github.com/cachix/devenv/issues/760
               containers = pkgs.lib.mkForce { };
             };

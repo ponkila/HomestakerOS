@@ -30,4 +30,7 @@ rustPlatform.buildRustPackage rec {
     wrapProgram $out/bin/${pname} \
       --prefix PATH : ${lib.makeBinPath [ nix json2nix ]}
   '';
+
+  # Tests require access to a /nix/ and a nix daemon; we run them at pre-commit instead
+  doCheck = false;
 }

@@ -24,7 +24,6 @@ import {
   AlertTitle,
   AlertDescription,
   VStack,
-  Link,
   Spinner,
   Alert,
   Text
@@ -34,9 +33,9 @@ import { AddIcon, CloseIcon } from '@chakra-ui/icons'
 import * as jp from 'jsonpath'
 import { useLoaderData, useOutletContext } from "react-router-dom";
 import { useBackend } from "../Context/BackendContext";
+import ArtifactsList, { Artifact } from './ArtifactsList'
 
 let uuid = () => self.crypto.randomUUID();
-
 
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
   const { name, children } = props
@@ -180,9 +179,9 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
 export const ConfigurationForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [downloadLinks, setDownloadLinks] = useState<string[]>([]);
   const loader: any = useLoaderData();
   const [_, s]: any = useOutletContext();
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
 
   let props = {
     schema: s.value,
@@ -289,7 +288,7 @@ export const ConfigurationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, backendUrl: String) => {
     e.preventDefault()
-    setDownloadLinks([])
+    setArtifacts([])
     const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
@@ -345,6 +344,7 @@ export const ConfigurationForm = () => {
 
     setIsLoading(true);
     setError(null);
+    
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -360,16 +360,16 @@ export const ConfigurationForm = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const responseData = await response.json();
-      if (responseData.status === "ok" && responseData.download_links) {
-        // Links are relative so we add the backend url as prefix
-        let links: string[] = responseData.download_links;
-        links.forEach((d, i) => {
-          links[i] = `${backendUrl}${d}`;
+      if (responseData.status === "ok" && responseData.artifacts) {
+        // Artifact links are relative so we add the backend url as prefix
+        let afrtifacts: Artifact[] = responseData.artifacts;
+        afrtifacts.forEach((a) => {
+          a.download_url = `${backendUrl}${a.download_url}`;
         });
 
-        setDownloadLinks(links);
+        setArtifacts(afrtifacts);
       } else {
-        setError("Error: No download links found.");
+        setError("Error: No artifacts links found.");
       }
 
     } catch (error: any) {
@@ -388,8 +388,8 @@ export const ConfigurationForm = () => {
     joined.push(props.schema)
     joined.push(...props.nodes)
 
-    const options = [<option value="0">New node template</option>]
-    const extOpt = props.nodes.map((v: any, i: number) => (<option key={i} value={i + (options.length)}>{v.localization.hostname}</option>))
+    const options = [<option key={0} value="0">New node template</option>]
+    const extOpt = props.nodes.map((v: any, i: number) => (<option key={i + 1} value={i + (options.length)}>{v.localization.hostname}</option>))
     const jopt = new Array()
     jopt.push(...options)
     jopt.push(...extOpt)
@@ -415,11 +415,7 @@ export const ConfigurationForm = () => {
           </OrderedList>
         </Box>
         <Select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
-          {jopt.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {jopt}
         </Select>
         {processNode([root], structuredClone(props.schema), chosenJSON)}
         {isLoading && (
@@ -439,21 +435,8 @@ export const ConfigurationForm = () => {
             </Alert>
           )}
 
-          {downloadLinks.length > 0 && (
-            <Box>
-              <Heading as="h3" size="md" mb={2}>
-                Download Links:
-              </Heading>
-              <VStack spacing={2} align="start">
-                {downloadLinks.map((link, index) => (
-                  <Box key={index} p={2} borderWidth={1} borderRadius="md" width="full">
-                    <Link href={link} download isExternal>
-                      {link.split("/").pop()}
-                    </Link>
-                  </Box>
-                ))}
-              </VStack>
-            </Box>
+          {artifacts.length > 0 && (
+            <ArtifactsList artifacts={artifacts}/>
           )}
         </VStack>
         <Button w="100%" type="submit">
