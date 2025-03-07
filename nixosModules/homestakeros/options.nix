@@ -20,19 +20,71 @@
     };
 
     mounts = mkOption {
-      type = types.attrsOf types.attrs;
+      type = types.attrsOf (types.submodule {
+        options = {
+          enable = lib.mkEnableOption "Whether to enable this mount.";
+          description = mkOption {
+            type = types.str;
+            default = "storage device";
+            description = ''
+              Description of this unit used in systemd messages and progress indicators.
+            '';
+            example = "ethereum mainnet";
+          };
+          what = mkOption {
+            type = types.str;
+            description = ''
+              Absolute path of device node, file or other resource. (Mandatory)
+            '';
+            example = "/dev/sda1";
+          };
+          where = mkOption {
+            type = types.str;
+            description = ''
+              Absolute path of a directory of the mount point. Will be created if it doesn’t exist. (Mandatory)
+            '';
+            example = "/mnt";
+          };
+          type = mkOption {
+            type = types.str;
+            default = "auto";
+            description = "File system type.";
+            example = "btrfs";
+          };
+          options = mkOption {
+            type = types.str;
+            default = "noatime";
+            description = ''
+              Options used to mount the file system; strings concatenated with ",".
+            '';
+            example = "noatime";
+          };
+          wantedBy = mkOption {
+            type = types.listOf types.str;
+            default = [ "multi-user.target" ];
+            description = "Units that want (i.e. depend on) this unit.";
+            example = [ "some-system.target" ];
+          };
+          before = mkOption {
+            type = types.listOf types.str;
+            default = [ ];
+            description = ''
+              If the specified units are started at the same time as this unit, delay them until this unit has started.
+            '';
+            example = [ "some-system.service" ];
+          };
+        };
+      });
       default = { };
-      description = "Definition of systemd mount units. Click [here](https://www.freedesktop.org/software/systemd/man/systemd.mount.html#Options) for more information.";
+      description = "A set of systemd mount definitions.";
       example = {
-        my-mount = {
+        myMount = {
           enable = true;
-          description = "A storage device";
-
-          what = "/dev/disk/by-label/my-label";
-          where = "/path/to/my/mount";
-          options = "noatime";
+          what = "/dev/sda1";
+          where = "/mnt";
           type = "btrfs";
-
+          options = [ "noatime" ];
+          before = [ "some-other.service" ];
           wantedBy = [ "multi-user.target" ];
         };
       };

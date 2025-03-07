@@ -103,19 +103,7 @@ in
     # cfg: https://www.freedesktop.org/software/systemd/man/systemd.mount.html#Options
     (
       mkIf true {
-        systemd.mounts =
-          lib.mapAttrsToList
-            (name: mount: {
-              enable = mount.enable or true;
-              description = mount.description or "${name} mount point";
-              inherit (mount) what;
-              inherit (mount) where;
-              type = mount.type or "ext4";
-              options = mount.options or "defaults";
-              before = lib.mkDefault (mount.before or [ ]);
-              wantedBy = mount.wantedBy or [ "multi-user.target" ];
-            })
-            cfg.mounts;
+        systemd.mounts = lib.mapAttrsToList (_mountName: mountCfg: mountCfg) cfg.mounts;
       }
     )
 
