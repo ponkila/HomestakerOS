@@ -7,7 +7,10 @@ use std::fs;
 
 use backend::schema_types::Config;
 use backend::workspace::Workspace;
-use backend::{handle_error, process_artifacts, run_json2nix, run_nix_build, write_default_nix};
+use backend::{
+    handle_error, process_artifacts, run_json2nix, run_nix_build, validate_config,
+    write_default_nix,
+};
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
@@ -32,6 +35,14 @@ async fn nixos_config(config: web::Json<Config>, data: web::Data<AppState>) -> i
         Ok(s) => s,
         Err(e) => return handle_error("Failed to serialize JSON", e),
     };
+
+    // Validate that required fields are not empty.
+    if let Err(e) = validate_config(&config) {
+        return handle_error("Failed to validate JSON", e);
+    }
+
+    // Print the input JSON string.
+    println!("Input JSON string: {json_str}");
 
     // Extract hostname from the config.
     let hostname = config.localization.hostname.clone();
