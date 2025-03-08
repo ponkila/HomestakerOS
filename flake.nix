@@ -163,18 +163,7 @@
 
       flake =
         let
-          # Function to format module options
-          parseOpts = options:
-            inputs.nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! inputs.nixpkgs.lib.options.isOption v)
-              (_k: v: {
-                type = if v.type.name == "nullOr" then v.type.functor.wrapped.name else v.type.name;
-                inherit (v) default;
-                description =
-                  v.description or null;
-                example =
-                  v.example or null;
-              })
-              options;
+          introspect = import ./introspect.nix { inherit (self.inputs.nixpkgs) lib; };
 
           # Function to get options from module(s)
           getOpts = modules:
@@ -183,7 +172,6 @@
                 inherit modules;
                 specialArgs = { inherit (inputs) nixpkgs; };
               }).options [ "_module" ];
-
         in
         {
           # NixOS configuration entrypoints
@@ -257,7 +245,7 @@
 
           # Module option exports for the frontend
           # Accessible through 'nix eval --json .#exports'
-          exports = parseOpts (getOpts [
+          exports = introspect.parseOpts (getOpts [
             ./nixosModules/homestakeros/options.nix
           ]);
         };

@@ -1,10 +1,7 @@
 { lib
 , ...
 }: {
-  options.homestakeros = with lib; let
-    nospace = str: filter (c: c == " ") (stringToCharacters str) == [ ];
-  in
-  {
+  options.homestakeros = with lib; {
     localization = {
       hostname = mkOption {
         type = types.str;
@@ -107,7 +104,7 @@
 
     ssh = {
       authorizedKeys = mkOption {
-        type = types.listOf types.singleLineStr;
+        type = types.listOf types.str;
         default = [ ];
         description = "A list of public SSH keys to be added to the user's authorized keys.";
       };
