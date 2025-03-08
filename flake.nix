@@ -167,7 +167,7 @@
           parseOpts = options:
             inputs.nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! inputs.nixpkgs.lib.options.isOption v)
               (_k: v: {
-                type = v.type.name;
+                type = if v.type.name == "nullOr" then v.type.functor.wrapped.name else v.type.name;
                 inherit (v) default;
                 description =
                   v.description or null;
