@@ -1,4 +1,5 @@
 use backend::schema_types::Config;
+use backend::validate_config;
 use serde_json::Error;
 
 #[test]
@@ -141,5 +142,83 @@ fn test_valid_config() {
     assert!(
         config.is_ok(),
         "Deserialization should succeed with a minimal valid configuration"
+    );
+}
+
+#[test]
+fn test_empty_hostname() {
+    // Configuration with an empty 'localization.hostname' should fail validation.
+    let json_str = r#"
+    {
+        "localization": {
+            "hostname": ""
+        },
+        "ssh": {
+            "authorizedKeys": ["ssh-rsa AAAAB3Nza..."]
+        }
+    }
+    "#;
+    let config: Config = serde_json::from_str(json_str)
+        .expect("Deserialization should succeed even if hostname is empty");
+    let result = validate_config(&config);
+    assert!(
+        result.is_err(),
+        "Configuration with empty hostname should fail validation"
+    );
+    assert_eq!(
+        result.unwrap_err(),
+        "The 'localization.hostname' must not be empty"
+    );
+}
+
+#[test]
+fn test_empty_authorized_keys() {
+    // Configuration with an empty 'ssh.authorizedKeys' should fail validation.
+    let json_str = r#"
+    {
+        "localization": {
+            "hostname": "example"
+        },
+        "ssh": {
+            "authorizedKeys": []
+        }
+    }
+    "#;
+    let config: Config = serde_json::from_str(json_str)
+        .expect("Deserialization should succeed even if authorizedKeys is empty");
+    let result = validate_config(&config);
+    assert!(
+        result.is_err(),
+        "Configuration with empty authorizedKeys should fail validation"
+    );
+    assert_eq!(
+        result.unwrap_err(),
+        "The 'ssh.authorizedKeys' must contain at least one key"
+    );
+}
+
+#[test]
+fn test_authorized_keys_contains_empty_string() {
+    // Configuration with an empty string in the 'ssh.authorizedKeys' array should fail validation.
+    let json_str = r#"
+    {
+        "localization": {
+            "hostname": "example"
+        },
+        "ssh": {
+            "authorizedKeys": ["", "ssh-rsa AAAAB3Nza..."]
+        }
+    }
+    "#;
+    let config: Config = serde_json::from_str(json_str)
+        .expect("Deserialization should succeed even if authorizedKeys contains an empty string");
+    let result = validate_config(&config);
+    assert!(
+        result.is_err(),
+        "Configuration with an empty string in authorizedKeys should fail validation"
+    );
+    assert_eq!(
+        result.unwrap_err(),
+        "The 'ssh.authorizedKeys' must not contain an empty key"
     );
 }
