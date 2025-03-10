@@ -85,7 +85,6 @@ const ListOfControl = (props: ListOfControlProps) => {
   const { nodeKey, description, example, defaultValue } = props
   const [list, setList] = useState<string[]>(defaultValue || [])
   const name = nodeKey.split('.').slice(-1)[0]
-
   return (
     <>
       <FormControl id={name}>
@@ -201,8 +200,9 @@ export const ConfigurationForm = () => {
         const s = jp.value(sel, k)
         node.default = s
       }
-      switch (node.type) {
-        case 'bool':
+
+      switch (true) {
+        case node.type.startsWith('bool'):
           return (
             <FormControl key={uuid()} id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
@@ -211,16 +211,16 @@ export const ConfigurationForm = () => {
               </CustomCheckbox>
             </FormControl>
           )
-        case 'str':
-        case 'path':
-        case 'nullOr':
+        case node.type.startsWith('str'):
+        case node.type.startsWith('path'):
+        case node.type.startsWith('nullOr'):
           return (
             <FormControl key={uuid()} id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
               <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
             </FormControl>
           )
-        case 'int':
+        case node.type.startsWith('int'):
           return (
             <FormControl key={uuid()} id={jsonPath}>
               <DescriptionFormLabel label={keyName} description={node.description} />
@@ -233,7 +233,7 @@ export const ConfigurationForm = () => {
               </NumberInput>
             </FormControl>
           )
-        case 'attrsOf':
+        case node.type.startsWith('attrsOf'):
           return (
             <AttrsOfControl
               key={uuid()}
@@ -243,7 +243,7 @@ export const ConfigurationForm = () => {
               defaultValue={node.default}
             />
           )
-        case 'listOf':
+        case node.type.startsWith('listOf'):
           return (
             <ListOfControl
               key={uuid()}
@@ -293,7 +293,7 @@ export const ConfigurationForm = () => {
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
     Object.entries(formDataJson).forEach(([key, value]) => {
-      key = key.replace("nodes.", "")
+      key = key.replace("schema.", "")
       const schemaEntry = jp.query(props.schema, key)
       const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
       if (value === '' && fieldType !== 'nullOr') {
@@ -321,7 +321,7 @@ export const ConfigurationForm = () => {
             break
           }
         }
-        if (parent['type'] == 'listOf') {
+        if (parent['type'].startsWith('listOf')) {
           jp.apply(result, parentPath, (v: any) => [...v, value])
         } else if (parent['type'] == 'attrsOf') {
           const path = jp.parse(key).at(-2)['expression']['value']
@@ -344,7 +344,6 @@ export const ConfigurationForm = () => {
 
     setIsLoading(true);
     setError(null);
-    
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -436,7 +435,7 @@ export const ConfigurationForm = () => {
           )}
 
           {artifacts.length > 0 && (
-            <ArtifactsList artifacts={artifacts}/>
+            <ArtifactsList artifacts={artifacts} />
           )}
         </VStack>
         <Button w="100%" type="submit">
