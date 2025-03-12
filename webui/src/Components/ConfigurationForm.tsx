@@ -125,14 +125,102 @@ type AttrsOfControlProps = {
   description: string | null
   example: Record<string, string | boolean> | null
   defaultValue: Record<string, any> | null
+  options: Record<string, any>
+}
+const isLeaf = (node: Record<string, any>) => {
+  return node != null && node.constructor == Object && 'type' in node
 }
 
+const processNode = (keys: string[], node: Record<string, any>, sel: Record<string, any>) => {
+  const keyName = keys.at(-1)
+  const jsonPath = jp.stringify(keys)
+  if (isLeaf(node)) {
+    if (keys.indexOf("nodes") == 0) {
+      const k = jsonPath.replace("nodes", "")
+      const s = jp.value(sel, k)
+      node.default = s
+    }
+
+    switch (true) {
+      case node.type.startsWith('bool'):
+        return (
+          <FormControl key={uuid()} id={jsonPath}>
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
+              {keyName}
+            </CustomCheckbox>
+          </FormControl>
+        )
+      case node.type.startsWith('str'):
+      case node.type.startsWith('path'):
+      case node.type.startsWith('nullOr'):
+        return (
+          <FormControl key={uuid()} id={jsonPath}>
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
+          </FormControl>
+        )
+      case node.type.startsWith('int'):
+        return (
+          <FormControl key={uuid()} id={jsonPath}>
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <NumberInput name={jsonPath} defaultValue={node.default}>
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </FormControl>
+        )
+      case node.type.startsWith('attrsOf'):
+        return (
+          <AttrsOfControl
+            key={uuid()}
+            keys={keys}
+            description={node.description}
+            example={node.example}
+            defaultValue={node.default}
+            options={node.options}
+          />
+        )
+      case node.type.startsWith('listOf'):
+        return (
+          <ListOfControl
+            key={uuid()}
+            nodeKey={jsonPath}
+            description={node.description}
+            example={node.example}
+            defaultValue={node.default}
+          />
+        )
+      default:
+        break
+    }
+    if (node.type.startsWith('strMatching')) {
+      return (
+        <FormControl key={uuid()}>
+          <DescriptionFormLabel label={keyName} description={node.description} />
+          <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
+          <FormHelperText>{node.description}</FormHelperText>
+        </FormControl>
+      )
+    }
+  } else {
+    return (
+      <FormSection key={uuid()} name={keyName}>
+        {Object.entries(node).map(([newKey, value]) => {
+          return processNode([...keys, newKey], value, sel)
+        })}
+      </FormSection>
+    )
+  }
+}
 const AttrsOfControl = (props: AttrsOfControlProps) => {
-  const { keys, description, example, defaultValue } = props
+  const { keys, description, example, defaultValue, options } = props
   const [list, setList] = useState<string[]>(Object.keys(defaultValue || {}))
   if (!example) return <></>
   const name = keys.slice(-1)[0]
-  const fields = Object.values(example)[0]
 
   return (
     <FormSection name={name}>
@@ -150,19 +238,9 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                   }}
                 />
               </FormControl>
-              {Object.entries(fields).map(([key, value]) => (
-                <FormControl key={value} mr={4} mb={4}>
-                  <FormLabel>{key}</FormLabel>
-                  {typeof value == 'boolean' ? (
-                    <CustomCheckbox name={jp.stringify([...keys, item, key])} defaultChecked={value || false} />
-                  ) : (
-                    <Input
-                      placeholder={value}
-                      defaultValue={defaultValue && item in defaultValue ? defaultValue[item][key] || '' : ''}
-                      name={jp.stringify([...keys, item, key])}
-                    />
-                  )}
-                </FormControl>
+              {Object.entries(options).map(([key, value]) => (
+                processNode([...keys, key], value, options)
+
               ))}
               <Button as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
             </Flex>
@@ -187,95 +265,6 @@ export const ConfigurationForm = () => {
     nodes: loader.nodes,
   };
 
-  const isLeaf = (node: Record<string, any>) => {
-    return node != null && node.constructor == Object && 'type' in node
-  }
-
-  const processNode = (keys: string[], node: Record<string, any>, sel: Record<string, any>) => {
-    const keyName = keys.at(-1)
-    const jsonPath = jp.stringify(keys)
-    if (isLeaf(node)) {
-      if (keys.indexOf("nodes") == 0) {
-        const k = jsonPath.replace("nodes", "")
-        const s = jp.value(sel, k)
-        node.default = s
-      }
-
-      switch (true) {
-        case node.type.startsWith('bool'):
-          return (
-            <FormControl key={uuid()} id={jsonPath}>
-              <DescriptionFormLabel label={keyName} description={node.description} />
-              <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
-                {keyName}
-              </CustomCheckbox>
-            </FormControl>
-          )
-        case node.type.startsWith('str'):
-        case node.type.startsWith('path'):
-        case node.type.startsWith('nullOr'):
-          return (
-            <FormControl key={uuid()} id={jsonPath}>
-              <DescriptionFormLabel label={keyName} description={node.description} />
-              <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
-            </FormControl>
-          )
-        case node.type.startsWith('int'):
-          return (
-            <FormControl key={uuid()} id={jsonPath}>
-              <DescriptionFormLabel label={keyName} description={node.description} />
-              <NumberInput name={jsonPath} defaultValue={node.default}>
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            </FormControl>
-          )
-        case node.type.startsWith('attrsOf'):
-          return (
-            <AttrsOfControl
-              key={uuid()}
-              keys={keys}
-              description={node.description}
-              example={node.example}
-              defaultValue={node.default}
-            />
-          )
-        case node.type.startsWith('listOf'):
-          return (
-            <ListOfControl
-              key={uuid()}
-              nodeKey={jsonPath}
-              description={node.description}
-              example={node.example}
-              defaultValue={node.default}
-            />
-          )
-        default:
-          break
-      }
-      if (node.type.startsWith('strMatching')) {
-        return (
-          <FormControl key={uuid()}>
-            <DescriptionFormLabel label={keyName} description={node.description} />
-            <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
-            <FormHelperText>{node.description}</FormHelperText>
-          </FormControl>
-        )
-      }
-    } else {
-      return (
-        <FormSection key={uuid()} name={keyName}>
-          {Object.entries(node).map(([newKey, value]) => {
-            return processNode([...keys, newKey], value, sel)
-          })}
-        </FormSection>
-      )
-    }
-  }
-
   const recursiveReplace = (obj: any) => {
     if ('default' in obj) {
       return obj['default']
@@ -288,6 +277,7 @@ export const ConfigurationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, backendUrl: String) => {
     e.preventDefault()
+    debugger;
     setArtifacts([])
     const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
@@ -324,6 +314,7 @@ export const ConfigurationForm = () => {
         if (parent['type'].startsWith('listOf')) {
           jp.apply(result, parentPath, (v: any) => [...v, value])
         } else if (parent['type'] == 'attrsOf') {
+          debugger;
           const path = jp.parse(key).at(-2)['expression']['value']
           const objPath = jp.stringify([...jp.parse(parentPath).map((v: any) => v['expression']['value']), path])
           const obj = jp.query(result, objPath)
@@ -341,7 +332,7 @@ export const ConfigurationForm = () => {
         jp.apply(result, key, () => value)
       }
     })
-
+    debugger;
     setIsLoading(true);
     setError(null);
     try {
