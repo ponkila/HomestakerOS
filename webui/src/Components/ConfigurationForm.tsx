@@ -239,8 +239,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 />
               </FormControl>
               {Object.entries(options).map(([key, value]) => (
-                processNode([...keys, key], value, options)
-
+                processNode([...keys, item, key], value, options)
               ))}
               <Button as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
             </Flex>
@@ -277,13 +276,17 @@ export const ConfigurationForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>, backendUrl: String) => {
     e.preventDefault()
-    debugger;
     setArtifacts([])
     const result = recursiveReplace(structuredClone(props.schema))
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
     Object.entries(formDataJson).forEach(([key, value]) => {
-      key = key.replace("schema.", "")
+      // The key should always start with $.schema. or $.nodes.
+      if (key.startsWith("$.schema."))
+        key = key.replace("schema.", "")
+      else
+        key = key.replace("nodes.", "")
+
       const schemaEntry = jp.query(props.schema, key)
       const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
       if (value === '' && fieldType !== 'nullOr') {
@@ -313,26 +316,70 @@ export const ConfigurationForm = () => {
         }
         if (parent['type'].startsWith('listOf')) {
           jp.apply(result, parentPath, (v: any) => [...v, value])
-        } else if (parent['type'] == 'attrsOf') {
-          debugger;
-          const path = jp.parse(key).at(-2)['expression']['value']
-          const objPath = jp.stringify([...jp.parse(parentPath).map((v: any) => v['expression']['value']), path])
-          const obj = jp.query(result, objPath)
-          if (obj.length == 0) {
-            jp.apply(result, parentPath, (v: any) => ({ ...v, [path]: {} }))
+        } else if (parent['type'].startsWith('attrsOf')) {
+          // Parse the JSON path and get the last segment (could be a key or an array index)
+          const lastSegment = jp.parse(key).at(-1);
+
+          // Check if the last segment is an array index (e.g., [0], [1])
+          const isLastSegmentArrayIndex = lastSegment.expression.type === "numeric_literal";
+
+          // Determine the index of the second-to-last segment in the path
+          // If the last segment is an array index, the actual key (array name) is at -3
+          // Otherwise, it's just the previous segment at -2
+          const secondLastSegmentIndex = isLastSegmentArrayIndex ? -3 : -2;
+
+          // Extract the key from the second-to-last segment
+          const parentKey = jp.parse(key).at(secondLastSegmentIndex)['expression']['value'];
+
+          // Construct the object path by combining the parent path and the extracted key
+          const fullObjectPath = jp.stringify([
+            ...jp.parse(parentPath).map((segment: any) => segment['expression']['value']),
+            parentKey
+          ]);
+
+          // Query the object at the constructed path
+          const targetObject = jp.query(result, fullObjectPath);
+
+          // If the target object doesn't exist, initialize it as an empty object
+          if (targetObject.length === 0) {
+            jp.apply(result, parentPath, (parentObject: any) => ({ ...parentObject, [parentKey]: {} }));
           }
-          const key2 = jp.parse(key).at(-1)['expression']['value']
-          if (key2 == 'enable') {
-            jp.apply(result, objPath, (v: any) => ({ ...v, [key2]: value === '1' }))
-          } else {
-            jp.apply(result, objPath, (v: any) => ({ ...v, [key2]: value }))
+
+          // Determine the key to modify within the target object
+          // If the last segment is an array index, use the second-to-last segment (array name)
+          // Otherwise, use the last segment (regular key)
+          const targetKey = isLastSegmentArrayIndex ?
+            jp.parse(key).at(-2)['expression']['value']
+            : jp.parse(key).at(-1)['expression']['value'];
+
+          // If the target is an array, append the new value
+          if (isLastSegmentArrayIndex) {
+            jp.apply(result, fullObjectPath, (v: any) => ({
+              ...v,
+              [targetKey]: Array.isArray(v[targetKey])
+                ? [...v[targetKey], value]
+                : [value]
+            }));
+          }
+          // If the target key is 'enable', store a boolean value (true if '1', false otherwise)
+          else if (targetKey === 'enable') {
+            jp.apply(result, fullObjectPath, (v: any) => ({
+              ...v,
+              [targetKey]: value === '1'
+            }));
+          }
+          // Otherwise, update the object with the new value
+          else {
+            jp.apply(result, fullObjectPath, (v: any) => ({
+              ...v,
+              [targetKey]: value
+            }));
           }
         }
       } else {
         jp.apply(result, key, () => value)
       }
     })
-    debugger;
     setIsLoading(true);
     setError(null);
     try {
