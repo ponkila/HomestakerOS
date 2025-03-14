@@ -15,7 +15,7 @@ let
     in
     # We'll pattern-match on known wrappers.
     if name == "nullOr" && child != null then
-      "nullOr " + "(" + describeType child + ")"
+      describeType child
 
     else if name == "listOf" && child != null then
       "listOf " + "(" + describeType child + ")"
