@@ -245,9 +245,10 @@
 
           # Format modules
           nixosModules = {
-            homestakeros.imports = [
-              ./nixosModules/homestakeros
-            ];
+            homestakeros = {
+              imports = [ ./nixosModules/homestakeros ];
+              nixpkgs.overlays = [ self.overlays.default ];
+            };
             backend = {
               imports = [ ./nixosModules/backend ];
               nixpkgs.overlays = [ self.overlays.default ];
