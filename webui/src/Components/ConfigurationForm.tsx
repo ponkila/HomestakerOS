@@ -315,7 +315,7 @@ export const ConfigurationForm = () => {
           }
         }
         if (parent['type'].startsWith('listOf')) {
-          jp.apply(result, parentPath, (v: any) => [...v, value])
+          jp.apply(result, parentPath, (v: any) => (Array.isArray(v) ? [...v, value] : [value]));
         } else if (parent['type'].startsWith('attrsOf')) {
           // Parse the JSON path and get the last segment (could be a key or an array index)
           const lastSegment = jp.parse(key).at(-1);
