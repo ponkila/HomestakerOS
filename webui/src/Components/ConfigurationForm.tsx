@@ -132,7 +132,9 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
     if (keys.indexOf("nodes") == 0) {
       const k = jsonPath.replace("nodes", "")
       const s = jp.value(sel, k)
-      node.default = s
+      // No need to overwrite default if s is undefined
+      if (s)
+        node.default = s
     }
 
     switch (true) {
@@ -243,7 +245,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 />
               </FormControl>
               {Object.entries(options).map(([key, value]) => (
-                processNode([...keys, item, key], value, sel)
+                processNode([...keys, item, key], structuredClone(value), sel)
               ))}
               <Button as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
             </Flex>
