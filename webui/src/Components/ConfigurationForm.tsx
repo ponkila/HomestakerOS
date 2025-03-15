@@ -35,8 +35,6 @@ import { useLoaderData, useOutletContext } from "react-router-dom";
 import { useBackend } from "../Context/BackendContext";
 import ArtifactsList, { Artifact } from './ArtifactsList'
 
-let uuid = () => self.crypto.randomUUID();
-
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
   const { name, children } = props
   const [show, setShow] = useState(true)
@@ -140,7 +138,7 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
     switch (true) {
       case node.type.startsWith('bool'):
         return (
-          <FormControl key={uuid()} id={jsonPath}>
+          <FormControl key={jsonPath} id={jsonPath}>
             <DescriptionFormLabel label={keyName} description={node.description} />
             <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
               {keyName}
@@ -150,14 +148,14 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
       case node.type.startsWith('str'):
       case node.type.startsWith('path'):
         return (
-          <FormControl key={uuid()} id={jsonPath}>
+          <FormControl key={jsonPath} id={jsonPath}>
             <DescriptionFormLabel label={keyName} description={node.description} />
             <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
           </FormControl>
         )
       case node.type.startsWith('int'):
         return (
-          <FormControl key={uuid()} id={jsonPath}>
+          <FormControl key={jsonPath} id={jsonPath}>
             <DescriptionFormLabel label={keyName} description={node.description} />
             <NumberInput name={jsonPath} defaultValue={node.default}>
               <NumberInputField />
@@ -171,7 +169,7 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
       case node.type.startsWith('attrsOf'):
         return (
           <AttrsOfControl
-            key={uuid()}
+            key={jsonPath}
             keys={keys}
             description={node.description}
             example={node.example}
@@ -183,7 +181,7 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
       case node.type.startsWith('listOf'):
         return (
           <ListOfControl
-            key={uuid()}
+            key={jsonPath}
             nodeKey={jsonPath}
             description={node.description}
             example={node.example}
@@ -195,7 +193,7 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
     }
   } else {
     return (
-      <FormSection key={uuid()} name={keyName}>
+      <FormSection key={jsonPath} name={keyName}>
         {Object.entries(node).map(([newKey, value]) => {
           return processNode([...keys, newKey], value, sel)
         })}
