@@ -389,7 +389,14 @@ export const ConfigurationForm = () => {
         mode: 'cors',
       });
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const errorData = await response.json();
+        let errorMessage = ""
+        if (errorData.message && errorData.error)
+          errorMessage = `${errorData.message}:\n ${errorData.error}`
+        else
+          errorMessage = `HTTP error! Status: ${response.status}`
+        
+        throw new Error(errorMessage);
       }
       const responseData = await response.json();
       if (responseData.status === "ok" && responseData.artifacts) {
