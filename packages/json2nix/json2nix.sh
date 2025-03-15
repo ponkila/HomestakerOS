@@ -11,11 +11,8 @@ else
   exit 1
 fi
 
-# Escape double quotes
-esc_json_data="${json_data//\"/\\\"}"
-
-# Convert JSON to Nix expression
-nix_expr=$(nix-instantiate --eval --expr "builtins.fromJSON \"$esc_json_data\"") || exit 1
+# Convert JSON to Nix expression using a here-document to avoid double escaping
+nix_expr=$(nix-instantiate --eval --expr "builtins.fromJSON ''$json_data''") || exit 1
 
 # Print to stdout
 echo "$nix_expr"

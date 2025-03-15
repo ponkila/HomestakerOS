@@ -32,6 +32,8 @@ pub struct Addons {
 pub struct MevBoost {
     pub enable: bool,
     pub endpoint: String,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -46,6 +48,8 @@ pub struct SsvNode {
         skip_serializing_if = "Option::is_none"
     )]
     pub private_key_password_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -74,6 +78,8 @@ pub struct Lighthouse {
     pub jwt_secret_file: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slasher: Option<LighthouseSlasher>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -97,6 +103,8 @@ pub struct Nimbus {
     pub exec_endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -112,6 +120,8 @@ pub struct Prysm {
     pub jwt_secret_file: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slasher: Option<PrysmSlasher>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -131,6 +141,8 @@ pub struct Teku {
     pub exec_endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -155,6 +167,8 @@ pub struct Besu {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -166,6 +180,8 @@ pub struct Erigon {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -177,6 +193,8 @@ pub struct Geth {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -188,6 +206,8 @@ pub struct Nethermind {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
+    pub extra_options: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
