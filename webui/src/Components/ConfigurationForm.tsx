@@ -120,13 +120,7 @@ const CustomCheckbox = (props: { name: string; defaultChecked: boolean; children
   )
 }
 
-type AttrsOfControlProps = {
-  keys: string[]
-  description: string | null
-  example: Record<string, string | boolean> | null
-  defaultValue: Record<string, any> | null
-  options: Record<string, any>
-}
+
 const isLeaf = (node: Record<string, any>) => {
   return node != null && node.constructor == Object && 'type' in node
 }
@@ -182,6 +176,7 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
             example={node.example}
             defaultValue={node.default}
             options={node.options}
+            sel={sel}
           />
         )
       case node.type.startsWith('listOf'):
@@ -216,8 +211,17 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
     )
   }
 }
+type AttrsOfControlProps = {
+  keys: string[]
+  description: string | null
+  example: Record<string, string | boolean> | null
+  defaultValue: Record<string, any> | null
+  options: Record<string, any>
+  sel: Record<string, any>
+}
+
 const AttrsOfControl = (props: AttrsOfControlProps) => {
-  const { keys, description, example, defaultValue, options } = props
+  const { keys, description, example, defaultValue, options, sel } = props
   const [list, setList] = useState<string[]>(Object.keys(defaultValue || {}))
   if (!example) return <></>
   const name = keys.slice(-1)[0]
@@ -239,7 +243,7 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                 />
               </FormControl>
               {Object.entries(options).map(([key, value]) => (
-                processNode([...keys, item, key], value, options)
+                processNode([...keys, item, key], value, sel)
               ))}
               <Button as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
             </Flex>
