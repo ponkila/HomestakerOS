@@ -149,7 +149,6 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
         )
       case node.type.startsWith('str'):
       case node.type.startsWith('path'):
-      case node.type.startsWith('nullOr'):
         return (
           <FormControl key={uuid()} id={jsonPath}>
             <DescriptionFormLabel label={keyName} description={node.description} />
@@ -193,15 +192,6 @@ const processNode = (keys: string[], node: Record<string, any>, sel: Record<stri
         )
       default:
         break
-    }
-    if (node.type.startsWith('strMatching')) {
-      return (
-        <FormControl key={uuid()}>
-          <DescriptionFormLabel label={keyName} description={node.description} />
-          <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
-          <FormHelperText>{node.description}</FormHelperText>
-        </FormControl>
-      )
     }
   } else {
     return (
@@ -295,16 +285,15 @@ export const ConfigurationForm = () => {
 
       const schemaEntry = jp.query(props.schema, key)
       const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
-      if (value === '' && fieldType !== 'nullOr') {
+      if (value === '') {
         return
       }
       if (fieldType === 'int') {
         jp.apply(result, key, () => parseInt(value as string))
       } else if (fieldType === 'bool') {
         jp.apply(result, key, () => value === '1')
-      } else if (fieldType === 'nullOr') {
-        jp.apply(result, key, () => (value === '' ? null : value))
-      } else if (schemaEntry.length == 0) {
+      } 
+      else if (schemaEntry.length == 0) {
         let parent = null
         let parentPath = ''
         for (let i = 1; i < key.length; i++) {
