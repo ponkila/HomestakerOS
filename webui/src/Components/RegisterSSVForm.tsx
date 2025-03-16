@@ -4,6 +4,7 @@ import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
+import { parseEther } from "viem";
 
 const enum ContractAddresses {
   Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
@@ -28,7 +29,7 @@ const RegisterSSVForm = () => {
       const coder = new ethers.utils.AbiCoder();
 
       const pk = e.target.publicKey.value;
-      const fee = roundOperatorFee(BigInt(e.target.fee.value) / BLOCKS_PER_YEAR);
+      const fee = roundOperatorFee(parseEther(e.target.fee.value) / BLOCKS_PER_YEAR);
       const setPrivate = e.target.isPrivate.checked;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -119,7 +120,7 @@ const RegisterSSVForm = () => {
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
-                <Input type="number" max="200" min="0"  placeholder="1.0" />
+                <Input type="number" max="200" min="0" step="any" placeholder="1.0" />
               </FormControl>
               <FormControl my={4} id="isPrivate">
                 <FormLabel>Private Operator</FormLabel>
