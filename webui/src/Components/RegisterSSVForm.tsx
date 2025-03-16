@@ -1,28 +1,29 @@
 import { useState } from 'react'
-import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select } from '@chakra-ui/react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select, AlertIcon, Alert } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
-import { parseEther } from 'ethers/lib/utils'
 
 const enum ContractAddresses {
   Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
   Mainnet = "0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1",
 }
 const BLOCKS_PER_YEAR = 2613400n;
+const USE_TEST_NETWORK = true;
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [transactionLink, settransactionLink] = useState('')
   const [_, setNode] = useState<NodeInfo | null>(null)
   const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
     e.preventDefault();
     setIsLoading(true);
-
+    settransactionLink('');
     try {
       const coder = new ethers.utils.AbiCoder();
 
@@ -33,7 +34,8 @@ const RegisterSSVForm = () => {
       const signer = provider.getSigner();
 
       const abi = await (await fetch('/SSVNetwork.json')).json();
-      const contract = new ethers.Contract(ContractAddresses.Testnet, abi, signer);
+      const address = USE_TEST_NETWORK ? ContractAddresses.Testnet : ContractAddresses.Mainnet
+      const contract = new ethers.Contract(address, abi, signer);
       const gasEstimate = await contract.estimateGas.registerOperator(coder.encode(['string'], [pk]), fee, setPrivate);
       const pkDecoded = ethers.utils.base64.decode(pk);
       const publicKeyBytes = ethers.utils.arrayify(pkDecoded);
@@ -116,12 +118,22 @@ const RegisterSSVForm = () => {
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
-                <Input type="number" placeholder="1.0" max={200}/>
+                <Input placeholder="1.0" />
               </FormControl>
               <FormControl my={4} id="isPrivate">
                 <FormLabel>Private Operator</FormLabel>
                 <input type="checkbox" name="isPrivate" />
               </FormControl>
+
+              {transactionLink && (
+                <Alert mb={5} status="success">
+                  <AlertIcon />
+                  Transaction submitted!
+                  <Link ml={1} href={transactionLink} color="blue.500" isExternal>
+                    View Transaction
+                  </Link>
+                </Alert>
+              )}
               <Button w="100%" type="submit">
                 Register
               </Button>
