@@ -42,7 +42,7 @@ const fetchBlocks = async (nodes: any) => {
 }
 const Backend = () => {
   const [status, setStatus] = useState<boolean>(false)
-  const backendUrl = useBackend()
+  const backendUrl = useBackend().backendUrl
   useEffect(() => {
     fetch(`${backendUrl}/api`, {
       method: 'GET',
