@@ -10,20 +10,20 @@ const enum ContractAddresses {
   Mainnet = "0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1",
 }
 const BLOCKS_PER_YEAR = 2613400n;
-const USE_TEST_NETWORK = true;
+const USE_TEST_NET = true;
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [transactionLink, settransactionLink] = useState('')
+  const [transactionLink, setTransactionLink] = useState('')
   const [_, setNode] = useState<NodeInfo | null>(null)
   const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
     e.preventDefault();
     setIsLoading(true);
-    settransactionLink('');
+    setTransactionLink('');
     try {
       const coder = new ethers.utils.AbiCoder();
 
@@ -34,7 +34,7 @@ const RegisterSSVForm = () => {
       const signer = provider.getSigner();
 
       const abi = await (await fetch('/SSVNetwork.json')).json();
-      const address = USE_TEST_NETWORK ? ContractAddresses.Testnet : ContractAddresses.Mainnet
+      const address = USE_TEST_NET ? ContractAddresses.Testnet : ContractAddresses.Mainnet
       const contract = new ethers.Contract(address, abi, signer);
       const gasEstimate = await contract.estimateGas.registerOperator(coder.encode(['string'], [pk]), fee, setPrivate);
       const pkDecoded = ethers.utils.base64.decode(pk);
@@ -42,9 +42,10 @@ const RegisterSSVForm = () => {
       contract
         .registerOperator(publicKeyBytes, fee, setPrivate, { gasLimit: gasEstimate })
         .then((tx: any) => {
-          console.log(tx);
           setIsLoading(false);
           setError('');
+          const txLink = USE_TEST_NET ? `https://holesky.etherscan.io/tx/${tx.hash}` : `https://etherscan.io/tx/${tx.hash}`;
+          setTransactionLink(txLink)
         })
     } catch (err: any) {
       setError(err.message);
@@ -112,13 +113,13 @@ const RegisterSSVForm = () => {
                   ))}
                 </Select>
               </FormControl>
-              <FormControl my={4} id="publicKey">
+              <FormControl my={4} id="publicKey" isRequired>
                 <FormLabel>Public key</FormLabel>
                 <Input />
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
-                <Input placeholder="1.0" />
+                <Input type="number" max="200" min="0"  placeholder="1.0" />
               </FormControl>
               <FormControl my={4} id="isPrivate">
                 <FormLabel>Private Operator</FormLabel>
