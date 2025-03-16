@@ -344,7 +344,7 @@ export const ConfigurationForm = () => {
 
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -415,11 +415,7 @@ export const ConfigurationForm = () => {
           </OrderedList>
         </Box>
         <Select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
-          {jopt.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {jopt}
         </Select>
         {processNode([root], structuredClone(props.schema), chosenJSON)}
         {isLoading && (
@@ -440,7 +436,7 @@ export const ConfigurationForm = () => {
           )}
 
           {artifacts.length > 0 && (
-            <ArtifactsList artifacts={artifacts}/>
+            <ArtifactsList artifacts={artifacts} />
           )}
         </VStack>
         <Button w="100%" type="submit">
