@@ -4,11 +4,13 @@ import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
+import { parseEther } from 'ethers/lib/utils'
 
 const enum ContractAddresses {
   Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
   Mainnet = "0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1",
 }
+const BLOCKS_PER_YEAR = 2613400n;
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
@@ -25,7 +27,7 @@ const RegisterSSVForm = () => {
       const coder = new ethers.utils.AbiCoder();
 
       const pk = e.target.publicKey.value;
-      const fee = Number(e.target.fee.value);
+      const fee = roundOperatorFee(BigInt(e.target.fee.value) / BLOCKS_PER_YEAR);
       const setPrivate = e.target.isPrivate.checked;
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -54,6 +56,20 @@ const RegisterSSVForm = () => {
     } else {
       setNode(null)
     }
+  }
+
+  const roundOperatorFee = (
+    fee: bigint,
+    precision = 10_000_000n,
+  ): bigint => {
+    return bigintRound(fee, precision);
+  }
+
+  const bigintRound = (value: bigint, precision: bigint): bigint => {
+    const remainder = value % precision;
+    return remainder >= precision / 2n
+      ? value + (precision - remainder) // Round up
+      : value - remainder; // Round down
   }
 
   return (
@@ -100,7 +116,7 @@ const RegisterSSVForm = () => {
               </FormControl>
               <FormControl my={4} id="fee">
                 <FormLabel>Fee</FormLabel>
-                <Input placeholder="1.0" />
+                <Input type="number" placeholder="1.0" max={200}/>
               </FormControl>
               <FormControl my={4} id="isPrivate">
                 <FormLabel>Private Operator</FormLabel>
