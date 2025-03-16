@@ -452,11 +452,7 @@ export const ConfigurationForm = () => {
           </OrderedList>
         </Box>
         <Select value={selectedTemplate} onChange={e => setSelectedTemplate(e.target.value)}>
-          {jopt.map((option, index) => (
-            <option key={index} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {jopt}
         </Select>
         {processNode([root], structuredClone(props.schema), chosenJSON)}
         {isLoading && (
