@@ -44,7 +44,7 @@ const Backend = () => {
   const [status, setStatus] = useState<boolean>(false)
   const backendUrl = useBackend().backendUrl
   useEffect(() => {
-    fetch(`${backendUrl}/api`, {
+    fetch(`https://${backendUrl}`, {
       method: 'GET',
       headers: {
         'Access-Control-Allow-Origin': '*',
