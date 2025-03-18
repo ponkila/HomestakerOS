@@ -436,7 +436,7 @@ export const ConfigurationForm = () => {
           )}
 
           {artifacts.length > 0 && (
-            <ArtifactsList artifacts={artifacts} />
+            <ArtifactsList artifacts={artifacts}/>
           )}
         </VStack>
         <Button w="100%" type="submit">

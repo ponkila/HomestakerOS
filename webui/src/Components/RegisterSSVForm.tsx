@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select, AlertIcon, Alert } from '@chakra-ui/react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, AlertIcon, Alert } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
-import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
 import { parseEther } from "viem";
 
 const enum ContractAddresses {
