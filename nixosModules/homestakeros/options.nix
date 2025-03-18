@@ -1,18 +1,15 @@
 { lib
 , ...
 }: {
-  options.homestakeros = with lib; let
-    nospace = str: filter (c: c == " ") (stringToCharacters str) == [ ];
-  in
-  {
+  options.homestakeros = with lib; {
     localization = {
       hostname = mkOption {
-        type = types.strMatching "^$|^[[:alnum:]]([[:alnum:]_-]{0,61}[[:alnum:]])?$";
+        type = types.str;
         default = "homestaker";
         description = "The name of the machine.";
       };
       timezone = mkOption {
-        type = types.nullOr (types.addCheck types.str nospace);
+        type = types.nullOr types.str;
         default = null;
         description = "The time zone used when displaying times and dates.";
         example = "America/New_York";
@@ -107,7 +104,7 @@
 
     ssh = {
       authorizedKeys = mkOption {
-        type = types.listOf types.singleLineStr;
+        type = types.listOf types.str;
         default = [ ];
         description = "A list of public SSH keys to be added to the user's authorized keys.";
       };

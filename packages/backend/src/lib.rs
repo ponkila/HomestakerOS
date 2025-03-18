@@ -1,6 +1,7 @@
 pub mod schema_types;
 pub mod workspace;
 
+use crate::schema_types::Config;
 use actix_web::HttpResponse;
 use anyhow::{anyhow, Context, Result};
 use serde_json::{json, Value};
@@ -162,10 +163,31 @@ pub fn process_artifacts(
 }
 
 /// Logs the error and returns a standardized HTTP error response.
-pub fn handle_error<E: std::fmt::Debug>(desc: &str, error: E) -> HttpResponse {
-    println!("{desc}: {error:?}");
+pub fn handle_error<E: std::fmt::Display>(desc: &str, error: E) -> HttpResponse {
+    println!("{desc}: {error}");
     HttpResponse::InternalServerError().json(json!({
         "status": "error",
-        "message": desc
+        "message": desc,
+        "error": error.to_string()
     }))
+}
+
+/// Validates the configuration to ensure it meets required criteria.
+///
+/// # Errors
+///
+/// Returns an error if the configuration is invalid for any reason
+pub fn validate_config(config: &Config) -> Result<(), String> {
+    if config.localization.hostname.trim().is_empty() {
+        return Err("The 'localization.hostname' must not be empty".into());
+    }
+    if config.ssh.authorized_keys.is_empty() {
+        return Err("The 'ssh.authorizedKeys' must contain at least one key".into());
+    }
+    for key in &config.ssh.authorized_keys {
+        if key.trim().is_empty() {
+            return Err("The 'ssh.authorizedKeys' must not contain an empty key".into());
+        }
+    }
+    Ok(())
 }

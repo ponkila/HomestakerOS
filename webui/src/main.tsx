@@ -42,9 +42,14 @@ const fetchBlocks = async (nodes: any) => {
 }
 const Backend = () => {
   const [status, setStatus] = useState<boolean>(false)
-  const backendUrl = useBackend()
+  const backendUrl = useBackend().backendUrl
+  const getFullUrl = (url: string) => {
+    return url.startsWith('http://') || url.startsWith('https://') 
+      ? url 
+      : `https://${url}`;
+  };
   useEffect(() => {
-    fetch(`${backendUrl}/api`, {
+    fetch(getFullUrl(backendUrl), {
       method: 'GET',
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -52,7 +57,7 @@ const Backend = () => {
         'Content-Type': 'application/json',
       },
     }).then((res) => setStatus(res.ok))
-  }, [])
+  }, [backendUrl])
   return status
 }
 
