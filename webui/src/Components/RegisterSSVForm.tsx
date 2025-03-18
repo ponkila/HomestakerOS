@@ -18,8 +18,6 @@ const RegisterSSVForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [transactionLink, setTransactionLink] = useState('')
-  const [_, setNode] = useState<NodeInfo | null>(null)
-  const nodeInfo = useNodeInfo()
 
   const registerOperator = async (e: any) => {
     e.preventDefault();
@@ -53,14 +51,6 @@ const RegisterSSVForm = () => {
       setIsLoading(false);
     }
   };
-
-  const onHostnameChange = (e: any) => {
-    if (e.target.value) {
-      setNode(e.target.value)
-    } else {
-      setNode(null)
-    }
-  }
 
   const roundOperatorFee = (
     fee: bigint,
@@ -105,14 +95,6 @@ const RegisterSSVForm = () => {
               <FormControl my={4}>
                 <FormLabel>Owner</FormLabel>
                 <Input disabled value={wallet.accounts[0] || ''} />
-              </FormControl>
-              <FormControl my={4}>
-                <FormLabel>Hostname</FormLabel>
-                <Select placeholder="Select hostname" onChange={onHostnameChange}>
-                  {nodeInfo.map((node: NodeInfo) => (
-                    <option key={node.hostname} value={node.hostname}>{node.hostname}</option>
-                  ))}
-                </Select>
               </FormControl>
               <FormControl my={4} id="publicKey" isRequired>
                 <FormLabel>Public key</FormLabel>
