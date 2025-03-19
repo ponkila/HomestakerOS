@@ -2,7 +2,7 @@
 
 HomestakerOS is a web UI that creates a custom Linux OS for Ethereum homestaking. It aims to democratize homestaking by simplifying the process of creating and maintaining servers in home environments.
 
-Check out the live demo at [https://demo.homestakeros.com](https://demo.homestakeros.com)
+Check out the live demo at [https://homestakeros.com/ponkila/homestaking-infra](https://homestakeros.com/ponkila/homestaking-infra)
 
 ## 📋 Overview
 
@@ -26,17 +26,11 @@ It also offers a dashboard where you can inspect and manage the entire infrastru
     nix run .#backend
     ```
 
-4. **Start the frontend**
+4. Visit [https://homestakeros.com/](https://homestakeros.com/)
 
-    ```
-    direnv allow
-    cd webui
-    npm run dev -- --host 0.0.0.0
-    ```
+5. Set the flake URI as `<github-username>/<repository-name>`
 
-5. **Check it out**
-
-    Go to [http://localhost:5173](http://localhost:5173) to start using the Web UI.
+6. Click 'Submit' to load your configurations
 
 ## 🌟 Inspiration
 
@@ -52,7 +46,7 @@ In the web user interface, you will configure your node under the 'NixOS config'
 
 For those interested in the details, let's dive into the documentation from here.
 
-- [1. 📕 Getting Started](./docs/getting_started.md)
+- [1. 📕 Getting Started](./docs/homestakeros/1-introduction.md)
 
   Learn how to set up your machine for deploying HomestakerOS, including essential setup and configurations.
 
