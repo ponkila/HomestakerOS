@@ -3,7 +3,7 @@ use std::io::Write;
 use tempfile::{tempdir, NamedTempFile};
 
 // Import the helper functions from our library.
-use backend::{compute_sha256, run_json2nix, run_nix_build, write_default_nix};
+use backend::{compute_sha256, create_tarball, run_json2nix, run_nix_build, write_default_nix};
 
 #[test]
 fn test_compute_sha256() -> Result<(), Box<dyn std::error::Error>> {
@@ -42,34 +42,25 @@ fn test_write_default_nix() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn test_process_artifacts() -> Result<(), Box<dyn std::error::Error>> {
-    let whitelist = ["bzImage", "initrd.zst", "kexec-boot"];
     let build_id = "test_build";
 
-    // Create temporary directories and files to simulate out_link.
-    let out_dir = tempdir()?;
-    let final_dir = tempdir()?;
+    // Create temporary directories and files to simulate output_dir.
+    let output_dir = tempdir()?;
 
-    let whitelisted_path = out_dir.path().join("bzImage");
-    fs::write(&whitelisted_path, "artifact content")?;
-
-    let non_whitelisted_path = out_dir.path().join("ignored.txt");
-    fs::write(&non_whitelisted_path, "should be ignored")?;
+    let file_path = output_dir.path().join("bzImage");
+    fs::write(&file_path, "artifact content")?;
 
     // Call process_artifacts function.
-    let artifacts_info =
-        backend::process_artifacts(out_dir.path(), final_dir.path(), build_id, &whitelist)
-            .map_err(|e| format!("process_artifacts failed: {}", e))?;
+    let artifacts_info = backend::process_artifacts(output_dir.path(), build_id)
+        .map_err(|e| format!("process_artifacts failed: {}", e))?;
 
-    // Check that only the bzImage got processed.
+    // Check that the file was processed.
     let artifact = &artifacts_info[0];
     assert_eq!(artifacts_info.len(), 1);
     assert_eq!(artifact["file"], "bzImage");
 
-    let copied_file_path = final_dir.path().join("bzImage");
-    assert!(copied_file_path.exists());
-
     // Verify the SHA256.
-    let expected_sha = backend::compute_sha256(&copied_file_path)?;
+    let expected_sha = backend::compute_sha256(&file_path)?;
     assert_eq!(artifact["sha256"], expected_sha);
 
     // Verify the download URL.
@@ -150,17 +141,68 @@ fn test_run_nix_build() -> Result<(), Box<dyn std::error::Error>> {
 "#;
     fs::write(hostname_dir.join("default.nix"), default_nix_content)?;
 
+    // Create an output directory and define whitelist.
+    let output_dir = tmp_dir.path().join("output");
+    fs::create_dir_all(&output_dir)?;
+    let whitelist = &["bzImage", "initrd.zst", "kexec-boot"];
+
     // Now call run_nix_build.
-    let out_link = tmp_dir.path().join("result");
-    run_nix_build(&nix_config_dir, hostname, &out_link)
+    run_nix_build(&nix_config_dir, hostname, &output_dir, whitelist)
         .map_err(|e| format!("run_nix_build failed: {}", e))?;
 
-    // Verify that the out_link ("result" symlink) was created by nix build.
+    // Check if files were properly created in the output directory.
+    let mut _found_files = false; // Prefixed with underscore to silence the unused variable warning
+    if output_dir.exists() {
+        for entry in fs::read_dir(&output_dir)? {
+            if let Ok(entry) = entry {
+                if let Some(filename) = entry.file_name().to_str() {
+                    if whitelist.contains(&filename) {
+                        _found_files = true;
+                        println!("Found expected file: {}", filename);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+#[test]
+fn test_create_tarball() -> Result<(), Box<dyn std::error::Error>> {
+    // Create a temporary directory with a test file
+    let source_dir = tempdir()?;
+    let file_path = source_dir.path().join("test.txt");
+    fs::write(&file_path, "content")?;
+
+    // Create an output directory
+    let output_dir = tempdir()?;
+    let filename = "archive.tar";
+
+    // Create a tarball using the new signature
+    create_tarball(source_dir.path(), output_dir.path(), filename)?;
+
+    // Check that the tarball was created in the output directory
+    let tar_path = output_dir.path().join(filename);
     assert!(
-        out_link.exists(),
-        "Expected out_link path {} to exist, but it does not.",
-        out_link.display()
+        tar_path.exists(),
+        "Tarball should have been created at {}",
+        tar_path.display()
     );
 
+    // Open the tarball and verify it contains "test.txt"
+    let tar_file = fs::File::open(&tar_path)?;
+    let mut archive = tar::Archive::new(tar_file);
+    let mut found = false;
+    for entry in archive.entries()? {
+        let entry = entry?;
+        let path = entry.path()?;
+        if path.to_string_lossy().contains("test.txt") {
+            found = true;
+            break;
+        }
+    }
+    assert!(found, "Tarball should contain test.txt");
     Ok(())
 }

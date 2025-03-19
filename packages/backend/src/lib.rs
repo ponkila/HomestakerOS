@@ -10,6 +10,7 @@ use std::fs;
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
 use std::process::{Command as StdCommand, Stdio};
+use tar::Builder;
 
 /// Runs the `json2nix` command by piping in the JSON string and returns the command's stdout.
 ///
@@ -60,16 +61,23 @@ pub fn write_default_nix(hostname_dir: &Path, json2nix_output: &str) -> std::io:
 /// # Errors
 ///
 /// Returns an error if executing the command fails or if the build does not succeed.
-pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> Result<()> {
+pub fn run_nix_build(
+    nix_config_dir: &Path,
+    hostname: &str,
+    output_dir: &Path,
+    whitelist: &[&str],
+) -> Result<()> {
     let nix_config_dir_str = nix_config_dir.display().to_string();
     let build_arg = format!(
         "path:{nix_config_dir_str}#nixosConfigurations.{hostname}.config.system.build.kexecTree"
     );
+    let out_link_path = nix_config_dir.join("result");
+
     let output = StdCommand::new("nix")
         .arg("build")
         .arg(build_arg)
         .arg("--out-link")
-        .arg(out_link)
+        .arg(&out_link_path)
         .arg("--extra-experimental-features")
         .arg("nix-command")
         .stdout(Stdio::piped())
@@ -88,6 +96,38 @@ pub fn run_nix_build(nix_config_dir: &Path, hostname: &str, out_link: &Path) -> 
         "Nix build stderr: {}",
         String::from_utf8_lossy(&output.stderr)
     );
+
+    // Copy whitelisted files from the build output to the output directory
+    for entry in fs::read_dir(&out_link_path)
+        .with_context(|| format!("Failed to read out_link dir: {out_link_path:?}"))?
+    {
+        let entry = entry.with_context(|| "Failed to get directory entry")?;
+        let path = entry.path();
+
+        if path.is_file() || path.is_symlink() {
+            let filename = path
+                .file_name()
+                .ok_or_else(|| anyhow!("Could not get file_name for {path:?}"))?
+                .to_string_lossy()
+                .to_string();
+
+            if whitelist.contains(&filename.as_str()) {
+                // Resolve the path if it's a symlink
+                let real_path = if path.is_symlink() {
+                    fs::canonicalize(&path)
+                        .with_context(|| format!("Failed to canonicalize {path:?}"))?
+                } else {
+                    path.clone()
+                };
+
+                let dest_file = output_dir.join(&filename);
+                fs::copy(&real_path, &dest_file)
+                    .with_context(|| format!("Failed to copy {real_path:?} to {dest_file:?}"))?;
+            } else {
+                println!("Skipping file not in whitelist: {filename}");
+            }
+        }
+    }
 
     Ok(())
 }
@@ -117,40 +157,24 @@ pub fn compute_sha256<P: AsRef<Path>>(path: P) -> std::io::Result<String> {
 /// # Errors
 ///
 /// Returns an error if reading the output directory fails or if a directory entry cannot be processed.
-pub fn process_artifacts(
-    out_link: &Path,
-    final_build_dir: &Path,
-    build_id: &str,
-    whitelist: &[&str],
-) -> Result<Vec<Value>> {
+pub fn process_artifacts(output_dir: &Path, build_id: &str) -> Result<Vec<Value>> {
     let mut artifacts_info = Vec::new();
-    for entry in fs::read_dir(out_link)
-        .with_context(|| format!("Failed to read out_link dir: {out_link:?}"))?
+    for entry in fs::read_dir(output_dir)
+        .with_context(|| format!("Failed to read output_dir: {output_dir:?}"))?
     {
         let entry = entry.with_context(|| "Failed to get directory entry")?;
         let path = entry.path();
+
         if path.is_file() {
-            let filename_osstr = path
+            let filename = path
                 .file_name()
-                .ok_or_else(|| anyhow!("Could not get file_name for {path:?}"))?;
-            let filename = filename_osstr.to_string_lossy().to_string();
+                .ok_or_else(|| anyhow!("Could not get file_name for {path:?}"))?
+                .to_string_lossy()
+                .to_string();
 
-            // Filter by whitelist
-            if !whitelist.contains(&filename.as_str()) {
-                println!("Skipping file not in whitelist: {filename}");
-                continue;
-            }
-
-            // Resolve symlinks, and copy real files
-            let real_path = fs::canonicalize(&path)
-                .with_context(|| format!("Failed to canonicalize {path:?}"))?;
-            let dest_file = final_build_dir.join(&filename);
-            fs::copy(&real_path, &dest_file)
-                .with_context(|| format!("Failed to copy {real_path:?} to {dest_file:?}"))?;
-
-            // Compute SHA256
-            let sha = compute_sha256(&dest_file)
-                .with_context(|| format!("Failed to compute SHA256 for {dest_file:?}"))?;
+            // Compute SHA256.
+            let sha = compute_sha256(&path)
+                .with_context(|| format!("Failed to compute SHA256 for {path:?}"))?;
             let download_url = format!("/builds/{build_id}/{filename}");
             artifacts_info.push(json!({
                 "file": filename,
@@ -159,6 +183,7 @@ pub fn process_artifacts(
             }));
         }
     }
+
     Ok(artifacts_info)
 }
 
@@ -189,5 +214,23 @@ pub fn validate_config(config: &Config) -> Result<(), String> {
             return Err("The 'ssh.authorizedKeys' must not contain an empty key".into());
         }
     }
+    Ok(())
+}
+
+/// Create a tar archive from a source directory.
+///
+/// # Errors
+///
+/// Returns an error if writing to the archive fails.
+pub fn create_tarball<P: AsRef<Path>>(
+    source: P,
+    output_dir: &Path,
+    filename: &str,
+) -> std::io::Result<()> {
+    let tar_path = output_dir.join(filename);
+    let tar_file = fs::File::create(tar_path)?;
+    let mut builder = Builder::new(tar_file);
+    builder.append_dir_all("", source)?;
+    builder.finish()?;
     Ok(())
 }
