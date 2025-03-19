@@ -8,15 +8,15 @@ use std::fs;
 use backend::schema_types::Config;
 use backend::workspace::Workspace;
 use backend::{
-    create_tarball, handle_error, process_artifacts, run_json2nix, run_nix_build, validate_config,
-    write_default_nix,
+    create_tarball, handle_error, process_artifacts, run_json2nix, run_nix_build, update_hostnames,
+    update_schema, validate_config, write_default_nix, write_json_to_file,
 };
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
 
-// A static array of allowed filenames in the build output.
-const WHITELIST: &[&str] = &["bzImage", "initrd.zst", "kexec-boot", "nixConfig.tar"];
+// A static array of allowed filenames in the nix build output.
+const WHITELIST: &[&str] = &["bzImage", "initrd.zst", "kexec-boot"];
 
 /// Application state.
 struct AppState {
@@ -69,6 +69,12 @@ async fn nixos_config(req_body: String, data: web::Data<AppState>) -> impl Respo
         Err(e) => return handle_error("Failed to run json2nix", e),
     };
 
+    // Output the original JSON to default.json
+    let default_json_path = workspace.hostname_dir.join("default.json");
+    if let Err(e) = write_json_to_file(&default_json_path, &json_str) {
+        return handle_error("Failed to write default.json file", e);
+    }
+
     // Prepend boilerplate and write default.nix.
     if let Err(e) = write_default_nix(&workspace.hostname_dir, &json2nix_output) {
         return handle_error("Failed to write default.nix file", e);
@@ -78,6 +84,22 @@ async fn nixos_config(req_body: String, data: web::Data<AppState>) -> impl Respo
     let flake_nix_path = workspace.nix_config_dir.join("flake.nix");
     if let Err(e) = fs::write(&flake_nix_path, FLAKE_NIX) {
         return handle_error("Failed to write flake.nix", e);
+    }
+
+    // Fetch hostnames.json.
+    let hostnames_output = workspace
+        .nix_config_dir
+        .join("nixosConfigurations/hostnames.json");
+    if let Err(e) = update_hostnames(&hostnames_output, &workspace.nix_config_dir) {
+        return handle_error("Failed to write hostnames.json", e);
+    }
+
+    // Fetch options.json.
+    let schema_output = workspace
+        .nix_config_dir
+        .join("nixosModules/homestakeros/options.json");
+    if let Err(e) = update_schema(&schema_output, &workspace.nix_config_dir) {
+        return handle_error("Failed to write options.json", e);
     }
 
     // Retrieve the build id and pre-created output directory.

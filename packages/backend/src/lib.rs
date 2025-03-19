@@ -234,3 +234,96 @@ pub fn create_tarball<P: AsRef<Path>>(
     builder.finish()?;
     Ok(())
 }
+
+/// Writes the input JSON to a file, with proper formatting.
+///
+/// # Errors
+///
+/// Returns an error if writing to the file fails.
+pub fn write_json_to_file<P: AsRef<Path>>(path: P, json_str: &str) -> std::io::Result<()> {
+    // Parse the JSON string to validate.
+    let parsed_value: Value = serde_json::from_str(json_str)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+
+    // Pretty-print the JSON.
+    let formatted_json = serde_json::to_string_pretty(&parsed_value)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+
+    // Create parent directories if they don't exist.
+    if let Some(parent) = path.as_ref().parent() {
+        fs::create_dir_all(parent)?;
+    }
+
+    // Write the formatted JSON to the file.
+    fs::write(path, formatted_json.as_bytes())
+}
+
+/// Updates the hostnames.json file with the list of configured hostnames.
+///
+/// # Errors
+///
+/// Returns an error if the command fails or writing to the file fails.
+pub fn update_hostnames(output_path: &Path, nix_config_dir: &Path) -> Result<()> {
+    let output = StdCommand::new("nix")
+        .arg("eval")
+        .arg("--json")
+        .arg(".#nixosConfigurations")
+        .arg("--apply")
+        .arg("builtins.attrNames")
+        .arg("--extra-experimental-features")
+        .arg("nix-command")
+        .current_dir(nix_config_dir)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .with_context(|| "Failed to execute nix eval for hostnames")?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        return Err(anyhow!(stderr));
+    }
+    let json_str = String::from_utf8_lossy(&output.stdout).to_string();
+
+    // Create parent directories if they don't exist.
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("Failed to create parent directories for {output_path:?}"))?;
+    }
+
+    write_json_to_file(output_path, &json_str)
+        .with_context(|| format!("Failed to write hostnames.json to {output_path:?}"))?;
+    Ok(())
+}
+
+/// Updates the options.json file with the schema information.
+///
+/// # Errors
+///
+/// Returns an error if the command fails or writing to the file fails.
+pub fn update_schema(output_path: &Path, nix_config_dir: &Path) -> Result<()> {
+    let output = StdCommand::new("nix")
+        .arg("eval")
+        .arg("--json")
+        .arg(".#schema")
+        .arg("--extra-experimental-features")
+        .arg("nix-command")
+        .current_dir(nix_config_dir)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .with_context(|| "Failed to execute nix eval for schema")?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        return Err(anyhow!(stderr));
+    }
+    let json_str = String::from_utf8_lossy(&output.stdout).to_string();
+
+    // Create parent directories if they don't exist.
+    if let Some(parent) = output_path.parent() {
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("Failed to create parent directories for {output_path:?}"))?;
+    }
+
+    write_json_to_file(output_path, &json_str)
+        .with_context(|| format!("Failed to write options.json to {output_path:?}"))?;
+    Ok(())
+}
