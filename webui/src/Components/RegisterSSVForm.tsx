@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, AlertIcon, Alert } from '@chakra-ui/react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, AlertIcon, Alert, Flex, Tooltip } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
-import { parseEther } from "viem";
+import { encodeAbiParameters, parseAbiParameters, parseEther } from "viem";
+import { QuestionOutlineIcon } from '@chakra-ui/icons'
 
 const enum ContractAddresses {
   Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
@@ -22,23 +23,31 @@ const RegisterSSVForm = () => {
     e.preventDefault();
     setIsLoading(true);
     setTransactionLink('');
+    setError('');
     try {
-      const coder = new ethers.utils.AbiCoder();
+      const feeAsWei = parseEther(e.target.fee.value)
+      const isZeroFee = feeAsWei === 0n;
+      const feePerBlock = isZeroFee ? 0n : roundOperatorFee(feeAsWei / BLOCKS_PER_YEAR);
 
-      const pk = e.target.publicKey.value;
-      const fee = roundOperatorFee(parseEther(e.target.fee.value) / BLOCKS_PER_YEAR);
       const setPrivate = e.target.isPrivate.checked;
+      if (isZeroFee && !Boolean(setPrivate)) {
+        setError("Fee cannot be set to 0 while operator status is set to public. To set the fee to 0, switch the operator status to private.");
+        setIsLoading(false);
+        return;
+      }
+
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
 
       const abi = await (await fetch('/SSVNetwork.json')).json();
       const address = USE_TEST_NET ? ContractAddresses.Testnet : ContractAddresses.Mainnet
       const contract = new ethers.Contract(address, abi, signer);
-      const gasEstimate = await contract.estimateGas.registerOperator(coder.encode(['string'], [pk]), fee, setPrivate);
-      const pkDecoded = ethers.utils.base64.decode(pk);
-      const publicKeyBytes = ethers.utils.arrayify(pkDecoded);
+      const pk = e.target.publicKey.value;
+      const publicKey = encodeAbiParameters(parseAbiParameters("string"), [pk]);
+      const gasEstimate = await contract.estimateGas.registerOperator(publicKey, feePerBlock, setPrivate);
+
       contract
-        .registerOperator(publicKeyBytes, fee, setPrivate, { gasLimit: gasEstimate })
+        .registerOperator(publicKey, feePerBlock, setPrivate, { gasLimit: gasEstimate })
         .then((tx: any) => {
           setIsLoading(false);
           setError('');
@@ -100,9 +109,22 @@ const RegisterSSVForm = () => {
                 <Input />
               </FormControl>
               <FormControl my={4} id="fee">
-                <FormLabel>Fee</FormLabel>
-                <Input type="number" max="200" min="0" step="any" placeholder="1.0" />
+                <Flex as="span" align="center">
+                  <FormLabel mb="0" whiteSpace="nowrap" verticalAlign="middle">Fee</FormLabel>
+                  <Link
+                    href="https://docs.google.com/spreadsheets/d/12cWougs1YjTd6gnsEvIZJMd0PXg_R3e7VkWyFXsmzbo/edit?pli=1&gid=549776430#gid=549776430"
+                    isExternal
+                  >
+                    <Tooltip label="Link to recommended fees" aria-label="A tooltip">
+                      <QuestionOutlineIcon verticalAlign="middle" />
+                    </Tooltip>
+                  </Link>
+                </Flex>
+
+
+                <Input mt={1} type="number" max="200" min="0" step="any" placeholder="1.0" />
               </FormControl>
+
               <FormControl my={4} id="isPrivate">
                 <FormLabel>Private Operator</FormLabel>
                 <input type="checkbox" name="isPrivate" />
