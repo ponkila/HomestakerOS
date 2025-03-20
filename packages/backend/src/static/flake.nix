@@ -42,6 +42,7 @@
                 })
                 hostnames)
             );
+        schema = inputs.homestakeros.schema;
       };
     };
 }
