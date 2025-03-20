@@ -375,6 +375,7 @@ export const ConfigurationForm = () => {
     })
     setIsLoading(true);
     setError(null);
+    
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -473,7 +474,7 @@ export const ConfigurationForm = () => {
           )}
 
           {artifacts.length > 0 && (
-            <ArtifactsList artifacts={artifacts} />
+            <ArtifactsList artifacts={artifacts}/>
           )}
         </VStack>
         <Button w="100%" type="submit">
