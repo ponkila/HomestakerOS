@@ -1,14 +1,17 @@
 # 1. Introduction
 
-Welcome to the official documentation for HomestakerOS, a web-based user interface that simplifies the creation of a custom Linux operating system designed specifically for Ethereum homestaking. By democratizing the homestaking process, it enables more individuals to participate in the Ethereum network securely and efficiently.
+Welcome to the official documentation for HomestakerOS, a web-based user interface that simplifies the creation of a custom Linux operating system designed specifically for Ethereum homestaking.
+By democratizing the homestaking process, it enables more individuals to participate in the Ethereum network securely and efficiently.
 
 ## What is HomestakerOS?
 
-HomestakerOS produces Linux disk images based on NixOS, allowing configurations to be public, deterministic, and self-upgrading. The system is designed to be user-friendly - you can configure and build your host through a simple form interface without requiring extensive knowledge of the Nix language.
+HomestakerOS produces Linux disk images based on NixOS, allowing configurations to be public, deterministic, and self-upgrading.
+The system is designed to be user-friendly - you can configure and build your host through a simple form interface without requiring extensive knowledge of the Nix language.
 
 > **Note:** The ephemeral nature of HomestakerOS means your operating system runs entirely in RAM, making it secure and easy to reset if needed.
 
 The resulting images deploy by loading the entire operating system into RAM, making it possible to use various deployment methods:
+
 - [Kernel execution](https://wiki.archlinux.org/title/Kexec)
 - [Netbooting](https://networkboot.org/fundamentals/)
 - [rEFInd boot manager](http://www.rodsbooks.com/refind/)
