@@ -8,7 +8,7 @@ By democratizing the homestaking process, it enables more individuals to partici
 HomestakerOS produces Linux disk images based on NixOS, allowing configurations to be public, deterministic, and self-upgrading.
 The system is designed to be user-friendly - you can configure and build your host through a simple form interface without requiring extensive knowledge of the Nix language.
 
-> **Note:** The ephemeral nature of HomestakerOS means your operating system runs entirely in RAM, making it secure and easy to reset if needed.
+> **Note:** The ephemeral nature of HomestakerOS means your operating system runs entirely in RAM, making it secure and easy to reset if needed. This approach follows the "Erase Your Darlings" philosophy (https://grahamc.com/blog/erase-your-darlings/), which enhances security by ensuring the system starts fresh on each boot, eliminating persistent threats and configuration drift.
 
 The resulting images deploy by loading the entire operating system into RAM, making it possible to use various deployment methods:
 
