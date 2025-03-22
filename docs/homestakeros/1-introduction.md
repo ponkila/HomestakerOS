@@ -18,11 +18,14 @@ The resulting images deploy by loading the entire operating system into RAM, mak
 
 ## Table of Contents
 
+Here's how it would look with your addition:
+
 1. [Introduction](1-introduction.md) - Overview of the system (you are here)
 2. Getting Started
    - [2.1 Prepare the System](2.1-prepare_system.md) - Setting up your local system
-   - [2.2 Configure and Deploy](2.2-configure_deploy.md) - Building and deploying your node
-   - [2.3 Managing Your Configurations with Git](2.3-git_management.md) - Version control for your configurations
+   - [2.2 Accessing the Web UI](2.2-accessing_webui.md) - Set up environment for accessing the Web UI
+   - [2.3 Configure and Deploy](2.3-configure_deploy.md) - Building and deploying your node
+   - [2.4 Managing Your Configurations with Git](2.4-git_management.md) - Version control for your configurations
 3. Tutorials
    - [3.1 WireGuard VPN Setup](3.1-wireguard_vpn.md) - Adding secure networking
    - [3.2 SSV Node Setup](3.2-ssv_node.md) - Setting up a Secret Shared Validator node
