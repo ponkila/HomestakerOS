@@ -1,46 +1,56 @@
 #!/usr/bin/env bash
-# Script for generating operator key pair for the SSV node
+# Script to generate SSV operator keys with a password
 
-# Check arguments
+# Define file paths
+PRIVATE_KEY_PATH="ssv_operator_key"
+PUBLIC_KEY_PATH="ssv_operator_key.pub"
+PASSWORD_PATH="password"
+TEMP_ENCRYPTED_PATH="encrypted_private_key.json"
+
+# Check if password is provided
 if [ "$#" -ne 1 ]; then
-    echo "Usage: init-ssv <hostname>"
+    echo "Usage: init-ssv <password>"
     exit 1
 fi
 
-hostname="$1"
-config_dir="webui/nixosConfigurations/$hostname"
-private_key_path="private/$hostname/ssv_operator_key"
+# Save password to file
+echo "$1" > "$PASSWORD_PATH"
+echo "saved password to '$PASSWORD_PATH'"
 
-# Validate hostname
-if [ ! -d "$config_dir" ]; then
-    echo "error: host '$hostname' does not exist, build it first."
+# Generate keys and capture both stdout and stderr
+echo "generating SSV operator keys..."
+if ! keys_output=$(ssvnode generate-operator-keys 2>&1); then
+    echo "error: failed to generate keys"
+    echo "$keys_output"
     exit 1
 fi
 
-# Check if JSON data exists
-default_json="$config_dir/default.json"
-if [ ! -f "$default_json" ]; then
-    echo "error: 'default.json' does not exist for host '$hostname'."
+# Extract the public and private keys
+public_key=$(echo "$keys_output" | grep -o '{"pk":.*}' | jq -r '.pk')
+private_key=$(echo "$keys_output" | grep -o '{"sk":.*}' | jq -r '.sk')
+
+if [ -z "$public_key" ] || [ -z "$private_key" ]; then
+    echo "error: could not parse keys from output"
+    echo "$keys_output"
     exit 1
 fi
 
-# Generate SSV node operator keys
-keys=$(ssvnode generate-operator-keys 2>/dev/null)
+# Save public key
+echo "$public_key" > "$PUBLIC_KEY_PATH"
+echo "saved public key to '$PUBLIC_KEY_PATH'"
 
-# Extract the keys
-public_key=$(echo "$keys" | grep -o '{"pk":.*}' | jq -r '.pk')
-private_key=$(echo "$keys" | grep -o '{"sk":.*}' | jq -r '.sk')
+# Encrypt the private key and capture output
+echo "encrypting private key..."
+if ! encrypt_output=$(echo "$private_key" | ssvnode generate-operator-keys -p "$PASSWORD_PATH" -o /dev/stdin 2>&1) || [ ! -f "$TEMP_ENCRYPTED_PATH" ]; then
+    echo "error: failed to encrypt private key"
+    echo "$encrypt_output"
+    exit 1
+fi
 
-# Save the public key
-echo "$public_key" > "$config_dir/ssv_operator_key.pub"
+# Move the encrypted key to the final location
+mv "$TEMP_ENCRYPTED_PATH" "$PRIVATE_KEY_PATH"
+echo "saved encrypted private key to '$PRIVATE_KEY_PATH'"
 
-# Fetch the configured path from the JSON data
-target=$(jq -r '.addons."ssv-node".privateKeyFile' "$config_dir/default.json")
-
-# Save the private key
-mkdir -p "$(dirname "$private_key_path")"
-echo "$private_key" > "$private_key_path"
-
-# Print instructions for the user
-cmd="scp $private_key_path core@$hostname:$target"
-echo -e "The private key has been generated. Transfer it securely to the target machine:\n\`$cmd\`"
+# Display the public key
+echo "generated public key:"
+cat "$PUBLIC_KEY_PATH"
