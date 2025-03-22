@@ -13,22 +13,6 @@ The resulting images deploy by loading the entire operating system into RAM, mak
 - [Netbooting](https://networkboot.org/fundamentals/)
 - [rEFInd boot manager](http://www.rodsbooks.com/refind/)
 
-## Accessing the Web UI
-
-1. **Install Nix** from [nixos.org](https://nixos.org/download.html)
-
-2. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/ponkila/HomestakerOS && cd HomestakerOS
-   ```
-
-3. **Start the Backend**:
-   ```bash
-   nix run .#backend
-   ```
-
-4. **Visit** [https://homestakeros.com/](https://homestakeros.com/)
-
 ## Table of Contents
 
 1. [Introduction](1-introduction.md) - Overview of the system (you are here)

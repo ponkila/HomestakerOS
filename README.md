@@ -54,7 +54,7 @@ For those interested in the details, let's dive into the documentation from here
 
   This is our entry-level guide to Ethereum and homestaking.
 
-- [3. 📘 Working with Nix](./docs/workflow.md)
+- [3. 📘 Working with Nix](./docs/workflow.md) (**outdated**)
 
   An in-depth explanation of the HomestakerOS workflow, including the initialization process and build process.
 
