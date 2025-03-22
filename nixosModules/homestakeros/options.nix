@@ -344,8 +344,8 @@
         };
         endpoint = mkOption {
           type = types.str;
-          default = "http://127.0.0.1:3500";
           description = "JSON-HTTP server listening interface.";
+          default = "http://127.0.0.1:5052";
         };
         port = mkOption {
           type = types.int;
@@ -391,8 +391,8 @@
         };
         endpoint = mkOption {
           type = types.str;
-          default = "http://127.0.0.1:5051";
           description = "JSON-HTTP server listening interface.";
+          default = "http://127.0.0.1:5052";
         };
         port = mkOption {
           type = types.int;
