@@ -81,7 +81,7 @@
           where = "/mnt";
           type = "btrfs";
           options = [ "noatime" ];
-          before = [ "some-other.service" ];
+          before = [ "some-system.service" ];
           wantedBy = [ "multi-user.target" ];
         };
       };
@@ -126,7 +126,7 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
         };
         port = mkOption {
           type = types.int;
@@ -166,7 +166,7 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
         };
         port = mkOption {
           type = types.int;
@@ -206,7 +206,7 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
         };
         port = mkOption {
           type = types.int;
@@ -246,7 +246,7 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
         };
         port = mkOption {
           type = types.int;
@@ -288,7 +288,7 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:5052";
-          description = "HTTP server listening interface.";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
         };
         port = mkOption {
           type = types.int;
@@ -344,8 +344,8 @@
         };
         endpoint = mkOption {
           type = types.str;
-          description = "JSON-HTTP server listening interface.";
           default = "http://127.0.0.1:5052";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
         };
         port = mkOption {
           type = types.int;
@@ -391,8 +391,8 @@
         };
         endpoint = mkOption {
           type = types.str;
-          description = "JSON-HTTP server listening interface.";
           default = "http://127.0.0.1:5052";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
         };
         port = mkOption {
           type = types.int;
@@ -432,7 +432,7 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:5052";
-          description = "JSON-HTTP server listening interface.";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
         };
         port = mkOption {
           type = types.int;
