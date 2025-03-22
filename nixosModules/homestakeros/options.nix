@@ -128,6 +128,16 @@
           default = "http://127.0.0.1:8551";
           description = "HTTP-RPC server listening interface of engine API.";
         };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
+        };
         dataDir = mkOption {
           type = types.path;
           default = "/var/mnt/erigon";
@@ -157,6 +167,16 @@
           type = types.str;
           default = "http://127.0.0.1:8551";
           description = "HTTP-RPC server listening interface of engine API.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
         };
         dataDir = mkOption {
           type = types.path;
@@ -188,6 +208,16 @@
           default = "http://127.0.0.1:8551";
           description = "HTTP-RPC server listening interface of engine API.";
         };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
+        };
         dataDir = mkOption {
           type = types.path;
           default = "/var/mnt/nethermind";
@@ -217,6 +247,16 @@
           type = types.str;
           default = "http://127.0.0.1:8551";
           description = "HTTP-RPC server listening interface of engine API.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
         };
         dataDir = mkOption {
           type = types.path;
@@ -249,6 +289,11 @@
           type = types.str;
           default = "http://127.0.0.1:5052";
           description = "HTTP server listening interface.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP). The QUIC port will be set to this port+1.";
         };
         execEndpoint = mkOption {
           type = types.str;
@@ -302,6 +347,11 @@
           default = "http://127.0.0.1:3500";
           description = "JSON-HTTP server listening interface.";
         };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP). The QUIC port will be set to this port+1.";
+        };
         execEndpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
@@ -344,6 +394,11 @@
           default = "http://127.0.0.1:5051";
           description = "JSON-HTTP server listening interface.";
         };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP).";
+        };
         execEndpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
@@ -378,6 +433,11 @@
           type = types.str;
           default = "http://127.0.0.1:5052";
           description = "JSON-HTTP server listening interface.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP).";
         };
         execEndpoint = mkOption {
           type = types.str;
