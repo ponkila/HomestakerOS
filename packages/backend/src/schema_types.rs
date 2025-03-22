@@ -76,6 +76,7 @@ pub struct Lighthouse {
     pub exec_endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    pub port: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slasher: Option<LighthouseSlasher>,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
@@ -103,6 +104,7 @@ pub struct Nimbus {
     pub exec_endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    pub port: i32,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
     pub extra_options: Option<Vec<String>>,
 }
@@ -118,6 +120,7 @@ pub struct Prysm {
     pub exec_endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    pub port: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub slasher: Option<PrysmSlasher>,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
@@ -141,6 +144,7 @@ pub struct Teku {
     pub exec_endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    pub port: i32,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
     pub extra_options: Option<Vec<String>>,
 }
@@ -167,6 +171,9 @@ pub struct Besu {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "jsonRpcPort")]
+    pub json_rpc_port: i32,
+    pub port: i32,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
     pub extra_options: Option<Vec<String>>,
 }
@@ -180,6 +187,9 @@ pub struct Erigon {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "jsonRpcPort")]
+    pub json_rpc_port: i32,
+    pub port: i32,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
     pub extra_options: Option<Vec<String>>,
 }
@@ -193,6 +203,9 @@ pub struct Geth {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "jsonRpcPort")]
+    pub json_rpc_port: i32,
+    pub port: i32,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
     pub extra_options: Option<Vec<String>>,
 }
@@ -206,6 +219,9 @@ pub struct Nethermind {
     pub endpoint: String,
     #[serde(rename = "jwtSecretFile", skip_serializing_if = "Option::is_none")]
     pub jwt_secret_file: Option<String>,
+    #[serde(rename = "jsonRpcPort")]
+    pub json_rpc_port: i32,
+    pub port: i32,
     #[serde(rename = "extraOptions", skip_serializing_if = "Option::is_none")]
     pub extra_options: Option<Vec<String>>,
 }
