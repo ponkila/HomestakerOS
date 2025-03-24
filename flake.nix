@@ -96,7 +96,6 @@
           devenv.shells = {
             default = {
               packages = with pkgs; [
-                init-ssv
                 jq
                 nodePackages.eslint
                 nodejs
@@ -119,17 +118,6 @@
                   warn-dirty = false
                 '';
               };
-              enterShell = ''
-                cat <<INFO
-
-                ### HomestakerOS ###
-
-                Available commands:
-
-                  init-ssv  : Generate an SSV operator key pair
-
-                INFO
-              '';
               pre-commit =
                 let
                   cargoTomlPath = "./packages/backend/Cargo.toml";

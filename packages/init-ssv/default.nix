@@ -11,6 +11,7 @@ pkgs.stdenv.mkDerivation rec {
 
   buildInputs = with pkgs; [
     jq
+    gnugrep
     ssvnode
   ];
 
