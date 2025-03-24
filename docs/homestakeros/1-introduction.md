@@ -16,6 +16,24 @@ The resulting images deploy by loading the entire operating system into RAM, mak
 - [Netbooting](https://networkboot.org/fundamentals/)
 - [rEFInd boot manager](http://www.rodsbooks.com/refind/)
 
+## Hardware Requirements
+
+### For HomestakerOS Backend
+
+> The more powerful the hardware, the faster compilation time
+
+- **RAM:** 64GB RAM for compilation **if running the system on RAM**
+- **Network**: Yes
+
+### For Your Ethereum Node
+
+> You can check the current size of the mainnet Ethereum blockchain on [ycharts](https://ycharts.com/indicators/ethereum_chain_full_sync_data_size)
+
+- **RAM**: 32GB+, more for better performance
+- **CPU**: 4+ cores from a recent processor generation
+- **Storage**: 2TB+ SSD (NVMe strongly recommended)
+- **Network**: Stable, wired internet connection with low latency
+
 ## Table of Contents
 
 Here's how it would look with your addition:
