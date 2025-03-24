@@ -46,7 +46,7 @@
             "besu" = inputs.ethereum-nix.packages.${system}.besu;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
-            "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
+            "lighthouse" = inputs.nixpkgs.legacyPackages.${system}.lighthouse;
             "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
             "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
