@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select } from '@chakra-ui/react'
+import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, Select, Tooltip, Flex } from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
 import useMetaMask from '../Hooks/useMetaMask'
 import { useNodeInfo, NodeInfo } from '../Context/NodeInfoContext'
+import { QuestionOutlineIcon } from '@chakra-ui/icons'
 
 const enum ContractAddresses {
   Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
@@ -64,9 +65,21 @@ const RegisterSSVForm = () => {
         </Box>
       )}
       <Box borderWidth="1px" w="100%" borderRadius="lg" p={4}>
-        <Heading as="h2" size="md" mb={4}>
-          Register SSV operator
-        </Heading>
+        <Flex>
+          <Heading as="h2" size="md" mb={4}>
+            Register SSV operator
+          </Heading>
+          <Link
+            href="https://github.com/ponkila/HomestakerOS/blob/main/docs/homestakeros/3.2-ssv_node.md#register-as-an-ssv-operator"
+            isExternal
+            ml={2}
+          >
+
+            <Tooltip label="See documentation" aria-label="A tooltip">
+              <QuestionOutlineIcon verticalAlign="middle" />
+            </Tooltip>
+          </Link>
+        </Flex>
         {!hasProvider ? (
           <Link href="https://metamask.io/download" isExternal>
             <Button>
@@ -112,7 +125,7 @@ const RegisterSSVForm = () => {
 
             </form>
           ))}
-      </Box>
+      </Box >
     </>
   )
 }
