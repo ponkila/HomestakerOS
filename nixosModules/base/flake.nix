@@ -254,6 +254,8 @@
         wheelNeedsPassword = lib.mkForce false;
         execWheelOnly = true;
       };
+
+      hardware.rasdaemon.enable = true;
     };
   };
 }

@@ -36,8 +36,6 @@ import { useLoaderData, useOutletContext } from "react-router-dom";
 import { useBackend } from "../Context/BackendContext";
 import ArtifactsList, { Artifact } from './ArtifactsList'
 
-let uuid = () => self.crypto.randomUUID();
-
 const FormSection = (props: { name: string | undefined; children: React.ReactNode }) => {
   const { name, children } = props
   const [show, setShow] = useState(true)
@@ -86,7 +84,6 @@ const ListOfControl = (props: ListOfControlProps) => {
   const { nodeKey, description, example, defaultValue } = props
   const [list, setList] = useState<string[]>(defaultValue || [])
   const name = nodeKey.split('.').slice(-1)[0]
-
   return (
     <>
       <FormControl id={name}>
@@ -122,19 +119,103 @@ const CustomCheckbox = (props: { name: string; defaultChecked: boolean; children
   )
 }
 
+
+const isLeaf = (node: Record<string, any>) => {
+  return node != null && node.constructor == Object && 'type' in node
+}
+
+const processNode = (keys: string[], node: Record<string, any>, sel: Record<string, any>) => {
+  const keyName = keys.at(-1)
+  const jsonPath = jp.stringify(keys)
+  if (isLeaf(node)) {
+    if (keys.indexOf("nodes") == 0) {
+      const k = jsonPath.replace("nodes", "")
+      const s = jp.value(sel, k)
+      // No need to overwrite default if s is undefined
+      if (s)
+        node.default = s
+    }
+
+    switch (true) {
+      case node.type.startsWith('bool'):
+        return (
+          <FormControl key={jsonPath} id={jsonPath}>
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
+              {keyName}
+            </CustomCheckbox>
+          </FormControl>
+        )
+      case node.type.startsWith('str'):
+      case node.type.startsWith('path'):
+        return (
+          <FormControl key={jsonPath} id={jsonPath}>
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
+          </FormControl>
+        )
+      case node.type.startsWith('int'):
+        return (
+          <FormControl key={jsonPath} id={jsonPath}>
+            <DescriptionFormLabel label={keyName} description={node.description} />
+            <NumberInput name={jsonPath} defaultValue={node.default}>
+              <NumberInputField />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
+          </FormControl>
+        )
+      case node.type.startsWith('attrsOf'):
+        return (
+          <AttrsOfControl
+            key={jsonPath}
+            keys={keys}
+            description={node.description}
+            example={node.example}
+            defaultValue={node.default}
+            options={node.options}
+            sel={sel}
+          />
+        )
+      case node.type.startsWith('listOf'):
+        return (
+          <ListOfControl
+            key={jsonPath}
+            nodeKey={jsonPath}
+            description={node.description}
+            example={node.example}
+            defaultValue={node.default}
+          />
+        )
+      default:
+        break
+    }
+  } else {
+    return (
+      <FormSection key={jsonPath} name={keyName}>
+        {Object.entries(node).map(([newKey, value]) => {
+          return processNode([...keys, newKey], value, sel)
+        })}
+      </FormSection>
+    )
+  }
+}
 type AttrsOfControlProps = {
   keys: string[]
   description: string | null
   example: Record<string, string | boolean> | null
   defaultValue: Record<string, any> | null
+  options: Record<string, any>
+  sel: Record<string, any>
 }
 
 const AttrsOfControl = (props: AttrsOfControlProps) => {
-  const { keys, description, example, defaultValue } = props
+  const { keys, description, example, defaultValue, options, sel } = props
   const [list, setList] = useState<string[]>(Object.keys(defaultValue || {}))
   if (!example) return <></>
   const name = keys.slice(-1)[0]
-  const fields = Object.values(example)[0]
 
   return (
     <FormSection name={name}>
@@ -152,19 +233,8 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
                   }}
                 />
               </FormControl>
-              {Object.entries(fields).map(([key, value]) => (
-                <FormControl key={value} mr={4} mb={4}>
-                  <FormLabel>{key}</FormLabel>
-                  {typeof value == 'boolean' ? (
-                    <CustomCheckbox name={jp.stringify([...keys, item, key])} defaultChecked={value || false} />
-                  ) : (
-                    <Input
-                      placeholder={value}
-                      defaultValue={defaultValue && item in defaultValue ? defaultValue[item][key] || '' : ''}
-                      name={jp.stringify([...keys, item, key])}
-                    />
-                  )}
-                </FormControl>
+              {Object.entries(options).map(([key, value]) => (
+                processNode([...keys, item, key], structuredClone(value), sel)
               ))}
               <Button as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
             </Flex>
@@ -189,94 +259,6 @@ export const ConfigurationForm = () => {
     nodes: loader.nodes,
   };
 
-  const isLeaf = (node: Record<string, any>) => {
-    return node != null && node.constructor == Object && 'type' in node
-  }
-
-  const processNode = (keys: string[], node: Record<string, any>, sel: Record<string, any>) => {
-    const keyName = keys.at(-1)
-    const jsonPath = jp.stringify(keys)
-    if (isLeaf(node)) {
-      if (keys.indexOf("nodes") == 0) {
-        const k = jsonPath.replace("nodes", "")
-        const s = jp.value(sel, k)
-        node.default = s
-      }
-      switch (node.type) {
-        case 'bool':
-          return (
-            <FormControl key={uuid()} id={jsonPath}>
-              <DescriptionFormLabel label={keyName} description={node.description} />
-              <CustomCheckbox name={jsonPath} defaultChecked={node.default}>
-                {keyName}
-              </CustomCheckbox>
-            </FormControl>
-          )
-        case 'str':
-        case 'path':
-        case 'nullOr':
-          return (
-            <FormControl key={uuid()} id={jsonPath}>
-              <DescriptionFormLabel label={keyName} description={node.description} />
-              <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
-            </FormControl>
-          )
-        case 'int':
-          return (
-            <FormControl key={uuid()} id={jsonPath}>
-              <DescriptionFormLabel label={keyName} description={node.description} />
-              <NumberInput name={jsonPath} defaultValue={node.default}>
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            </FormControl>
-          )
-        case 'attrsOf':
-          return (
-            <AttrsOfControl
-              key={uuid()}
-              keys={keys}
-              description={node.description}
-              example={node.example}
-              defaultValue={node.default}
-            />
-          )
-        case 'listOf':
-          return (
-            <ListOfControl
-              key={uuid()}
-              nodeKey={jsonPath}
-              description={node.description}
-              example={node.example}
-              defaultValue={node.default}
-            />
-          )
-        default:
-          break
-      }
-      if (node.type.startsWith('strMatching')) {
-        return (
-          <FormControl key={uuid()}>
-            <DescriptionFormLabel label={keyName} description={node.description} />
-            <Input name={jsonPath} placeholder={node.example} defaultValue={node.default} />
-            <FormHelperText>{node.description}</FormHelperText>
-          </FormControl>
-        )
-      }
-    } else {
-      return (
-        <FormSection key={uuid()} name={keyName}>
-          {Object.entries(node).map(([newKey, value]) => {
-            return processNode([...keys, newKey], value, sel)
-          })}
-        </FormSection>
-      )
-    }
-  }
-
   const recursiveReplace = (obj: any) => {
     if ('default' in obj) {
       return obj['default']
@@ -294,19 +276,23 @@ export const ConfigurationForm = () => {
     const formData = new FormData(e.target as HTMLFormElement)
     const formDataJson = Object.fromEntries(formData.entries())
     Object.entries(formDataJson).forEach(([key, value]) => {
-      key = key.replace("nodes.", "")
+      // The key should always start with $.schema. or $.nodes.
+      if (key.startsWith("$.schema."))
+        key = key.replace("schema.", "")
+      else
+        key = key.replace("nodes.", "")
+
       const schemaEntry = jp.query(props.schema, key)
       const fieldType = schemaEntry.length > 0 ? schemaEntry[0]['type'] : null
-      if (value === '' && fieldType !== 'nullOr') {
+      if (value === '') {
         return
       }
       if (fieldType === 'int') {
         jp.apply(result, key, () => parseInt(value as string))
       } else if (fieldType === 'bool') {
         jp.apply(result, key, () => value === '1')
-      } else if (fieldType === 'nullOr') {
-        jp.apply(result, key, () => (value === '' ? null : value))
-      } else if (schemaEntry.length == 0) {
+      } 
+      else if (schemaEntry.length == 0) {
         let parent = null
         let parentPath = ''
         for (let i = 1; i < key.length; i++) {
@@ -322,27 +308,72 @@ export const ConfigurationForm = () => {
             break
           }
         }
-        if (parent['type'] == 'listOf') {
-          jp.apply(result, parentPath, (v: any) => [...v, value])
-        } else if (parent['type'] == 'attrsOf') {
-          const path = jp.parse(key).at(-2)['expression']['value']
-          const objPath = jp.stringify([...jp.parse(parentPath).map((v: any) => v['expression']['value']), path])
-          const obj = jp.query(result, objPath)
-          if (obj.length == 0) {
-            jp.apply(result, parentPath, (v: any) => ({ ...v, [path]: {} }))
+        if (parent['type'].startsWith('listOf')) {
+          jp.apply(result, parentPath, (v: any) => (Array.isArray(v) ? [...v, value] : [value]));
+        } else if (parent['type'].startsWith('attrsOf')) {
+          // Parse the JSON path and get the last segment (could be a key or an array index)
+          const lastSegment = jp.parse(key).at(-1);
+
+          // Check if the last segment is an array index (e.g., [0], [1])
+          const isLastSegmentArrayIndex = lastSegment.expression.type === "numeric_literal";
+
+          // Determine the index of the second-to-last segment in the path
+          // If the last segment is an array index, the actual key (array name) is at -3
+          // Otherwise, it's just the previous segment at -2
+          const secondLastSegmentIndex = isLastSegmentArrayIndex ? -3 : -2;
+
+          // Extract the key from the second-to-last segment
+          const parentKey = jp.parse(key).at(secondLastSegmentIndex)['expression']['value'];
+
+          // Construct the object path by combining the parent path and the extracted key
+          const fullObjectPath = jp.stringify([
+            ...jp.parse(parentPath).map((segment: any) => segment['expression']['value']),
+            parentKey
+          ]);
+
+          // Query the object at the constructed path
+          const targetObject = jp.query(result, fullObjectPath);
+
+          // If the target object doesn't exist, initialize it as an empty object
+          if (targetObject.length === 0) {
+            jp.apply(result, parentPath, (parentObject: any) => ({ ...parentObject, [parentKey]: {} }));
           }
-          const key2 = jp.parse(key).at(-1)['expression']['value']
-          if (key2 == 'enable') {
-            jp.apply(result, objPath, (v: any) => ({ ...v, [key2]: value === '1' }))
-          } else {
-            jp.apply(result, objPath, (v: any) => ({ ...v, [key2]: value }))
+
+          // Determine the key to modify within the target object
+          // If the last segment is an array index, use the second-to-last segment (array name)
+          // Otherwise, use the last segment (regular key)
+          const targetKey = isLastSegmentArrayIndex ?
+            jp.parse(key).at(-2)['expression']['value']
+            : jp.parse(key).at(-1)['expression']['value'];
+
+          // If the target is an array, append the new value
+          if (isLastSegmentArrayIndex) {
+            jp.apply(result, fullObjectPath, (v: any) => ({
+              ...v,
+              [targetKey]: Array.isArray(v[targetKey])
+                ? [...v[targetKey], value]
+                : [value]
+            }));
+          }
+          // If the target key is 'enable', store a boolean value (true if '1', false otherwise)
+          else if (targetKey === 'enable') {
+            jp.apply(result, fullObjectPath, (v: any) => ({
+              ...v,
+              [targetKey]: value === '1'
+            }));
+          }
+          // Otherwise, update the object with the new value
+          else {
+            jp.apply(result, fullObjectPath, (v: any) => ({
+              ...v,
+              [targetKey]: value
+            }));
           }
         }
       } else {
         jp.apply(result, key, () => value)
       }
     })
-
     setIsLoading(true);
     setError(null);
 
@@ -358,7 +389,14 @@ export const ConfigurationForm = () => {
         mode: 'cors',
       });
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        const errorData = await response.json();
+        let errorMessage = ""
+        if (errorData.message && errorData.error)
+          errorMessage = `${errorData.message}:\n ${errorData.error}`
+        else
+          errorMessage = `HTTP error! Status: ${response.status}`
+        
+        throw new Error(errorMessage);
       }
       const responseData = await response.json();
       if (responseData.status === "ok" && responseData.artifacts) {

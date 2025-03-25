@@ -46,7 +46,7 @@
             "besu" = inputs.ethereum-nix.packages.${system}.besu;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
-            "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
+            "lighthouse" = inputs.nixpkgs.legacyPackages.${system}.lighthouse;
             "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
             "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
@@ -96,7 +96,6 @@
           devenv.shells = {
             default = {
               packages = with pkgs; [
-                init-ssv
                 jq
                 nodePackages.eslint
                 nodejs
@@ -119,17 +118,6 @@
                   warn-dirty = false
                 '';
               };
-              enterShell = ''
-                cat <<INFO
-
-                ### HomestakerOS ###
-
-                Available commands:
-
-                  init-ssv  : Generate an SSV operator key pair
-
-                INFO
-              '';
               pre-commit =
                 let
                   cargoTomlPath = "./packages/backend/Cargo.toml";
@@ -163,18 +151,7 @@
 
       flake =
         let
-          # Function to format module options
-          parseOpts = options:
-            inputs.nixpkgs.lib.attrsets.mapAttrsRecursiveCond (v: ! inputs.nixpkgs.lib.options.isOption v)
-              (_k: v: {
-                type = v.type.name;
-                inherit (v) default;
-                description =
-                  v.description or null;
-                example =
-                  v.example or null;
-              })
-              options;
+          introspect = import ./introspect.nix { inherit (self.inputs.nixpkgs) lib; };
 
           # Function to get options from module(s)
           getOpts = modules:
@@ -183,7 +160,6 @@
                 inherit modules;
                 specialArgs = { inherit (inputs) nixpkgs; };
               }).options [ "_module" ];
-
         in
         {
           # NixOS configuration entrypoints
@@ -245,9 +221,10 @@
 
           # Format modules
           nixosModules = {
-            homestakeros.imports = [
-              ./nixosModules/homestakeros
-            ];
+            homestakeros = {
+              imports = [ ./nixosModules/homestakeros ];
+              nixpkgs.overlays = [ self.overlays.default ];
+            };
             backend = {
               imports = [ ./nixosModules/backend ];
               nixpkgs.overlays = [ self.overlays.default ];
@@ -257,7 +234,7 @@
 
           # Module option exports for the frontend
           # Accessible through 'nix eval --json .#exports'
-          exports = parseOpts (getOpts [
+          exports = introspect.parseOpts (getOpts [
             ./nixosModules/homestakeros/options.nix
           ]);
         };
