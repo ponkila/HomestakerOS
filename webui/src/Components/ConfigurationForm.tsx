@@ -26,7 +26,8 @@ import {
   VStack,
   Spinner,
   Alert,
-  Text
+  Text,
+  Link
 } from '@chakra-ui/react'
 import { QuestionOutlineIcon } from '@chakra-ui/icons'
 import { AddIcon, CloseIcon } from '@chakra-ui/icons'
@@ -375,7 +376,7 @@ export const ConfigurationForm = () => {
     })
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -439,9 +440,21 @@ export const ConfigurationForm = () => {
     return (
       <form onSubmit={e => handleSubmit(e, backend.backendUrl)}>
         <Box borderWidth="1px" borderRadius="lg" p={4} mb={4}>
-          <Heading as="h2" size="md" mb={4}>
-            Configuration
-          </Heading>
+          <Flex>
+            <Heading as="h2" size="md" mb={4}>
+              Configuration
+            </Heading>
+            <Link
+              href="https://github.com/ponkila/HomestakerOS/blob/main/docs/homestakeros/2.3-configure_deploy.md#23-configure-and-deploy"
+              isExternal
+              ml={2}
+            >
+              <Tooltip label="See documentation" aria-label="A tooltip">
+                <QuestionOutlineIcon verticalAlign="middle" />
+              </Tooltip>
+            </Link>
+          </Flex>
+
           <OrderedList>
             <ListItem>Select features below</ListItem>
             <ListItem>Click on #BUIDL</ListItem>
@@ -474,7 +487,7 @@ export const ConfigurationForm = () => {
           )}
 
           {artifacts.length > 0 && (
-            <ArtifactsList artifacts={artifacts}/>
+            <ArtifactsList artifacts={artifacts} />
           )}
         </VStack>
         <Button w="100%" type="submit">
