@@ -81,7 +81,7 @@
           where = "/mnt";
           type = "btrfs";
           options = [ "noatime" ];
-          before = [ "some-other.service" ];
+          before = [ "some-system.service" ];
           wantedBy = [ "multi-user.target" ];
         };
       };
@@ -126,7 +126,17 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
         };
         dataDir = mkOption {
           type = types.path;
@@ -156,7 +166,17 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
         };
         dataDir = mkOption {
           type = types.path;
@@ -186,7 +206,17 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
         };
         dataDir = mkOption {
           type = types.path;
@@ -216,7 +246,17 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:8551";
-          description = "HTTP-RPC server listening interface of engine API.";
+          description = "Endpoint for consensus clients to connect to this execution client (Engine API/AuthRPC).";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 30303;
+          description = "Network port for P2P communication with other Ethereum nodes (TCP/UDP).";
+        };
+        jsonRpcPort = mkOption {
+          type = types.int;
+          default = 8545;
+          description = "JSON-RPC port for wallet/dapp connections. WebSocket port will automatically be set to this port+1.";
         };
         dataDir = mkOption {
           type = types.path;
@@ -248,7 +288,12 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:5052";
-          description = "HTTP server listening interface.";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP). The QUIC port will be set to this port+1.";
         };
         execEndpoint = mkOption {
           type = types.str;
@@ -299,8 +344,13 @@
         };
         endpoint = mkOption {
           type = types.str;
-          default = "http://127.0.0.1:3500";
-          description = "JSON-HTTP server listening interface.";
+          default = "http://127.0.0.1:5052";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP). The QUIC port will be set to this port+1.";
         };
         execEndpoint = mkOption {
           type = types.str;
@@ -341,8 +391,13 @@
         };
         endpoint = mkOption {
           type = types.str;
-          default = "http://127.0.0.1:5051";
-          description = "JSON-HTTP server listening interface.";
+          default = "http://127.0.0.1:5052";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP).";
         };
         execEndpoint = mkOption {
           type = types.str;
@@ -377,7 +432,12 @@
         endpoint = mkOption {
           type = types.str;
           default = "http://127.0.0.1:5052";
-          description = "JSON-HTTP server listening interface.";
+          description = "HTTP API endpoint for validators and other tools to connect to this beacon node.";
+        };
+        port = mkOption {
+          type = types.int;
+          default = 9000;
+          description = "Network port for P2P communication with other beacon nodes (TCP/UDP).";
         };
         execEndpoint = mkOption {
           type = types.str;
