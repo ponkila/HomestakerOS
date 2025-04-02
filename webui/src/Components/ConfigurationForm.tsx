@@ -439,7 +439,7 @@ export const ConfigurationForm = () => {
     return (
       <form onSubmit={e => handleSubmit(e, backend.backendUrl)}>
         <Box borderWidth="1px" borderRadius="lg" p={4} mb={4}>
-        <Flex>
+          <Flex>
             <Heading as="h2" size="md" mb={4}>
               Configuration
             </Heading>
