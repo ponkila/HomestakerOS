@@ -7,7 +7,7 @@ let
   cfg = config.homestakeros;
 in
 {
-  inherit (import ./options.nix { inherit lib pkgs; }) options;
+  inherit (import ./options.nix { inherit lib pkgs cfg; }) options;
 
   config = with lib; let
     # Function to parse a URL into its components
@@ -193,16 +193,12 @@ in
     (
       mkIf
         (
-          cfg.addons.ssv-node.privateKeyFile
-          != null
-          && cfg.addons.ssv-node.privateKeyPasswordFile
-          != null
-          && pkgs.system == "x86_64-linux"
+          pkgs.system == "x86_64-linux"
           && length activeConsensusClients > 0
           && length activeExecutionClients > 0
         )
         {
-          systemd.services.ssv-autostart =
+          systemd.services.ssv-node =
             let
               # TODO: This is a bad way to do this, prevents multiple instances
               executionClient = builtins.elemAt activeExecutionClients 0;
@@ -237,40 +233,60 @@ in
               '';
             in
             {
-              description = "Start the SSV node if the private operator key exists";
-              unitConfig.ConditionPathExists = [
-                "${cfg.addons.ssv-node.privateKeyFile}"
-                "${cfg.addons.ssv-node.privateKeyPasswordFile}"
-              ];
-              # The operator key is defined here, so it does not need to be evaluated
-              script = ''
-                ${pkgs.ssvnode}/bin/ssvnode start-node --config ${ssvConfig}
-              '';
+              description = "Operator node for Secret Shared Validators (SSV)";
+              after = [ "network-online.target" ];
+              wants = [ "network-online.target" ];
               wantedBy = [ "multi-user.target" ];
+
+              script =
+                let
+                  curl = "${pkgs.curl}/bin/curl";
+                  jq = "${pkgs.jq}/bin/jq";
+                in
+                ''
+                  mkdir -p ${cfg.addons.ssv-node.dataDir}
+
+                  # Check if keys exist
+                  if [ ! -f "${cfg.addons.ssv-node.privateKeyFile}" ] || [ ! -f "${cfg.addons.ssv-node.publicKeyFile}" ]; then
+
+                    # Check if dataDir is on tmpfs
+                    FS_TYPE=$(df --output=fstype "${cfg.addons.ssv-node.dataDir}" | tail -n1)
+                    if [[ "$FS_TYPE" =~ ^(tmpfs|overlay|squashfs)$ ]]; then
+                      echo "error: '${cfg.addons.ssv-node.dataDir}' is on a tmpfs; generated keys would be lost after reboot"
+                      exit 1
+                    fi
+
+                    # Generate keys with timestamp as a password
+                    ${pkgs.init-ssv}/bin/init-ssv
+                      --private-key "${cfg.addons.ssv-node.privateKeyFile}" \
+                      --public-key "${cfg.addons.ssv-node.publicKeyFile}" \
+                      --password-file "${cfg.addons.ssv-node.privateKeyPasswordFile}" \
+                      $(date +%s) || exit 1
+                  fi
+
+                  # Start the node if operator is registered
+                  SSV_PUBLIC_KEY=$(cat "${cfg.addons.ssv-node.publicKeyFile}")
+                  if $(${curl} -s "https://api.ssv.network/api/v4/mainnet/operators/public_key/$SSV_PUBLIC_KEY") | ${jq} -e '.data != null' > /dev/null; then
+                    echo "operator is registered, starting ssv node..."
+                    ${pkgs.ssvnode}/bin/ssvnode start-node --config ${ssvConfig}
+                  else
+                    echo "error: operator is not registered yet, exiting"
+                    exit 1
+                  fi
+                '';
               serviceConfig = {
-                Restart = "always";
-                RestartSec = "5s";
                 Type = "simple";
+                Restart = "on-failure";
+                RestartSec = "600s"; # 10 minutes
               };
             };
-          systemd.timers.ssv-autostart = {
-            timerConfig.OnBootSec = "10min";
-            wantedBy = [ "timers.target" ];
-          };
+
           # Firewall
           networking.firewall = {
             allowedTCPPorts = [ 13001 ];
             allowedUDPPorts = [ 12001 ];
           };
         }
-    )
-
-    #################################################################### WIREGUARD
-    # cfg: https://man7.org/linux/man-pages/man8/wg.8.html
-    (
-      mkIf cfg.vpn.wireguard.enable {
-        networking.wg-quick.interfaces.${getVpnInterfaceName "wireguard"}.configFile = cfg.vpn.wireguard.configFile;
-      }
     )
 
     #################################################################### ERIGON
