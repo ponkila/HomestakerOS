@@ -1,4 +1,4 @@
-import { Container, Box, Heading, Flex, Spacer, Tag, TagLabel } from '@chakra-ui/react'
+import { Container, Box, Heading, Flex, Spacer, Tag, TagLabel, Text } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import './App.css'
 import NewsletterForm from './Components/NewsletterForm'
@@ -119,11 +119,18 @@ export const App = () => {
         )}
       </Box>
       <Flex mb={8} mt={8}>
-        <a href="/">
-          <Heading as="h1" size="xl" mb={4} cursor="pointer">
-            🪄 HomestakerOS
-          </Heading>
-        </a>
+        <Flex direction="column">
+          <Link to="/">
+            <Heading as="h1" size="xl" mb={2} cursor="pointer">
+              🪄 HomestakerOS
+            </Heading>
+          </Link>
+          <Link to="https://github.com/ponkila/HomestakerOS/blob/main/docs/homestakeros/1-introduction.md" target="_blank" rel="noopener noreferrer">
+            <Text fontSize="lg" color="blue.500" textAlign="center" _hover={{ textDecoration: "underline" }}>
+              Documentation
+            </Text>
+          </Link>
+        </Flex>
         <Spacer />
         <NewsletterForm />
       </Flex>

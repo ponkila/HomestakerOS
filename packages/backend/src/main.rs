@@ -8,14 +8,14 @@ use std::fs;
 use backend::schema_types::Config;
 use backend::workspace::Workspace;
 use backend::{
-    handle_error, process_artifacts, run_json2nix, run_nix_build, validate_config,
-    write_default_nix,
+    create_tarball, handle_error, process_artifacts, run_json2nix, run_nix_build, update_hostnames,
+    update_schema, validate_config, write_default_nix, write_json_to_file,
 };
 
 // Embed the flake files at compile time.
 const FLAKE_NIX: &str = include_str!("static/flake.nix");
 
-// A static array of allowed filenames in the build output.
+// A static array of allowed filenames in the nix build output.
 const WHITELIST: &[&str] = &["bzImage", "initrd.zst", "kexec-boot"];
 
 /// Application state.
@@ -69,6 +69,12 @@ async fn nixos_config(req_body: String, data: web::Data<AppState>) -> impl Respo
         Err(e) => return handle_error("Failed to run json2nix", e),
     };
 
+    // Output the original JSON to default.json
+    let default_json_path = workspace.hostname_dir.join("default.json");
+    if let Err(e) = write_json_to_file(&default_json_path, &json_str) {
+        return handle_error("Failed to write default.json file", e);
+    }
+
     // Prepend boilerplate and write default.nix.
     if let Err(e) = write_default_nix(&workspace.hostname_dir, &json2nix_output) {
         return handle_error("Failed to write default.nix file", e);
@@ -80,22 +86,42 @@ async fn nixos_config(req_body: String, data: web::Data<AppState>) -> impl Respo
         return handle_error("Failed to write flake.nix", e);
     }
 
-    // Run nix build.
-    if let Err(e) = run_nix_build(&workspace.nix_config_dir, &hostname, &workspace.out_link) {
-        return handle_error("Failed to run nix build", e);
+    // Fetch hostnames.json.
+    let hostnames_output = workspace
+        .nix_config_dir
+        .join("nixosConfigurations/hostnames.json");
+    if let Err(e) = update_hostnames(&hostnames_output, &workspace.nix_config_dir) {
+        return handle_error("Failed to write hostnames.json", e);
     }
-    println!("Nix build completed.");
+
+    // Fetch options.json.
+    let schema_output = workspace
+        .nix_config_dir
+        .join("nixosModules/homestakeros/options.json");
+    if let Err(e) = update_schema(&schema_output, &workspace.nix_config_dir) {
+        return handle_error("Failed to write options.json", e);
+    }
 
     // Retrieve the build id and pre-created output directory.
     let build_id = &workspace.uuid;
     let output_dir = workspace.output_dir.clone();
 
-    // Copy whitelisted results, and compute their SHA256's.
-    let artifacts_info =
-        match process_artifacts(&workspace.out_link, &output_dir, build_id, WHITELIST) {
-            Ok(info) => info,
-            Err(e) => return handle_error("Failed to process artifacts", e),
-        };
+    // Create nixConfig.tar.
+    if let Err(e) = create_tarball(&workspace.nix_config_dir, &output_dir, "nixConfig.tar") {
+        return handle_error("Failed to create nixConfig.tar", e);
+    }
+
+    // Run nix build.
+    if let Err(e) = run_nix_build(&workspace.nix_config_dir, &hostname, &output_dir, WHITELIST) {
+        return handle_error("Failed to run nix build", e);
+    }
+    println!("Nix build completed.");
+
+    // Process all files from the output directory.
+    let artifacts_info = match process_artifacts(&output_dir, build_id) {
+        Ok(info) => info,
+        Err(e) => return handle_error("Failed to process artifacts", e),
+    };
 
     // Return artifacts in JSON
     HttpResponse::Ok().json(json!({

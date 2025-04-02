@@ -96,7 +96,7 @@
         };
         configFile = mkOption {
           type = types.path;
-          default = "/var/mnt/secrets/wg0.conf";
+          default = "/mnt/secrets/wg0.conf";
           description = "A file path for the wg-quick configuration.";
         };
       };
@@ -112,7 +112,7 @@
         type = types.nullOr types.path;
         default = null;
         description = "Path to the Ed25519 SSH host key. If absent, the key will be generated automatically.";
-        example = "/var/mnt/secrets/ssh/id_ed25519";
+        example = "/mnt/secrets/ssh/id_ed25519";
       };
     };
 
@@ -130,14 +130,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/erigon";
+          default = "/mnt/erigon";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.str;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/erigon/jwt.hex";
+          example = "/mnt/erigon/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -160,14 +160,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/geth";
+          default = "/mnt/geth";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.str;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/geth/jwt.hex";
+          example = "/mnt/geth/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -190,14 +190,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/nethermind";
+          default = "/mnt/nethermind";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.str;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/nethermind/jwt.hex";
+          example = "/mnt/nethermind/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -220,14 +220,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/besu";
+          default = "/mnt/besu";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.str;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/besu/jwt.hex";
+          example = "/mnt/besu/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -274,14 +274,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/lighthouse";
+          default = "/mnt/lighthouse";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.path;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/lighthouse/jwt.hex";
+          example = "/mnt/lighthouse/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -316,14 +316,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/prysm";
+          default = "/mnt/prysm";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.path;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/prysm/jwt.hex";
+          example = "/mnt/prysm/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -351,14 +351,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/teku";
+          default = "/mnt/teku";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.path;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/teku/jwt.hex";
+          example = "/mnt/teku/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -386,14 +386,14 @@
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/nimbus";
+          default = "/mnt/nimbus";
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
           type = types.nullOr types.path;
           default = null;
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/var/mnt/nimbus/jwt.hex";
+          example = "/mnt/nimbus/jwt.hex";
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
@@ -408,17 +408,17 @@
       ssv-node = {
         privateKeyFile = mkOption {
           type = types.nullOr types.path;
-          default = "/var/mnt/addons/ssv/ssv_operator_key";
+          default = "/mnt/addons/ssv/ssv_operator_key";
           description = "Path to the private SSV operator key.";
         };
         privateKeyPasswordFile = mkOption {
           type = types.nullOr types.path;
-          default = "/var/mnt/addons/ssv/password";
+          default = "/mnt/addons/ssv/password";
           description = "Path to the password file of SSV operator key";
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/var/mnt/addons/ssv";
+          default = "/mnt/addons/ssv";
           description = "Path to a persistent directory to store the node's database.";
         };
         extraOptions = mkOption {

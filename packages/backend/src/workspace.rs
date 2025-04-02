@@ -15,7 +15,6 @@ pub struct Build {
     pub working_dir: PathBuf,
     pub nix_config_dir: PathBuf,
     pub hostname_dir: PathBuf,
-    pub out_link: PathBuf,
     pub output_dir: PathBuf,
 }
 
@@ -53,9 +52,6 @@ impl Workspace {
         fs::create_dir_all(&hostname_dir)
             .with_context(|| format!("Failed to create hostname directory at {hostname_dir:?}"))?;
 
-        // Construct a path for the nix build result.
-        let out_link = working_dir.join("kexecTree");
-
         // Create the final build directory.
         let output_dir = self.base_dir.path().join("builds").join(&build_uuid);
         fs::create_dir_all(&output_dir)
@@ -66,7 +62,6 @@ impl Workspace {
             working_dir,
             nix_config_dir,
             hostname_dir,
-            out_link,
             output_dir,
         })
     }

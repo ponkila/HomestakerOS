@@ -292,7 +292,7 @@ export const ConfigurationForm = () => {
         jp.apply(result, key, () => parseInt(value as string))
       } else if (fieldType === 'bool') {
         jp.apply(result, key, () => value === '1')
-      }
+      } 
       else if (schemaEntry.length == 0) {
         let parent = null
         let parentPath = ''
@@ -395,7 +395,6 @@ export const ConfigurationForm = () => {
           errorMessage = `${errorData.message}:\n ${errorData.error}`
         else
           errorMessage = `HTTP error! Status: ${response.status}`
-
         throw new Error(errorMessage);
       }
       const responseData = await response.json();

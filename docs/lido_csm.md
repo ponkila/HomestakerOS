@@ -24,8 +24,9 @@ In specific, the PR [kaakkuri-ephemeral-alpha: init](https://github.com/ponkila/
 
 Bootstrapping the node required us to also make a few upstream commits to the community maintained repository for Ethereum, called [ethereum.nix](https://github.com/nix-community/ethereum.nix).
 We initiated a few PRs to get all the software bundled:
-- https://github.com/nix-community/ethereum.nix/pull/542
-- https://github.com/nix-community/ethereum.nix/pull/547
+
+- <https://github.com/nix-community/ethereum.nix/pull/542>
+- <https://github.com/nix-community/ethereum.nix/pull/547>
 
 The first PR packages ssv-dkg, whereas the second one includes changes required to run the new v2 version of ssvnode.
 In particular, the second PR found [a seemingly an upstream issue in ssvnode](https://github.com/ssvlabs/ssv/issues/1765), which assumes OpenSSL to be installed in the system.

@@ -46,7 +46,7 @@
             "besu" = inputs.ethereum-nix.packages.${system}.besu;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
-            "lighthouse" = inputs.ethereum-nix.packages.${system}.lighthouse;
+            "lighthouse" = inputs.nixpkgs.legacyPackages.${system}.lighthouse;
             "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
             "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
@@ -96,7 +96,6 @@
           devenv.shells = {
             default = {
               packages = with pkgs; [
-                init-ssv
                 jq
                 nodePackages.eslint
                 nodejs
@@ -119,17 +118,6 @@
                   warn-dirty = false
                 '';
               };
-              enterShell = ''
-                cat <<INFO
-
-                ### HomestakerOS ###
-
-                Available commands:
-
-                  init-ssv  : Generate an SSV operator key pair
-
-                INFO
-              '';
               pre-commit =
                 let
                   cargoTomlPath = "./packages/backend/Cargo.toml";
@@ -233,9 +221,10 @@
 
           # Format modules
           nixosModules = {
-            homestakeros.imports = [
-              ./nixosModules/homestakeros
-            ];
+            homestakeros = {
+              imports = [ ./nixosModules/homestakeros ];
+              nixpkgs.overlays = [ self.overlays.default ];
+            };
             backend = {
               imports = [ ./nixosModules/backend ];
               nixpkgs.overlays = [ self.overlays.default ];

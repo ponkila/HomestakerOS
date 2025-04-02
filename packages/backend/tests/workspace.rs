@@ -25,9 +25,6 @@ fn test_build_workspace_creation() -> Result<(), Box<dyn std::error::Error>> {
     assert!(build_ws.hostname_dir.exists());
     assert!(build_ws.output_dir.exists());
 
-    // For now, out_link path should't exist.
-    assert!(!build_ws.out_link.exists());
-
     Ok(())
 }
 
