@@ -289,6 +289,14 @@ in
         }
     )
 
+    #################################################################### WIREGUARD
+    # cfg: https://man7.org/linux/man-pages/man8/wg.8.html
+    (
+      mkIf cfg.vpn.wireguard.enable {
+        networking.wg-quick.interfaces.${getVpnInterfaceName "wireguard"}.configFile = cfg.vpn.wireguard.configFile;
+      }
+    )
+
     #################################################################### ERIGON
     # cli: https://erigon.gitbook.io/erigon/advanced-usage/command-line-options
     # sec: https://erigon.gitbook.io/erigon/basic-usage/default-ports-and-firewalls
