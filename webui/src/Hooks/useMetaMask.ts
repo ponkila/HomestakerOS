@@ -26,13 +26,17 @@ function useMetaMask() {
   }
 
   const refreshNetwork = (newChainId: string) => {
-    let chainId = Network.None
-    if (Object.values(Network).includes(newChainId as Network)) {
-      chainId = newChainId as Network
-    }
+    let chainId = stringToNetwork(newChainId)
     setWallet((prevState) => ({ ...prevState, chainId }))
   }
 
+  const stringToNetwork = (strChainId: string) => {
+    let chainId = Network.None
+    if (Object.values(Network).includes(strChainId as Network)) {
+      chainId = strChainId as Network
+    }
+    return chainId
+  }
   useEffect(() => {
     const getProvider = async () => {
       const provider = await detectEthereumProvider({ silent: true })
@@ -56,10 +60,13 @@ function useMetaMask() {
   }, [])
 
   const handleConnect = async () => {
-    const accounts = await window.ethereum.request({
-      method: 'eth_requestAccounts',
-    })
-    setWallet((prevState) => ({ ...prevState, accounts }))
+    const [accounts, chainId]: [string[], string] = await Promise.all([
+      window.ethereum.request({ method: 'eth_requestAccounts' }),
+      window.ethereum.request({ method: 'eth_chainId' }),
+    ])
+    const network = stringToNetwork(chainId)
+
+    setWallet((prevState) => ({ ...prevState, accounts, chainId: network }))
   }
 
   const switchNetwork = (networkId: string): Promise<any> => {
