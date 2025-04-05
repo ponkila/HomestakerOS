@@ -5,9 +5,10 @@ import NewsletterForm from './Components/NewsletterForm'
 import { Tabs, TabList, Tab } from '@chakra-ui/react'
 import useMetaMask from './Hooks/useMetaMask'
 import * as O from 'fp-ts/Option'
-import { Outlet, Link } from "react-router-dom";
-import { useParams, useLoaderData } from "react-router-dom";
+import { Outlet, Link } from 'react-router-dom'
+import { useParams, useLoaderData } from 'react-router-dom'
 import { useBackend } from './Context/BackendContext'
+import NetworkSwitchBtn from './Components/NetworkSwitchBtn'
 
 export const Schema = (flake: string) => {
   const [schema, setSchema] = useState<O.Option<Record<string, any>>>(O.none)
@@ -23,15 +24,15 @@ export const Schema = (flake: string) => {
 }
 
 export type BlockResponse = {
-  host: string;
-  data: O.Option<Record<string, any>>;
+  host: string
+  data: O.Option<Record<string, any>>
 }
 
 export const Block = async (endpoint: string, timeout: number): Promise<O.Option<Record<string, any>>> => {
-  const controller = new AbortController();
-  const signal = controller.signal;
+  const controller = new AbortController()
+  const signal = controller.signal
 
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const timeoutId = setTimeout(() => controller.abort(), timeout)
   try {
     const response = await fetch(`${endpoint}/eth/v1/beacon/headers/head`, {
       method: 'GET',
@@ -39,75 +40,83 @@ export const Block = async (endpoint: string, timeout: number): Promise<O.Option
         Accept: 'application/json',
       },
       signal,
-    });
+    })
 
-    clearTimeout(timeoutId);
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      throw new Error(`HTTP error! Status: ${response.status}`)
     }
 
-    const data = await response.json();
-    return O.some(data);
+    const data = await response.json()
+    return O.some(data)
   } catch (_) {
     return O.none
   }
-};
-
-
+}
 
 export const TabsView = () => {
-  const loader: any = useLoaderData();
-  let { owner, repo } = useParams();
+  const loader: any = useLoaderData()
+  let { owner, repo } = useParams()
 
-  const schema = O.some(loader.schema);
-  const flake = loader.flake;
+  const schema = O.some(loader.schema)
+  const flake = loader.flake
 
-  const { backendUrl } = useBackend();
+  const { backendUrl } = useBackend()
 
   return (
     <>
       <Tabs variant="enclosed">
         <TabList mb={5}>
-          <Link to={`/${owner}/${repo}#backendUrl=${backendUrl}`}><Tab>Status</Tab></Link>
+          <Link to={`/${owner}/${repo}#backendUrl=${backendUrl}`}>
+            <Tab>Status</Tab>
+          </Link>
           <Link to={`/${owner}/${repo}/nixosConfigurations#backendUrl=${backendUrl}`}>
             <Tab isDisabled={O.isNone(schema) ? true : false}>NixOS config</Tab>
           </Link>
-          <Link to={`/${owner}/${repo}/query#backendUrl=${backendUrl}`}><Tab>Query node</Tab></Link>
-          <Link to={`/${owner}/${repo}/visualize#backendUrl=${backendUrl}`}><Tab>Nodes</Tab></Link>
-          <Link to={`/${owner}/${repo}/ssvform#backendUrl=${backendUrl}`}><Tab>Register SSV operator</Tab></Link>
+          <Link to={`/${owner}/${repo}/query#backendUrl=${backendUrl}`}>
+            <Tab>Query node</Tab>
+          </Link>
+          <Link to={`/${owner}/${repo}/visualize#backendUrl=${backendUrl}`}>
+            <Tab>Nodes</Tab>
+          </Link>
+          <Link to={`/${owner}/${repo}/ssvform#backendUrl=${backendUrl}`}>
+            <Tab>Register SSV operator</Tab>
+          </Link>
         </TabList>
       </Tabs>
       <Outlet context={[flake, schema]} />
     </>
-  );
-};
+  )
+}
 
 export const App = () => {
-  const [hasProvider, wallet, handleConnect] = useMetaMask()
+  const [hasProvider, wallet, handleConnect, switchNetwork] = useMetaMask()
 
   return (
     <Container maxW="container.lg">
       <Box position="fixed" top={4} right={4}>
-        {wallet.accounts.length > 0 ? (
-          <Tag size="lg" colorScheme="green" borderRadius="full" variant="solid" cursor="pointer">
-            <TagLabel>
-              {wallet.accounts[0].slice(0, 6)}...{wallet.accounts[0].slice(-4)}
-            </TagLabel>
-          </Tag>
+        {!hasProvider ? (
+          <Text>MetaMask is not available. Please install MetaMask.</Text>
         ) : (
-          hasProvider && (
-            <Tag
-              size="lg"
-              colorScheme="blue"
-              borderRadius="full"
-              variant="solid"
-              cursor="pointer"
-              onClick={handleConnect}
-            >
-              <TagLabel>Connect MetaMask</TagLabel>
-            </Tag>
-          )
+          <>
+            {wallet.accounts.length > 0 ? (
+              <Box>
+                <NetworkSwitchBtn wallet={wallet} switchNetwork={switchNetwork} handleConnect={handleConnect} />
+              </Box>
+            ) : (
+              <Tag
+                size="lg"
+                colorScheme="blue"
+                borderRadius="full"
+                variant="solid"
+                cursor="pointer"
+                onClick={handleConnect}
+              >
+                <TagLabel>Connect MetaMask</TagLabel>
+              </Tag>
+            )}
+          </>
         )}
       </Box>
       <Flex mb={8} mt={8}>
@@ -117,8 +126,12 @@ export const App = () => {
               🪄 HomestakerOS
             </Heading>
           </Link>
-          <Link to="https://github.com/ponkila/HomestakerOS/blob/main/docs/homestakeros/1-introduction.md" target="_blank" rel="noopener noreferrer">
-            <Text fontSize="lg" color="blue.500" textAlign="center" _hover={{ textDecoration: "underline" }}>
+          <Link
+            to="https://github.com/ponkila/HomestakerOS/blob/main/docs/homestakeros/1-introduction.md"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Text fontSize="lg" color="blue.500" textAlign="center" _hover={{ textDecoration: 'underline' }}>
               Documentation
             </Text>
           </Link>

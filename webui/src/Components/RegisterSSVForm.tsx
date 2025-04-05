@@ -1,17 +1,30 @@
 import { useState } from 'react'
-import { Text, Button, Box, FormControl, FormLabel, Heading, Input, Spinner, Link, AlertIcon, Alert, Flex, Tooltip } from '@chakra-ui/react'
+import {
+  Text,
+  Button,
+  Box,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  Spinner,
+  Link,
+  AlertIcon,
+  Alert,
+  Flex,
+  Tooltip,
+} from '@chakra-ui/react'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { ethers } from 'ethers/dist/ethers.esm.js'
-import useMetaMask from '../Hooks/useMetaMask'
-import { encodeAbiParameters, parseAbiParameters, parseEther } from "viem";
+import useMetaMask, { Network } from '../Hooks/useMetaMask'
+import { encodeAbiParameters, parseAbiParameters, parseEther } from 'viem'
 import { QuestionOutlineIcon } from '@chakra-ui/icons'
 
 const enum ContractAddresses {
-  Testnet = "0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA",
-  Mainnet = "0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1",
+  Testnet = '0x38A4794cCEd47d3baf7370CcC43B560D3a1beEFA',
+  Mainnet = '0xDD9BC35aE942eF0cFa76930954a156B3fF30a4E1',
 }
-const BLOCKS_PER_YEAR = 2613400n;
-const USE_TEST_NET = true;
+const BLOCKS_PER_YEAR = 2613400n
 
 const RegisterSSVForm = () => {
   const [hasProvider, wallet, handleConnect] = useMetaMask()
@@ -20,58 +33,56 @@ const RegisterSSVForm = () => {
   const [transactionLink, setTransactionLink] = useState('')
 
   const registerOperator = async (e: any) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setTransactionLink('');
-    setError('');
+    e.preventDefault()
+    setIsLoading(true)
+    setTransactionLink('')
+    setError('')
     try {
       const feeAsWei = parseEther(e.target.fee.value)
-      const isZeroFee = feeAsWei === 0n;
-      const feePerBlock = isZeroFee ? 0n : roundOperatorFee(feeAsWei / BLOCKS_PER_YEAR);
+      const isZeroFee = feeAsWei === 0n
+      const feePerBlock = isZeroFee ? 0n : roundOperatorFee(feeAsWei / BLOCKS_PER_YEAR)
+      const setPrivate = e.target.isPrivate.checked
+      const useTestNet = wallet.chainId == Network.Holesky
 
-      const setPrivate = e.target.isPrivate.checked;
       if (isZeroFee && !Boolean(setPrivate)) {
-        setError("Fee cannot be set to 0 while operator status is set to public. To set the fee to 0, switch the operator status to private.");
-        setIsLoading(false);
-        return;
+        setError(
+          'Fee cannot be set to 0 while operator status is set to public. To set the fee to 0, switch the operator status to private.'
+        )
+        setIsLoading(false)
+        return
       }
 
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
 
-      const abi = await (await fetch('/SSVNetwork.json')).json();
-      const address = USE_TEST_NET ? ContractAddresses.Testnet : ContractAddresses.Mainnet
-      const contract = new ethers.Contract(address, abi, signer);
-      const pk = e.target.publicKey.value;
-      const publicKey = encodeAbiParameters(parseAbiParameters("string"), [pk]);
-      const gasEstimate = await contract.estimateGas.registerOperator(publicKey, feePerBlock, setPrivate);
+      const abi = await (await fetch('/SSVNetwork.json')).json()
+      const address = useTestNet ? ContractAddresses.Testnet : ContractAddresses.Mainnet
+      const contract = new ethers.Contract(address, abi, signer)
+      const pk = e.target.publicKey.value
+      const publicKey = encodeAbiParameters(parseAbiParameters('string'), [pk])
+      const gasEstimate = await contract.estimateGas.registerOperator(publicKey, feePerBlock, setPrivate)
 
-      contract
-        .registerOperator(publicKey, feePerBlock, setPrivate, { gasLimit: gasEstimate })
-        .then((tx: any) => {
-          setIsLoading(false);
-          setError('');
-          const txLink = USE_TEST_NET ? `https://holesky.etherscan.io/tx/${tx.hash}` : `https://etherscan.io/tx/${tx.hash}`;
-          setTransactionLink(txLink)
-        })
+      contract.registerOperator(publicKey, feePerBlock, setPrivate, { gasLimit: gasEstimate }).then((tx: any) => {
+        setIsLoading(false)
+        setError('')
+        const txLink = useTestNet ? `https://holesky.etherscan.io/tx/${tx.hash}` : `https://etherscan.io/tx/${tx.hash}`
+        setTransactionLink(txLink)
+      })
     } catch (err: any) {
-      setError(err.message);
-      setIsLoading(false);
+      setError(err.message)
+      setIsLoading(false)
     }
-  };
+  }
 
-  const roundOperatorFee = (
-    fee: bigint,
-    precision = 10_000_000n,
-  ): bigint => {
-    return bigintRound(fee, precision);
+  const roundOperatorFee = (fee: bigint, precision = 10_000_000n): bigint => {
+    return bigintRound(fee, precision)
   }
 
   const bigintRound = (value: bigint, precision: bigint): bigint => {
-    const remainder = value % precision;
+    const remainder = value % precision
     return remainder >= precision / 2n
       ? value + (precision - remainder) // Round up
-      : value - remainder; // Round down
+      : value - remainder // Round down
   }
 
   return (
@@ -91,7 +102,6 @@ const RegisterSSVForm = () => {
             isExternal
             ml={2}
           >
-
             <Tooltip label="See documentation" aria-label="A tooltip">
               <QuestionOutlineIcon verticalAlign="middle" />
             </Tooltip>
@@ -122,7 +132,9 @@ const RegisterSSVForm = () => {
               </FormControl>
               <FormControl my={4} id="fee">
                 <Flex as="span" align="center">
-                  <FormLabel mb="0" whiteSpace="nowrap" verticalAlign="middle">Fee</FormLabel>
+                  <FormLabel mb="0" whiteSpace="nowrap" verticalAlign="middle">
+                    Fee
+                  </FormLabel>
                   <Link
                     href="https://docs.google.com/spreadsheets/d/12cWougs1YjTd6gnsEvIZJMd0PXg_R3e7VkWyFXsmzbo/edit?pli=1&gid=549776430#gid=549776430"
                     isExternal
@@ -132,7 +144,6 @@ const RegisterSSVForm = () => {
                     </Tooltip>
                   </Link>
                 </Flex>
-
 
                 <Input mt={1} type="number" max="200" min="0" step="any" placeholder="1.0" />
               </FormControl>
@@ -154,10 +165,9 @@ const RegisterSSVForm = () => {
               <Button w="100%" type="submit">
                 Register
               </Button>
-
             </form>
           ))}
-      </Box >
+      </Box>
     </>
   )
 }
