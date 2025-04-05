@@ -1,21 +1,40 @@
-import React, { useState } from 'react'
-import { Tag, TagLabel, Select, Box, Flex, Text } from '@chakra-ui/react' // Importing Chakra UI components
+import React from 'react'
+import { Tag, TagLabel, Box, Flex, Menu, MenuButton, MenuItem, MenuList, Button, useToast } from '@chakra-ui/react' // Importing Chakra UI components
 import { WalletState, Network } from '../Hooks/useMetaMask' // Assuming you have WalletState typed
 
 const NetworkSwitchBtn: React.FC<{
   wallet: WalletState
-  switchNetwork: (networkId: string) => Promise<any>
+  switchNetwork: (networkId: Network) => Promise<any>
   handleConnect: () => void
 }> = ({ wallet, switchNetwork, handleConnect }) => {
-  const [error, setError] = useState('')
+  const toast = useToast()
+
   // Handle network change when the user selects a new network
-  const handleSelectChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedNetwork = event.target.value as keyof typeof Network
+  const handleSelectChange = async (selectedNetwork: Network) => {
     try {
-      setError('')
-      await switchNetwork(selectedNetwork)
-    } catch (error) {
-      setError('Unable to switch the network. Try to do it manually!')
+      if (selectedNetwork === Network.None) {
+      } else {
+        await switchNetwork(selectedNetwork)
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Network switch failed. Try to do it manually from MetaMask!',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+    }
+  }
+
+  const getNetworkName = (chainId: Network) => {
+    switch (chainId) {
+      case Network.Ethereum:
+        return 'Ethereum'
+      case Network.Holesky:
+        return 'Holesky'
+      default:
+        return 'Invalid Network'
     }
   }
 
@@ -24,10 +43,23 @@ const NetworkSwitchBtn: React.FC<{
       {wallet.accounts.length > 0 ? (
         <Box>
           <Flex alignItems="center" gap="4">
-            <Select value={wallet.chainId ?? 'Select network'} onChange={handleSelectChange} size="lg" width="auto">
-              <option value={Network.Ethereum}>Ethereum</option>
-              <option value={Network.Holesky}>Holesky</option>
-            </Select>
+            <Menu>
+              {wallet.chainId === Network.None ? (
+                <MenuButton as={Button} size="md" width="auto" bg="red.400">
+                  Invalid Network
+                </MenuButton>
+              ) : (
+                <MenuButton as={Button} size="md" width="auto">
+                  {getNetworkName(wallet.chainId)}
+                </MenuButton>
+              )}
+              <MenuList>
+                {/* Ethereum */}
+                <MenuItem onClick={() => handleSelectChange(Network.Ethereum)}>Ethereum</MenuItem>
+                {/* Holesky */}
+                <MenuItem onClick={() => handleSelectChange(Network.Holesky)}>Holesky</MenuItem>
+              </MenuList>
+            </Menu>
 
             <Tag size="lg" colorScheme="green" borderRadius="full" variant="solid" cursor="pointer">
               <TagLabel>
@@ -35,11 +67,6 @@ const NetworkSwitchBtn: React.FC<{
               </TagLabel>
             </Tag>
           </Flex>
-          {error !== '' ? (
-            <Text fontSize="md" color="red" textAlign="center">
-              {error}
-            </Text>
-          ) : null}
         </Box>
       ) : (
         <Tag size="lg" colorScheme="blue" borderRadius="full" variant="solid" cursor="pointer" onClick={handleConnect}>
