@@ -1,6 +1,19 @@
 { lib
+, cfg
 , ...
-}: {
+}:
+let
+  # Try to get the first mount's path, fallback to null
+  firstMountPath =
+    let
+      mountNames = lib.attrNames (lib.filterAttrs (name: mount: mount.enable) cfg.mounts);
+      firstMountName = lib.optional (mountNames != [ ]) (builtins.head mountNames);
+    in
+    if firstMountName != [ ]
+    then "${cfg.mounts.${builtins.head firstMountName}.where}"
+    else null;
+in
+{
   options.homestakeros = with lib; {
     localization = {
       hostname = mkOption {
@@ -407,19 +420,27 @@
     addons = {
       ssv-node = {
         privateKeyFile = mkOption {
-          type = types.nullOr types.path;
-          default = "/mnt/addons/ssv/ssv_operator_key";
+          type = types.path;
+          default = cfg.addons.ssv-node.dataDir + "/ssv_operator_key";
           description = "Path to the private SSV operator key.";
         };
+        publicKeyFile = mkOption {
+          type = types.path;
+          default = cfg.addons.ssv-node.dataDir + "/ssv_operator_key.pub";
+          description = "Path to the public SSV operator key.";
+        };
         privateKeyPasswordFile = mkOption {
-          type = types.nullOr types.path;
-          default = "/mnt/addons/ssv/password";
           description = "Path to the password file of SSV operator key";
+          type = types.path;
+          default = cfg.addons.ssv-node.dataDir + "/password";
         };
         dataDir = mkOption {
           type = types.path;
-          default = "/mnt/addons/ssv";
-          description = "Path to a persistent directory to store the node's database.";
+          default = if firstMountPath != null then firstMountPath else "/mnt/addons/ssv";
+          description = ''
+            Path to a persistent directory to store the node's database and keys (if not specified separately).
+            Defaults to the first enabled mount's path + /ssv if any mount exists.
+          '';
         };
         extraOptions = mkOption {
           type = types.nullOr (types.listOf types.str);
