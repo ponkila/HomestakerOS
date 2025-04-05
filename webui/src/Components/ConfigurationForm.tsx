@@ -97,10 +97,11 @@ const ListOfControl = (props: ListOfControlProps) => {
               placeholder={item}
               onChange={(e) => setList(list.map((v, j) => (j == i ? e.target.value : v)))}
             />
-            <Button ml={4} as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
+            <Button bg="red.300"  _hover={{ bg: "red.400" }} ml={4} as={CloseIcon}
+              onClick={() => setList(list.filter((_, j) => j != i))} />
           </Flex>
         ))}
-        <Button as={AddIcon} onClick={() => setList([...list, ''])} />
+        <Button bg="green.200" _hover={{ bg: "green.300" }} as={AddIcon} onClick={() => setList([...list, ''])} />
         {example && <FormHelperText>Example: {example}</FormHelperText>}
       </FormControl>
     </>
@@ -236,11 +237,11 @@ const AttrsOfControl = (props: AttrsOfControlProps) => {
               {Object.entries(options).map(([key, value]) => (
                 processNode([...keys, item, key], structuredClone(value), sel)
               ))}
-              <Button as={CloseIcon} onClick={() => setList(list.filter((_, j) => j != i))} />
+              <Button bg="red.300"  _hover={{ bg: "red.400" }} mt={4} onClick={() => setList(list.filter((_, j) => j != i))}>Remove</Button>
             </Flex>
           </FormSection>
         ))}
-        <Button as={AddIcon} onClick={() => setList([...list, ''])} />
+        <Button bg="green.200" _hover={{ bg: "green.300" }} as={AddIcon} onClick={() => setList([...list, ''])} />
         <FormHelperText style={{ overflowWrap: "anywhere" }}>{description}</FormHelperText>
       </FormControl>
     </FormSection>
@@ -376,7 +377,6 @@ export const ConfigurationForm = () => {
     })
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await fetch(`${backendUrl}/nixosConfig`, {
         method: 'POST',
@@ -395,7 +395,6 @@ export const ConfigurationForm = () => {
           errorMessage = `${errorData.message}:\n ${errorData.error}`
         else
           errorMessage = `HTTP error! Status: ${response.status}`
-        
         throw new Error(errorMessage);
       }
       const responseData = await response.json();
@@ -454,11 +453,10 @@ export const ConfigurationForm = () => {
               </Tooltip>
             </Link>
           </Flex>
-
           <OrderedList>
             <ListItem>Select features below</ListItem>
             <ListItem>Click on #BUIDL</ListItem>
-            <ListItem>A download will start for your initrd and kernel</ListItem>
+            <ListItem>Build artifact links will appear for download</ListItem>
             <ListItem>
               Execute the <a href="https://en.wikipedia.org/wiki/Kexec">kexec</a> script on an existing Linux distribution
               to boot

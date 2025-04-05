@@ -5,8 +5,8 @@ import NewsletterForm from './Components/NewsletterForm'
 import { Tabs, TabList, Tab } from '@chakra-ui/react'
 import useMetaMask from './Hooks/useMetaMask'
 import * as O from 'fp-ts/Option'
-import { Outlet, Link } from 'react-router-dom'
-import { useParams, useLoaderData } from 'react-router-dom'
+import { Outlet, Link, useLocation } from "react-router-dom";
+import { useParams, useLoaderData } from "react-router-dom";
 import { useBackend } from './Context/BackendContext'
 import NetworkSwitchBtn from './Components/NetworkSwitchBtn'
 
@@ -56,33 +56,33 @@ export const Block = async (endpoint: string, timeout: number): Promise<O.Option
 }
 
 export const TabsView = () => {
-  const loader: any = useLoaderData()
-  let { owner, repo } = useParams()
+  const loader: any = useLoaderData();
+  let { owner, repo } = useParams();
+  const location = useLocation();
+  const { backendUrl } = useBackend();
 
   const schema = O.some(loader.schema)
   const flake = loader.flake
 
-  const { backendUrl } = useBackend()
+  const getActiveTabIndex = () => {
+    if (location.pathname.includes("nixosConfigurations")) return 1;
+    if (location.pathname.includes("query")) return 2;
+    if (location.pathname.includes("visualize")) return 3;
+    if (location.pathname.includes("ssvform")) return 4;
+    return 0;
+  };
 
   return (
     <>
-      <Tabs variant="enclosed">
-        <TabList mb={5}>
-          <Link to={`/${owner}/${repo}#backendUrl=${backendUrl}`}>
-            <Tab>Status</Tab>
-          </Link>
+      <Tabs sx={{ borderBottom: "none" }} index={getActiveTabIndex()}>
+        <TabList mb={5} sx={{ borderBottom: "none" }}>
+          <Link to={`/${owner}/${repo}#backendUrl=${backendUrl}`}><Tab _focus={{ outline: "none"}}>Status</Tab></Link>
           <Link to={`/${owner}/${repo}/nixosConfigurations#backendUrl=${backendUrl}`}>
-            <Tab isDisabled={O.isNone(schema) ? true : false}>NixOS config</Tab>
+            <Tab isDisabled={O.isNone(schema)} _focus={{ outline: "none" }}>NixOS config</Tab>
           </Link>
-          <Link to={`/${owner}/${repo}/query#backendUrl=${backendUrl}`}>
-            <Tab>Query node</Tab>
-          </Link>
-          <Link to={`/${owner}/${repo}/visualize#backendUrl=${backendUrl}`}>
-            <Tab>Nodes</Tab>
-          </Link>
-          <Link to={`/${owner}/${repo}/ssvform#backendUrl=${backendUrl}`}>
-            <Tab>Register SSV operator</Tab>
-          </Link>
+          <Link to={`/${owner}/${repo}/query#backendUrl=${backendUrl}`}><Tab _focus={{ outline: "none"}}>Query node</Tab></Link>
+          <Link to={`/${owner}/${repo}/visualize#backendUrl=${backendUrl}`}><Tab _focus={{ outline: "none"}}>Nodes</Tab></Link>
+          <Link to={`/${owner}/${repo}/ssvform#backendUrl=${backendUrl}`}><Tab _focus={{ outline: "none"}}>Register SSV operator</Tab></Link>
         </TabList>
       </Tabs>
       <Outlet context={[flake, schema]} />
