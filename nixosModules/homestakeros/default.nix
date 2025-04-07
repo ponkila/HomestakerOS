@@ -10,6 +10,19 @@ in
   inherit (import ./options.nix { inherit lib pkgs cfg; }) options;
 
   config = with lib; let
+    # Function to check if a path is on a persistent mount
+    isPersistentPath = path:
+      let
+        mountsOnPath = lib.filterAttrs
+          (_name: mount:
+            mount.enable &&
+            lib.hasPrefix mount.where path &&
+            !(lib.elem mount.type [ "tmpfs" "overlay" "squashfs" ])
+          )
+          cfg.mounts;
+      in
+      mountsOnPath != { };
+
     # Function to parse a URL into its components
     parseEndpoint = endpoint:
       let
@@ -196,6 +209,7 @@ in
           pkgs.system == "x86_64-linux"
           && length activeConsensusClients > 0
           && length activeExecutionClients > 0
+          && isPersistentPath cfg.addons.ssv-node.dataDir
         )
         {
           systemd.services.ssv-node =
@@ -248,14 +262,6 @@ in
 
                   # Check if keys exist
                   if [ ! -f "${cfg.addons.ssv-node.privateKeyFile}" ] || [ ! -f "${cfg.addons.ssv-node.publicKeyFile}" ]; then
-
-                    # Check if dataDir is on tmpfs
-                    FS_TYPE=$(df --output=fstype "${cfg.addons.ssv-node.dataDir}" | tail -n1)
-                    if [[ "$FS_TYPE" =~ ^(tmpfs|overlay|squashfs)$ ]]; then
-                      echo "error: '${cfg.addons.ssv-node.dataDir}' is on a tmpfs; generated keys would be lost after reboot"
-                      exit 1
-                    fi
-
                     # Generate keys with timestamp as a password
                     ${pkgs.init-ssv}/bin/init-ssv
                       --private-key "${cfg.addons.ssv-node.privateKeyFile}" \
