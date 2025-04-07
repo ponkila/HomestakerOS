@@ -2,17 +2,6 @@
 , cfg
 , ...
 }:
-let
-  # Try to get the first mount's path, fallback to null
-  firstMountPath =
-    let
-      mountNames = lib.attrNames (lib.filterAttrs (name: mount: mount.enable) cfg.mounts);
-      firstMountName = lib.optional (mountNames != [ ]) (builtins.head mountNames);
-    in
-    if firstMountName != [ ]
-    then "${cfg.mounts.${builtins.head firstMountName}.where}"
-    else null;
-in
 {
   options.homestakeros = with lib; {
     localization = {
@@ -421,25 +410,26 @@ in
       ssv-node = {
         privateKeyFile = mkOption {
           type = types.path;
-          default = cfg.addons.ssv-node.dataDir + "/ssv_operator_key";
+          default = "/mnt/addons/ssv/ssv_operator_key";
           description = "Path to the private SSV operator key.";
         };
         publicKeyFile = mkOption {
           type = types.path;
-          default = cfg.addons.ssv-node.dataDir + "/ssv_operator_key.pub";
+          default = "/mnt/addons/ssv/ssv_operator_key.pub";
           description = "Path to the public SSV operator key.";
         };
         privateKeyPasswordFile = mkOption {
           description = "Path to the password file of SSV operator key";
           type = types.path;
-          default = cfg.addons.ssv-node.dataDir + "/password";
+          default = "/mnt/addons/ssv/password";
         };
         dataDir = mkOption {
           type = types.path;
-          default = if firstMountPath != null then firstMountPath else "/mnt/addons/ssv";
+          default = "/mnt/addons/ssv";
           description = ''
-            Path to a persistent directory to store the node's database and keys (if not specified separately).
-            Defaults to the first enabled mount's path + /ssv if any mount exists.
+            Path to a persistent directory to store the node's database and keys.
+            Expected files: ssv_operator_key, ssv_operator_key.pub, and password.
+            Keys will be generated automatically if missing.
           '';
         };
         extraOptions = mkOption {
