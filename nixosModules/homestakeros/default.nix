@@ -214,6 +214,10 @@ in
         {
           systemd.services.ssv-node =
             let
+              privateKeyFile = "${cfg.addons.ssv-node.dataDir}/ssv_operator_key";
+              publicKeyFile = "${cfg.addons.ssv-node.dataDir}/ssv_operator_key.pub";
+              privateKeyPasswordFile = "${cfg.addons.ssv-node.dataDir}/password";
+
               # TODO: This is a bad way to do this, prevents multiple instances
               executionClient = builtins.elemAt activeExecutionClients 0;
               consensusClient = builtins.elemAt activeConsensusClients 0;
@@ -242,8 +246,8 @@ in
                   ETH1Addr: ws://${parsedExecutionEndpoint.addr}:8546
 
                 KeyStore:
-                  PrivateKeyFile: ${cfg.addons.ssv-node.privateKeyFile}
-                  PasswordFile: ${cfg.addons.ssv-node.privateKeyPasswordFile}
+                  PrivateKeyFile: ${privateKeyFile}
+                  PasswordFile: ${privateKeyPasswordFile}
               '';
             in
             {
@@ -261,17 +265,17 @@ in
                   mkdir -p ${cfg.addons.ssv-node.dataDir}
 
                   # Check if keys exist
-                  if [ ! -f "${cfg.addons.ssv-node.privateKeyFile}" ] || [ ! -f "${cfg.addons.ssv-node.publicKeyFile}" ]; then
+                  if [ ! -f "${privateKeyFile}" ] || [ ! -f "${publicKeyFile}" ]; then
                     # Generate keys with timestamp as a password
-                    ${pkgs.init-ssv}/bin/init-ssv
-                      --private-key "${cfg.addons.ssv-node.privateKeyFile}" \
-                      --public-key "${cfg.addons.ssv-node.publicKeyFile}" \
-                      --password-file "${cfg.addons.ssv-node.privateKeyPasswordFile}" \
+                    ${pkgs.init-ssv}/bin/init-ssv \
+                      --private-key "${privateKeyFile}" \
+                      --public-key "${publicKeyFile}" \
+                      --password-file "${privateKeyPasswordFile}" \
                       $(date +%s) || exit 1
                   fi
 
                   # Start the node if operator is registered
-                  SSV_PUBLIC_KEY=$(cat "${cfg.addons.ssv-node.publicKeyFile}")
+                  SSV_PUBLIC_KEY=$(cat "${publicKeyFile}")
                   if $(${curl} -s "https://api.ssv.network/api/v4/mainnet/operators/public_key/$SSV_PUBLIC_KEY") | ${jq} -e '.data != null' > /dev/null; then
                     echo "operator is registered, starting ssv node..."
                     ${pkgs.ssvnode}/bin/ssvnode start-node --config ${ssvConfig}

@@ -408,21 +408,6 @@
 
     addons = {
       ssv-node = {
-        privateKeyFile = mkOption {
-          type = types.path;
-          default = "/mnt/addons/ssv/ssv_operator_key";
-          description = "Path to the private SSV operator key.";
-        };
-        publicKeyFile = mkOption {
-          type = types.path;
-          default = "/mnt/addons/ssv/ssv_operator_key.pub";
-          description = "Path to the public SSV operator key.";
-        };
-        privateKeyPasswordFile = mkOption {
-          description = "Path to the password file of SSV operator key";
-          type = types.path;
-          default = "/mnt/addons/ssv/password";
-        };
         dataDir = mkOption {
           type = types.path;
           default = "/mnt/addons/ssv";
