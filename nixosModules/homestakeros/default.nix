@@ -276,7 +276,7 @@ in
 
                   # Start the node if operator is registered
                   SSV_PUBLIC_KEY=$(cat "${publicKeyFile}")
-                  if $(${curl} -s "https://api.ssv.network/api/v4/mainnet/operators/public_key/$SSV_PUBLIC_KEY") | ${jq} -e '.data != null' > /dev/null; then
+                  if ${curl} -s "https://api.ssv.network/api/v4/mainnet/operators/public_key/$SSV_PUBLIC_KEY" | ${jq} -e '.data != null' > /dev/null; then
                     echo "operator is registered, starting ssv node..."
                     ${pkgs.ssvnode}/bin/ssvnode start-node --config ${ssvConfig}
                   else
