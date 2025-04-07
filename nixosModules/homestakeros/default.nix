@@ -82,7 +82,10 @@ in
                   if serviceType == "consensus"
                   then [ (lib.strings.toInt parsedEndpoint.port) ]
                   else if serviceType == "execution"
-                  then [ 8545 8546 ] # json-rpc / websockets
+                  then [
+                    cfg.${serviceType}.${serviceName}.jsonRpcPort # json-rpc
+                    (cfg.${serviceType}.${serviceName}.jsonRpcPort + 1) # ws-rpc
+                  ]
                   else [ ];
               };
             })
@@ -208,6 +211,7 @@ in
               executionClient = builtins.elemAt activeExecutionClients 0;
               consensusClient = builtins.elemAt activeConsensusClients 0;
               parsedExecutionEndpoint = parseEndpoint cfg.execution.${executionClient}.endpoint;
+              websocketPort = cfg.execution.${executionClient}.jsonRpcPort + 1;
 
               ssvConfig = pkgs.writeText "config.yaml" ''
                 global:
@@ -227,9 +231,7 @@ in
                   Network: mainnet
 
                 eth1:
-                  # This assumes that the websocket is bind to the same port, true for erigon, not for others
-                  # TODO: Consider having a variable name for websocket endpoint
-                  ETH1Addr: ws://${parsedExecutionEndpoint.addr}:8546
+                  ETH1Addr: ws://${parsedExecutionEndpoint.addr}:${toString websocketPort}
 
                 KeyStore:
                   PrivateKeyFile: ${cfg.addons.ssv-node.privateKeyFile}
@@ -282,11 +284,15 @@ in
         serviceType = "execution";
 
         parsedEndpoint = parseEndpoint cfg.execution.erigon.endpoint;
+        websocketPort = cfg.execution.erigon.jsonRpcPort + 1;
+
         execStart = [
           "${pkgs.erigon}/bin/erigon"
           "--datadir ${cfg.execution.erigon.dataDir}"
           "--chain mainnet"
           "--metrics"
+          # p2p port
+          "--port ${toString cfg.execution.erigon.port}"
           # auth for consensus client
           "--authrpc.vhosts \"*\""
           "--authrpc.port ${parsedEndpoint.port}"
@@ -300,14 +306,19 @@ in
           "--http.addr=${parsedEndpoint.addr}"
           "--http.api=eth,erigon,web3,net,debug,trace,txpool"
           "--http.corsdomain=\"*\""
-          "--http.port=8545"
+          "--http.port=${toString cfg.execution.erigon.jsonRpcPort}"
           "--private.api.addr=localhost:9090"
           "--txpool.api.addr=localhost:9090"
           # ws for ssv
           "--ws"
+          "--ws.port=${toString websocketPort}"
         ]
         ++ (if cfg.execution.erigon.extraOptions != null then cfg.execution.erigon.extraOptions else [ ]);
-        allowedPorts = [ 30303 30304 42069 ];
+        allowedPorts = [
+          cfg.execution.erigon.port
+          cfg.execution.erigon.jsonRpcPort
+          websocketPort
+        ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -321,11 +332,16 @@ in
         serviceType = "execution";
 
         parsedEndpoint = parseEndpoint cfg.execution.geth.endpoint;
+        websocketPort = cfg.execution.geth.jsonRpcPort + 1;
+
         execStart = [
           "${pkgs.go-ethereum}/bin/geth"
           "--mainnet"
           "--datadir ${cfg.execution.geth.dataDir}"
           "--metrics"
+          # p2p port
+          "--port ${toString cfg.execution.geth.port}"
+          "--discovery.port ${toString cfg.execution.geth.port}"
           # auth for consensus client
           "--authrpc.vhosts \"*\""
           "--authrpc.port ${parsedEndpoint.port}"
@@ -339,17 +355,21 @@ in
           "--http.addr=${parsedEndpoint.addr}"
           "--http.api=eth,web3,net,debug,txpool"
           "--http.corsdomain=\"*\""
-          "--http.port=8545"
+          "--http.port=${toString cfg.execution.geth.jsonRpcPort}"
           "--http"
           # ws for ssv
           "--ws.addr=${parsedEndpoint.addr}"
           "--ws.api=eth,web3,net,debug,txpool"
           "--ws.origins=\"*\""
-          "--ws.port=8545"
+          "--ws.port=${toString websocketPort}"
           "--ws"
         ]
         ++ (if cfg.execution.geth.extraOptions != null then cfg.execution.geth.extraOptions else [ ]);
-        allowedPorts = [ 30303 ];
+        allowedPorts = [
+          cfg.execution.geth.port
+          cfg.execution.geth.jsonRpcPort
+          websocketPort
+        ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -363,11 +383,16 @@ in
         serviceType = "execution";
 
         parsedEndpoint = parseEndpoint cfg.execution.nethermind.endpoint;
+        websocketPort = cfg.execution.nethermind.jsonRpcPort + 1;
+
         execStart = [
           "${pkgs.nethermind}/bin/Nethermind.Runner"
           "--config mainnet"
           "--datadir ${cfg.execution.nethermind.dataDir}"
           "--Metrics.Enabled true"
+          # p2p
+          "--Network.P2PPort ${toString cfg.execution.nethermind.port}"
+          "--Network.DiscoveryPort ${toString cfg.execution.nethermind.port}"
           # auth for consensus client
           "--JsonRpc.EngineHost ${parsedEndpoint.addr}"
           "--JsonRpc.EnginePort ${parsedEndpoint.port}"
@@ -379,13 +404,17 @@ in
           # json-rpc for interacting
           "--JsonRpc.Enabled true"
           "--JsonRpc.Host ${parsedEndpoint.addr}"
-          "--JsonRpc.Port 8545"
+          "--JsonRpc.Port ${toString cfg.execution.nethermind.jsonRpcPort}"
           # ws for ssv
           "--Init.WebSocketsEnabled true"
-          "--JsonRpc.WebSocketsPort 8545"
+          "--JsonRpc.WebSocketsPort ${toString websocketPort}"
         ]
         ++ (if cfg.execution.nethermind.extraOptions != null then cfg.execution.nethermind.extraOptions else [ ]);
-        allowedPorts = [ 30303 ];
+        allowedPorts = [
+          cfg.execution.nethermind.port
+          cfg.execution.nethermind.jsonRpcPort
+          websocketPort
+        ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -399,11 +428,15 @@ in
         serviceType = "execution";
 
         parsedEndpoint = parseEndpoint cfg.execution.besu.endpoint;
+        websocketPort = cfg.execution.besu.jsonRpcPort + 1;
+
         execStart = [
           "${pkgs.besu}/bin/besu"
           "--network=mainnet"
           "--data-path=${cfg.execution.besu.dataDir}"
           "--metrics-enabled=true"
+          # p2p
+          "--p2p-port=${toString cfg.execution.besu.port}"
           # auth for consensus client
           "--engine-rpc-enabled=true"
           "--engine-host-allowlist=\"*\""
@@ -419,16 +452,20 @@ in
           "--rpc-http-authentication-enabled=false"
           "--rpc-http-cors-origins=\"*\""
           "--rpc-http-enabled=true"
-          "--rpc-http-port=8545"
+          "--rpc-http-port=${toString cfg.execution.besu.jsonRpcPort}"
           # ws for ssv
           "--rpc-ws-api=ETH,NET,WEB3,TRACE,TXPOOL,DEBUG"
           "--rpc-ws-authentication-enabled=false"
           "--rpc-ws-enabled=true"
           "--rpc-ws-host=${parsedEndpoint.addr}"
-          "--rpc-ws-port=8546"
+          "--rpc-ws-port=${toString websocketPort}"
         ]
         ++ (if cfg.execution.besu.extraOptions != null then cfg.execution.besu.extraOptions else [ ]);
-        allowedPorts = [ 30303 ];
+        allowedPorts = [
+          cfg.execution.besu.port
+          cfg.execution.besu.jsonRpcPort
+          websocketPort
+        ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -471,6 +508,8 @@ in
         serviceType = "consensus";
 
         parsedEndpoint = parseEndpoint cfg.consensus.lighthouse.endpoint;
+        quicPort = cfg.consensus.lighthouse.port + 1;
+
         execStart = [
           "${pkgs.lighthouse}/bin/lighthouse bn"
           "--datadir ${cfg.consensus.lighthouse.dataDir}"
@@ -480,6 +519,9 @@ in
           "--http-port ${parsedEndpoint.port}"
           "--http-allow-origin \"*\""
           "--execution-endpoint ${cfg.consensus.lighthouse.execEndpoint}"
+          # p2p
+          "--port ${toString cfg.consensus.lighthouse.port}"
+          "--quic-port ${toString quicPort}"
           (
             if cfg.consensus.lighthouse.jwtSecretFile != null
             then "--execution-jwt ${cfg.consensus.lighthouse.jwtSecretFile}"
@@ -506,7 +548,7 @@ in
           "--checkpoint-sync-url \"https://beaconstate.info\""
         ]
         ++ (if cfg.consensus.lighthouse.extraOptions != null then cfg.consensus.lighthouse.extraOptions else [ ]);
-        allowedPorts = [ 9000 9001 ];
+        allowedPorts = [ cfg.consensus.lighthouse.port quicPort ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -520,6 +562,8 @@ in
         serviceType = "consensus";
 
         parsedEndpoint = parseEndpoint cfg.consensus.prysm.endpoint;
+        quicPort = cfg.consensus.prysm.port + 1;
+
         execStart = [
           "${pkgs.prysm}/bin/beacon-chain"
           "--datadir ${cfg.consensus.prysm.dataDir}"
@@ -527,6 +571,10 @@ in
           "--grpc-gateway-host ${parsedEndpoint.addr}"
           "--grpc-gateway-port ${parsedEndpoint.port}"
           "--execution-endpoint ${cfg.consensus.prysm.execEndpoint}"
+          # p2p
+          "--p2p-tcp-port=${toString cfg.consensus.prysm.port}"
+          "--p2p-udp-port=${toString cfg.consensus.prysm.port}"
+          "--p2p-quic-port=${toString quicPort}"
           (
             if cfg.consensus.prysm.jwtSecretFile != null
             then "--jwt-secret ${cfg.consensus.prysm.jwtSecretFile}"
@@ -549,7 +597,7 @@ in
           "--genesis-beacon-api-url=https://beaconstate.info"
         ]
         ++ (if cfg.consensus.prysm.extraOptions != null then cfg.consensus.prysm.extraOptions else [ ]);
-        allowedPorts = [ 9000 ];
+        allowedPorts = [ cfg.consensus.prysm.port quicPort ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -571,6 +619,8 @@ in
           "--rest-api-interface=${parsedEndpoint.addr}"
           "--rest-api-host-allowlist=\"*\""
           "--ee-endpoint=${cfg.consensus.teku.execEndpoint}"
+          # p2p
+          "--p2p-port=${toString cfg.consensus.teku.port}"
           (
             if cfg.consensus.teku.jwtSecretFile != null
             then "--ee-jwt-secret-file=${cfg.consensus.teku.jwtSecretFile}"
@@ -584,7 +634,7 @@ in
           "--metrics-enabled=true"
         ]
         ++ (if cfg.consensus.teku.extraOptions != null then cfg.consensus.teku.extraOptions else [ ]);
-        allowedPorts = [ 9000 ];
+        allowedPorts = [ cfg.consensus.teku.port ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
@@ -607,6 +657,9 @@ in
           "--rest-allow-origin=\"*\""
           "--el=${cfg.consensus.nimbus.execEndpoint}"
           "--jwt-secret=${cfg.consensus.nimbus.jwtSecretFile}"
+          # p2p
+          "--tcp-port=${toString cfg.consensus.nimbus.port}"
+          "--udp-port=${toString cfg.consensus.nimbus.port}"
           (
             if cfg.addons.mev-boost.enable
             then
@@ -617,7 +670,7 @@ in
           "--metrics=true"
         ]
         ++ (if cfg.consensus.nimbus.extraOptions != null then cfg.consensus.nimbus.extraOptions else [ ]);
-        allowedPorts = [ 9000 ];
+        allowedPorts = [ cfg.consensus.nimbus.port ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
     )
