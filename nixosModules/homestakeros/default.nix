@@ -125,7 +125,7 @@ in
       mkIf true {
         services.openssh = {
           enable = true;
-          hostKeys = lib.mkIf (cfg.ssh.privateKeyFile != null) [
+          hostKeys = [
             {
               path = cfg.ssh.privateKeyFile;
               type = "ed25519";
@@ -325,11 +325,7 @@ in
           "--authrpc.vhosts \"*\""
           "--authrpc.port ${parsedEndpoint.port}"
           "--authrpc.addr ${parsedEndpoint.addr}"
-          (
-            if cfg.execution.erigon.jwtSecretFile != null
-            then "--authrpc.jwtsecret ${cfg.execution.erigon.jwtSecretFile}"
-            else ""
-          )
+          "--authrpc.jwtsecret ${cfg.execution.erigon.jwtSecretFile}"
           # json-rpc for interacting
           "--http.addr=${parsedEndpoint.addr}"
           "--http.api=eth,erigon,web3,net,debug,trace,txpool"
@@ -340,7 +336,7 @@ in
           # ws for ssv
           "--ws"
         ]
-        ++ (if cfg.execution.erigon.extraOptions != null then cfg.execution.erigon.extraOptions else [ ]);
+        ++ cfg.execution.erigon.extraOptions;
         allowedPorts = [ 30303 30304 42069 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -364,11 +360,7 @@ in
           "--authrpc.vhosts \"*\""
           "--authrpc.port ${parsedEndpoint.port}"
           "--authrpc.addr ${parsedEndpoint.addr}"
-          (
-            if cfg.execution.geth.jwtSecretFile != null
-            then "--authrpc.jwtsecret ${cfg.execution.geth.jwtSecretFile}"
-            else ""
-          )
+          "--authrpc.jwtsecret ${cfg.execution.geth.jwtSecretFile}"
           # json-rpc for interacting
           "--http.addr=${parsedEndpoint.addr}"
           "--http.api=eth,web3,net,debug,txpool"
@@ -382,7 +374,7 @@ in
           "--ws.port=8545"
           "--ws"
         ]
-        ++ (if cfg.execution.geth.extraOptions != null then cfg.execution.geth.extraOptions else [ ]);
+        ++ cfg.execution.geth.extraOptions;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -405,11 +397,7 @@ in
           # auth for consensus client
           "--JsonRpc.EngineHost ${parsedEndpoint.addr}"
           "--JsonRpc.EnginePort ${parsedEndpoint.port}"
-          (
-            if cfg.execution.nethermind.jwtSecretFile != null
-            then "--JsonRpc.JwtSecretFile ${cfg.execution.nethermind.jwtSecretFile}"
-            else ""
-          )
+          "--JsonRpc.JwtSecretFile ${cfg.execution.nethermind.jwtSecretFile}"
           # json-rpc for interacting
           "--JsonRpc.Enabled true"
           "--JsonRpc.Host ${parsedEndpoint.addr}"
@@ -418,7 +406,7 @@ in
           "--Init.WebSocketsEnabled true"
           "--JsonRpc.WebSocketsPort 8545"
         ]
-        ++ (if cfg.execution.nethermind.extraOptions != null then cfg.execution.nethermind.extraOptions else [ ]);
+        ++ cfg.execution.nethermind.extraOptions;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -443,11 +431,7 @@ in
           "--engine-host-allowlist=\"*\""
           "--engine-rpc-port=${parsedEndpoint.port}"
           "--rpc-http-host=${parsedEndpoint.addr}"
-          (
-            if cfg.execution.besu.jwtSecretFile != null
-            then "--engine-jwt-secret=${cfg.execution.besu.jwtSecretFile}"
-            else ""
-          )
+          "--engine-jwt-secret=${cfg.execution.besu.jwtSecretFile}"
           # json-rpc for interacting
           "--rpc-http-api=ETH,NET,WEB3,TRACE,TXPOOL,DEBUG"
           "--rpc-http-authentication-enabled=false"
@@ -461,7 +445,7 @@ in
           "--rpc-ws-host=${parsedEndpoint.addr}"
           "--rpc-ws-port=8546"
         ]
-        ++ (if cfg.execution.besu.extraOptions != null then cfg.execution.besu.extraOptions else [ ]);
+        ++ cfg.execution.besu.extraOptions;
         allowedPorts = [ 30303 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -490,7 +474,7 @@ in
             ]}"
           "-addr ${parsedEndpoint.addr}:${parsedEndpoint.port}"
         ]
-        ++ (if cfg.addons.mev-boost.extraOptions != null then cfg.addons.mev-boost.extraOptions else [ ]);
+        ++ cfg.addons.mev-boost.extraOptions;
         allowedPorts = [ ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -514,11 +498,7 @@ in
           "--http-port ${parsedEndpoint.port}"
           "--http-allow-origin \"*\""
           "--execution-endpoint ${cfg.consensus.lighthouse.execEndpoint}"
-          (
-            if cfg.consensus.lighthouse.jwtSecretFile != null
-            then "--execution-jwt ${cfg.consensus.lighthouse.jwtSecretFile}"
-            else ""
-          )
+          "--execution-jwt ${cfg.consensus.lighthouse.jwtSecretFile}"
           "--prune-payloads false"
           (
             if cfg.consensus.lighthouse.slasher.enable
@@ -539,7 +519,7 @@ in
           "--metrics"
           "--checkpoint-sync-url \"https://beaconstate.info\""
         ]
-        ++ (if cfg.consensus.lighthouse.extraOptions != null then cfg.consensus.lighthouse.extraOptions else [ ]);
+        ++ cfg.consensus.lighthouse.extraOptions;
         allowedPorts = [ 9000 9001 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -561,11 +541,7 @@ in
           "--grpc-gateway-host ${parsedEndpoint.addr}"
           "--grpc-gateway-port ${parsedEndpoint.port}"
           "--execution-endpoint ${cfg.consensus.prysm.execEndpoint}"
-          (
-            if cfg.consensus.prysm.jwtSecretFile != null
-            then "--jwt-secret ${cfg.consensus.prysm.jwtSecretFile}"
-            else ""
-          )
+          "--jwt-secret ${cfg.consensus.prysm.jwtSecretFile}"
           (
             if cfg.addons.mev-boost.enable
             then "--http-mev-relay ${cfg.addons.mev-boost.endpoint}"
@@ -582,7 +558,7 @@ in
           "--checkpoint-sync-url=https://beaconstate.info"
           "--genesis-beacon-api-url=https://beaconstate.info"
         ]
-        ++ (if cfg.consensus.prysm.extraOptions != null then cfg.consensus.prysm.extraOptions else [ ]);
+        ++ cfg.consensus.prysm.extraOptions;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -605,11 +581,7 @@ in
           "--rest-api-interface=${parsedEndpoint.addr}"
           "--rest-api-host-allowlist=\"*\""
           "--ee-endpoint=${cfg.consensus.teku.execEndpoint}"
-          (
-            if cfg.consensus.teku.jwtSecretFile != null
-            then "--ee-jwt-secret-file=${cfg.consensus.teku.jwtSecretFile}"
-            else ""
-          )
+          "--ee-jwt-secret-file=${cfg.consensus.teku.jwtSecretFile}"
           (
             if cfg.addons.mev-boost.enable
             then "--builder-endpoint=${cfg.addons.mev-boost.endpoint}"
@@ -617,7 +589,7 @@ in
           )
           "--metrics-enabled=true"
         ]
-        ++ (if cfg.consensus.teku.extraOptions != null then cfg.consensus.teku.extraOptions else [ ]);
+        ++ cfg.consensus.teku.extraOptions;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts
@@ -650,7 +622,7 @@ in
           )
           "--metrics=true"
         ]
-        ++ (if cfg.consensus.nimbus.extraOptions != null then cfg.consensus.nimbus.extraOptions else [ ]);
+        ++ cfg.consensus.nimbus.extraOptions;
         allowedPorts = [ 9000 ];
       in
       createService serviceName serviceType execStart parsedEndpoint allowedPorts

@@ -1,5 +1,4 @@
 { lib
-, cfg
 , ...
 }:
 {
@@ -11,8 +10,8 @@
         description = "The name of the machine.";
       };
       timezone = mkOption {
-        type = types.nullOr types.str;
-        default = null;
+        type = types.str;
+        default = "UTC";
         description = "The time zone used when displaying times and dates.";
         example = "America/New_York";
       };
@@ -40,7 +39,7 @@
           where = mkOption {
             type = types.str;
             description = ''
-              Absolute path of a directory of the mount point. Will be created if it doesn’t exist. (Mandatory)
+              Absolute path of a directory of the mount point. Will be created if it doesn't exist. (Mandatory)
             '';
             example = "/mnt";
           };
@@ -111,10 +110,9 @@
         description = "A list of public SSH keys to be added to the user's authorized keys.";
       };
       privateKeyFile = mkOption {
-        type = types.nullOr types.path;
-        default = null;
+        type = types.path;
+        default = "/mnt/secrets/ssh/id_ed25519";
         description = "Path to the Ed25519 SSH host key. If absent, the key will be generated automatically.";
-        example = "/mnt/secrets/ssh/id_ed25519";
       };
     };
 
@@ -136,14 +134,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
+          type = types.str;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/erigon/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -166,14 +163,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
+          type = types.str;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/geth/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -196,14 +192,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
+          type = types.str;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/nethermind/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -226,14 +221,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
+          type = types.str;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/besu/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -280,14 +274,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.path;
-          default = null;
+          type = types.path;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/lighthouse/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -322,14 +315,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.path;
-          default = null;
+          type = types.path;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/prysm/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -357,14 +349,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.path;
-          default = null;
+          type = types.path;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/teku/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -392,14 +383,13 @@
           description = "Data directory for the blockchain.";
         };
         jwtSecretFile = mkOption {
-          type = types.nullOr types.path;
-          default = null;
+          type = types.path;
+          default = "/mnt/secrets/jwt.hex";
           description = "Path to the token that ensures safe connection between CL and EL.";
-          example = "/mnt/nimbus/jwt.hex";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -418,8 +408,8 @@
           '';
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
@@ -436,8 +426,8 @@
           description = "Listening interface for the MEV-Boost server.";
         };
         extraOptions = mkOption {
-          type = types.nullOr (types.listOf types.str);
-          default = null;
+          type = types.listOf types.str;
+          default = [ ];
           description = "Additional command-line arguments.";
           example = [ "--some-extra-option=value" ];
         };
