@@ -160,9 +160,9 @@ Example: `["--some-extra-option=value"]` |
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `dataDir` | Path | `"/var/mnt/addons/ssv"` | Path to a persistent directory to store the node's database. |
-| `privateKeyFile` | Path | `"/var/mnt/addons/ssv/ssv_operator_key"` | Path to the private SSV operator key. |
-| `privateKeyPasswordFile` | Path | `"/var/mnt/addons/ssv/password"` | Path to the password file of SSV operator key. |
+| `dataDir` | Path | `"/var/mnt/addons/ssv"` | Path to a persistent directory to store the node's database and keys.
+Expected files: ssv_operator_key, ssv_operator_key.pub, and password.
+Keys will be generated automatically if missing. |
 | `extraOptions` | List of Strings | `null` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
