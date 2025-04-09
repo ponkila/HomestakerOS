@@ -225,6 +225,7 @@
         rsync
         vim
         wireguard-tools
+        tree
       ];
 
       services.timesyncd.enable = true;
