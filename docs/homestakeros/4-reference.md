@@ -34,11 +34,10 @@ Execution layer client options (formerly known as Ethereum 1.0 clients).
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Erigon. |
-| `dataDir` | Path | `"/var/mnt/erigon"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/erigon"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:8551"` | HTTP-RPC server listening interface of engine API. |
-| `jwtSecretFile` | String | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/erigon/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | String | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ### Geth
@@ -46,11 +45,10 @@ Example: `["--some-extra-option=value"]` |
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Geth. |
-| `dataDir` | Path | `"/var/mnt/geth"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/geth"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:8551"` | HTTP-RPC server listening interface of engine API. |
-| `jwtSecretFile` | String | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/geth/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | String | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ### Nethermind
@@ -58,11 +56,10 @@ Example: `["--some-extra-option=value"]` |
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Nethermind. |
-| `dataDir` | Path | `"/var/mnt/nethermind"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/nethermind"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:8551"` | HTTP-RPC server listening interface of engine API. |
-| `jwtSecretFile` | String | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/nethermind/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | String | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ### Besu
@@ -70,11 +67,10 @@ Example: `["--some-extra-option=value"]` |
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Besu. |
-| `dataDir` | Path | `"/var/mnt/besu"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/besu"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:8551"` | HTTP-RPC server listening interface of engine API. |
-| `jwtSecretFile` | String | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/besu/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | String | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ## Consensus Clients
@@ -88,12 +84,11 @@ Consensus layer client options (formerly known as Ethereum 2.0 clients).
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Lighthouse. |
-| `dataDir` | Path | `"/var/mnt/lighthouse"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/lighthouse"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:5052"` | HTTP server listening interface. |
 | `execEndpoint` | String | `"http://127.0.0.1:8551"` | Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection. |
-| `jwtSecretFile` | Path | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/lighthouse/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | Path | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 | `slasher.enable` | Boolean | `false` | Whether to enable slasher. |
 | `slasher.historyLength` | Integer | `4096` | Number of epochs to store. |
@@ -104,12 +99,11 @@ Example: `["--some-extra-option=value"]` |
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Prysm. |
-| `dataDir` | Path | `"/var/mnt/prysm"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/prysm"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:3500"` | JSON-HTTP server listening interface. |
 | `execEndpoint` | String | `"http://127.0.0.1:8551"` | Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection. |
-| `jwtSecretFile` | Path | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/prysm/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | Path | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 | `slasher.enable` | Boolean | `false` | Whether to enable historical slasher. |
 
@@ -118,12 +112,11 @@ Example: `["--some-extra-option=value"]` |
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Nimbus. |
-| `dataDir` | Path | `"/var/mnt/nimbus"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/nimbus"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:5052"` | JSON-HTTP server listening interface. |
 | `execEndpoint` | String | `"http://127.0.0.1:8551"` | Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection. |
-| `jwtSecretFile` | Path | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/nimbus/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | Path | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ### Teku
@@ -131,12 +124,11 @@ Example: `["--some-extra-option=value"]` |
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable Teku. |
-| `dataDir` | Path | `"/var/mnt/teku"` | Data directory for the blockchain. |
+| `dataDir` | Path | `"/mnt/teku"` | Data directory for the blockchain. |
 | `endpoint` | String | `"http://127.0.0.1:5051"` | JSON-HTTP server listening interface. |
 | `execEndpoint` | String | `"http://127.0.0.1:8551"` | Server endpoint for an execution layer JWT-authenticated HTTP JSON-RPC connection. |
-| `jwtSecretFile` | Path | `null` | Path to the token that ensures safe connection between CL and EL.
-Example: `"/var/mnt/teku/jwt.hex"` |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `jwtSecretFile` | Path | `"/mnt/secrets/jwt.hex"` | Path to the token that ensures safe connection between CL and EL. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ## Add-ons
@@ -151,7 +143,7 @@ Additional services and tools to enhance your staking setup.
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable MEV-Boost. |
 | `endpoint` | String | `"http://127.0.0.1:18550"` | Listening interface for the MEV-Boost server. |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ### SSV-Node
@@ -160,10 +152,10 @@ Example: `["--some-extra-option=value"]` |
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `dataDir` | Path | `"/var/mnt/addons/ssv"` | Path to a persistent directory to store the node's database. |
-| `privateKeyFile` | Path | `"/var/mnt/addons/ssv/ssv_operator_key"` | Path to the private SSV operator key. |
-| `privateKeyPasswordFile` | Path | `"/var/mnt/addons/ssv/password"` | Path to the password file of SSV operator key. |
-| `extraOptions` | List of Strings | `null` | Additional command-line arguments.
+| `dataDir` | Path | `"/mnt/addons/ssv"` | Path to a persistent directory to store the node's database and keys.
+Expected files: ssv_operator_key, ssv_operator_key.pub, and password.
+Keys will be generated automatically if missing. |
+| `extraOptions` | List of Strings | `[]` | Additional command-line arguments.
 Example: `["--some-extra-option=value"]` |
 
 ## Localization
@@ -174,7 +166,7 @@ Settings related to system localization.
 |--------|------|---------|-------------|
 | `hostname` | String | `"homestaker"` | The name of the machine.
 Must contain only alphanumeric characters, hyphens, or underscores, with a length between 1-63 characters. |
-| `timezone` | String | `null` | The time zone used when displaying times and dates.
+| `timezone` | String | `"UTC"` | The time zone used when displaying times and dates.
 Example: `"America/New_York"` |
 
 ## Mounts
@@ -195,9 +187,9 @@ Each mount entry has the following options:
 | `type` | String | `"auto"` | File system type.
 Example: `"btrfs"` |
 | `wantedBy` | List of Strings | `["multi-user.target"]` | Units that want (i.e. depend on) this unit. |
-| `what` | String | `null` (Required) | Absolute path of device node, file or other resource.
+| `what` | String | (Required) | Absolute path of device node, file or other resource.
 Example: `"/dev/disk/by-label/homestaker"` |
-| `where` | String | `null` (Required) | Absolute path of a directory of the mount point.
+| `where` | String | (Required) | Absolute path of a directory of the mount point.
 Will be created if it doesn't exist.
 Example: `"/mnt/erigon"` |
 
@@ -208,9 +200,8 @@ SSH server configuration for secure remote access to your node.
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `authorizedKeys` | List of Strings | `[]` | A list of public SSH keys to be added to the user's authorized keys. |
-| `privateKeyFile` | Path | `null` | Path to the Ed25519 SSH host key.
-If absent, the key will be generated automatically.
-Example: `"/var/mnt/secrets/ssh/id_ed25519"` |
+| `privateKeyFile` | Path | `"/mnt/secrets/ssh/id_ed25519"` | Path to the Ed25519 SSH host key.
+If absent, the key will be generated automatically. |
 
 ## VPN
 
@@ -221,4 +212,4 @@ Virtual Private Network configurations for secure communications.
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `enable` | Boolean | `false` | Whether to enable WireGuard. |
-| `configFile` | Path | `"/var/mnt/secrets/wg0.conf"` | A file path for the wg-quick configuration. |
+| `configFile` | Path | `"/mnt/secrets/wg0.conf"` | A file path for the wg-quick configuration. |

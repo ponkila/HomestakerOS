@@ -221,8 +221,11 @@
       environment.systemPackages = with pkgs; [
         btrfs-progs
         kexec-tools
+        openssl
         rsync
         vim
+        wireguard-tools
+        tree
       ];
 
       services.timesyncd.enable = true;
