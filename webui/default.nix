@@ -13,7 +13,7 @@ buildNpmPackage {
 
   # The code sources for the package
   src = ./.;
-  npmDepsHash = "sha256-jFIlfKrIGJolkjmYoleQ1nbmOgG246uMjbehAsZUf+c=";
+  npmDepsHash = "sha256-A1I1hp29O9tY9RFZWlbpp+cDK4tMxN9LNvbSv9zAQ28=";
 
   npmBuild = "npm run build";
 
