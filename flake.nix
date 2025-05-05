@@ -14,6 +14,7 @@
   };
 
   inputs = {
+    besu-hotfix.url = "github:nix-community/ethereum.nix?ref=pull/607/head";
     devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -44,7 +45,7 @@
             "json2nix" = pkgs.callPackage ./packages/json2nix { };
             "update-json" = pkgs.callPackage ./packages/update-json { };
             # Ethereum.nix
-            "besu" = inputs.ethereum-nix.packages.${system}.besu;
+            "besu" = inputs.besu-hotfix.packages.${system}.besu;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
             "lighthouse" = inputs.nixpkgs.legacyPackages.${system}.lighthouse;
