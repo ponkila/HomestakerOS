@@ -196,6 +196,10 @@
       };
 
       boot = {
+        kernelModules = [
+          "usbip_core"
+          "usbip_host"
+        ];
         kernelParams = [
           "boot.shell_on_fail"
 
@@ -220,12 +224,14 @@
 
       environment.systemPackages = with pkgs; [
         btrfs-progs
+        efibootmgr
         kexec-tools
+        linuxPackages.usbip
         openssl
         rsync
+        tree
         vim
         wireguard-tools
-        tree
       ];
 
       services.timesyncd.enable = true;
