@@ -15,6 +15,8 @@
 
   inputs = {
     besu-hotfix.url = "github:nix-community/ethereum.nix?ref=pull/607/head";
+    lighthouse-hotfix.url = "github:/NixOS/nixpkgs?ref=pull/402444/head";
+
     devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -48,7 +50,7 @@
             "besu" = inputs.besu-hotfix.packages.${system}.besu;
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
-            "lighthouse" = inputs.nixpkgs.legacyPackages.${system}.lighthouse;
+            "lighthouse" = inputs.lighthouse-hotfix.legacyPackages.${system}.lighthouse;
             "mev-boost" = inputs.nixpkgs-unstable.legacyPackages.${system}.mev-boost;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
             "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;

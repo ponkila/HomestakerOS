@@ -563,6 +563,22 @@
         "type": "github"
       }
     },
+    "lighthouse-hotfix": {
+      "locked": {
+        "lastModified": 1745820613,
+        "narHash": "sha256-5erx1hQ8OkkDJnP0JoKpYWu+1h4+oweoINZSxrxla0k=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2d2e291fd88adf489d832dab978de67a9f7fd107",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "pull/402444/head",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nix": {
       "inputs": {
         "flake-compat": "flake-compat_2",
@@ -1076,6 +1092,7 @@
         "devenv": "devenv",
         "ethereum-nix": "ethereum-nix",
         "flake-parts": "flake-parts_4",
+        "lighthouse-hotfix": "lighthouse-hotfix",
         "nixpkgs": "nixpkgs_6",
         "nixpkgs-unstable": "nixpkgs-unstable_3",
         "ponkila": "ponkila",
