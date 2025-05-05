@@ -17,6 +17,7 @@
     devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
@@ -47,7 +48,7 @@
             "erigon" = inputs.ethereum-nix.packages.${system}.erigon;
             "geth" = inputs.ethereum-nix.packages.${system}.geth;
             "lighthouse" = inputs.nixpkgs.legacyPackages.${system}.lighthouse;
-            "mev-boost" = inputs.ethereum-nix.packages.${system}.mev-boost;
+            "mev-boost" = inputs.nixpkgs-unstable.legacyPackages.${system}.mev-boost;
             "nethermind" = inputs.ethereum-nix.packages.${system}.nethermind;
             "nimbus" = inputs.ethereum-nix.packages.${system}.nimbus;
             "prysm" = inputs.ethereum-nix.packages.${system}.prysm;
