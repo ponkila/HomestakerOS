@@ -88,16 +88,32 @@
       };
 
       # Create the initrd
-      system.build.netbootRamdisk = pkgs.makeInitrdNG {
-        compressor = "zstd";
-        prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
-        contents = [
-          {
-            source = config.system.build.squashfsStore;
-            target = "/nix-store.squashfs";
-          }
-        ];
-      };
+      system.build.netbootRamdisk =
+        let
+          baseRamdisk = pkgs.makeInitrdNG {
+            compressor = "zstd";
+            prepend = [ "${config.system.build.initialRamdisk}/initrd" ];
+            contents = [
+              {
+                source = config.system.build.squashfsStore;
+                target = "/nix-store.squashfs";
+              }
+            ];
+          };
+        in
+        pkgs.runCommand "initrd" { } ''
+          cp -r ${baseRamdisk} $out
+
+          if [ -f $out/initrd ]; then
+            min_size=102400 # KB
+            initrd_size=$(du -L $out/initrd | cut -f1)
+            if [ "$initrd_size" -lt "$min_size" ]; then
+              echo "error: size $initrd_size KB < $min_size KB, likely deformed due to >4GB contents"
+              echo "hint: use 'squashfs' format for large images or reduce the size"
+              exit 1
+            fi
+          fi
+        '';
 
       system.build.netbootIpxeScript = pkgs.writeText "netboot.ipxe" ''
         #!ipxe
