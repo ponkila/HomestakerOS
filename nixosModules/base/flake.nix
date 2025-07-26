@@ -217,8 +217,15 @@
           "tsx_async_abort=off"
         ];
         # Increase tmpfs (default: "50%")
-        tmp.tmpfsSize = "80%";
+        tmp = {
+          useTmpfs = true;
+          tmpfsSize = "80%";
+          cleanOnBoot = true;
+        };
       };
+
+      # Avoid locking up in low memory situations
+      services.earlyoom.enable = true;
 
       users.mutableUsers = false;
 
