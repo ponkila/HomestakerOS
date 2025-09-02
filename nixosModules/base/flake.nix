@@ -236,6 +236,9 @@
         tmp.tmpfsSize = "80%";
       };
 
+      # Avoid locking up in low memory situations
+      services.earlyoom.enable = true;
+
       users.mutableUsers = false;
 
       environment.systemPackages = with pkgs; [
