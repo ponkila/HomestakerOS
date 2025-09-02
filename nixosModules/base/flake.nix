@@ -217,11 +217,7 @@
           "tsx_async_abort=off"
         ];
         # Increase tmpfs (default: "50%")
-        tmp = {
-          useTmpfs = true;
-          tmpfsSize = "80%";
-          cleanOnBoot = true;
-        };
+        tmp.tmpfsSize = "80%";
       };
 
       # Avoid locking up in low memory situations
