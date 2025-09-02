@@ -1,21 +1,24 @@
 # 🏠📈 HomestakerOS
 
-HomestakerOS is a web UI that creates a custom Linux OS for Ethereum homestaking.
-It aims to democratize homestaking by simplifying the process of creating and maintaining servers in home environments.
+HomestakerOS is a declaratively managed Linux distribution for [Ethereum homestaking](https://ethereum.org/en/staking/solo/).
+Nodes can be managed either through a web UI or via text files.
+Compared to Docker-based approaches which build on Ubuntu and the apt package manager, HomestakerOS builds on [NixOS](https://nixos.org/) and the Nix package manager.
+And by _building_, we really mean building: both the web UI and the text files are actually instructions how to derive a self-contained Linux disk images (akin to ISO files) from zero.
+By self-contained we mean that once the image is booted, there are no further commands to run for the node become operational.
+A unique aspect of HomestakerOS is that you never "install" HomestakerOS, but instead you run it as an ephemeral [RAM disk](https://en.wikipedia.org/wiki/Initial_ramdisk) (a.k.a "live CD").
 
-Check out the live demo at [https://homestakeros.com/ponkila/homestaking-infra](https://homestakeros.com/ponkila/homestaking-infra)
+This repository contains open-source software tooling to create such images.
+The main contribution is the web UI at [HomestakerOS.com](https://homestakeros.com) and its NixOS configuration page, which allows you to configure and build homestaking nodes using a web UI.
+The main artifacts returned by the build process endorse [kexec](https://en.wikipedia.org/wiki/Kexec) as the boot approach: given an existing Linux installation, executing the `kexec-boot` file jumps the existing Linux into HomestakerOS.
+The web UI also returns you [a pre-configured NixOS system template](https://github.com/ponkila/HomestakerOS-template).
+Compared to Docker-based alternatives, this bootstraps you with more control over your node: you can manage the whole Linux distribution rather than only the Ethereum client software.
 
-## 📋 Overview
+The main practical benefit of the approach endorsed by HomestakerOS is improved system reliability.
+Tragicomically and anecdotally, Linux is easier to manage and troubleshoot when you delete it (so-called ["erase your darlings"](https://grahamc.com/blog/erase-your-darlings/) paradigm) on each boot.
+This does not mean deleting everything -- blockchain state and other so-called "persistent" files are saved in an opt-in manner via disk mounts.
 
-The wizard produces Linux disk images based on NixOS.
-NixOS allows configurations to be public, deterministic, and self-upgrading.
-You can configure and build your host with a simple form and push of a button, without requiring extensive knowledge of the Nix language.
-The resulting images are deployed by loading the entire operating system into RAM.
-This makes it possible to deploy the OS in various ways, such as netbooting, or even booting by double-clicking a kernel execution script.
-If you want to return to your previous distribution, just restart your computer!
 
-It also offers a dashboard where you can inspect and manage the entire infrastructure from a single point.
-Information is presented in an intuitive way, with automatically generated graphs and diagrams, representing the entire cluster of machines and real-time data about the services they manage.
+To get started, there exists a live demo which uses a publicly shared multi-node cluster: [https://homestakeros.com/ponkila/homestaking-infra](https://homestakeros.com/ponkila/homestaking-infra).
 
 ## 🛠️ Usage
 
