@@ -6,7 +6,7 @@
     ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
   };
 
-  outputs = { ... }@inputs:
+  outputs = inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = inputs.nixpkgs.lib.systems.flakeExposed;
       flake = {
@@ -42,7 +42,7 @@
                 })
                 hostnames)
             );
-        schema = inputs.homestakeros.schema;
+        inherit (inputs.homestakeros) schema;
       };
     };
 }
