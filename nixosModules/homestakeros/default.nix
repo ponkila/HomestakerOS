@@ -495,7 +495,6 @@ in
           "--http-allow-origin \"*\""
           "--execution-endpoint ${cfg.consensus.lighthouse.execEndpoint}"
           "--execution-jwt ${cfg.consensus.lighthouse.jwtSecretFile}"
-          "--prune-payloads false"
           (
             if cfg.consensus.lighthouse.slasher.enable
             then
