@@ -255,7 +255,7 @@
       services.resolved.dnsovertls = "opportunistic";
 
       # Reboots hanged system
-      systemd.watchdogd.enable = true;
+      services.watchdogd.enable = true;
 
       # Rip out packages
       environment.defaultPackages = lib.mkForce [ ];
