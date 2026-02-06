@@ -10,7 +10,6 @@
 
   outputs =
     inputs @ { flake-parts
-    , juuso
     , nixpkgs
     , nixvim
     , ...
