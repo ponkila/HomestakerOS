@@ -14,12 +14,12 @@
   };
 
   inputs = {
-    devenv.url = "github:cachix/devenv/v1.9";
+    devenv.url = "github:cachix/devenv";
     ethereum-nix.url = "github:nix-community/ethereum.nix";
     flake-parts.url = "github:hercules-ci/flake-parts";
     git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
     git-hooks-nix.url = "github:cachix/git-hooks.nix";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     ponkila.url = "github:ponkila/HomestakerOS?dir=nixosModules/base";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
@@ -83,7 +83,7 @@
       };
 
       # Development shell -> 'nix develop' or 'direnv allow'
-      devenv.shells.default = {
+      devenv.shells.dev = {
         packages = with pkgs; [
           cargo-tarpaulin
           jq
@@ -131,12 +131,11 @@
         introspect = import ./introspect.nix { inherit (self.inputs.nixpkgs) lib; };
 
         # Function to get options from module(s)
-        getOpts = modules:
-          builtins.removeAttrs
-            (inputs.nixpkgs.lib.evalModules {
-              inherit modules;
-              specialArgs = { inherit (inputs) nixpkgs; };
-            }).options [ "_module" ];
+        getOpts = modules: removeAttrs
+          (inputs.nixpkgs.lib.evalModules {
+            inherit modules;
+            specialArgs = { inherit (inputs) nixpkgs; };
+          }).options [ "_module" ];
       in
       {
         # NixOS configuration entrypoints
@@ -191,7 +190,7 @@
                 '';
                 wantedBy = [ "multi-user.target" ];
               };
-              system.stateVersion = "24.11";
+              system.stateVersion = "25.11";
             }
           ];
         };

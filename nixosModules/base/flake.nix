@@ -2,7 +2,7 @@
   description = "Opinionated NixOS base config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
   };
 
   outputs = _: {
@@ -212,10 +212,6 @@
       };
 
       boot = {
-        kernelModules = [
-          "usbip_core"
-          "usbip_host"
-        ];
         kernelParams = [
           "boot.shell_on_fail"
 
@@ -245,7 +241,6 @@
         btrfs-progs
         efibootmgr
         kexec-tools
-        linuxPackages.usbip
         openssl
         rsync
         tree
@@ -260,8 +255,7 @@
       services.resolved.dnsovertls = "opportunistic";
 
       # Reboots hanged system
-      systemd.watchdog.device = "/dev/watchdog";
-      systemd.watchdog.runtimeTime = "30s";
+      services.watchdogd.enable = true;
 
       # Rip out packages
       environment.defaultPackages = lib.mkForce [ ];
