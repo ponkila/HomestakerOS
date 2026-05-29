@@ -2,7 +2,7 @@
   description = "Opinionated NixOS base config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
   };
 
   outputs = _: {
@@ -32,7 +32,7 @@
       boot.loader.grub.enable = false;
 
       # These kmodules are implicit requirements of netboot
-      boot.initrd.availableKernelModules = [ "squashfs" "overlay" "btrfs" ];
+      boot.initrd.availableKernelModules = [ "squashfs" "overlay" ];
       boot.initrd.kernelModules = [ "loop" "overlay" ];
 
       fileSystems."/" = lib.mkImageMediaOverride {
@@ -56,28 +56,41 @@
       };
 
       fileSystems."/nix/store" = lib.mkImageMediaOverride {
-        fsType = "overlay";
-        device = "overlay";
-        options = [
-          "lowerdir=/nix/.ro-store"
-          "upperdir=/nix/.rw-store/store"
-          "workdir=/nix/.rw-store/work"
-        ];
-
-        depends = [
-          "/nix/.ro-store"
-          "/nix/.rw-store/store"
-          "/nix/.rw-store/work"
-        ];
+        overlay = {
+          lowerdir = [ "/nix/.ro-store" ];
+          upperdir = "/nix/.rw-store/store";
+          workdir = "/nix/.rw-store/work";
+        };
+        neededForBoot = true;
       };
 
-      boot.postBootCommands = ''
-        # After booting, register the contents of the Nix store in the Nix database in the tmpfs.
-        ${config.nix.package}/bin/nix-store --load-db < /nix/store/nix-path-registration
-        # nixos-rebuild also requires a "system" profile and an /etc/NIXOS tag.
-        touch /etc/NIXOS
-        ${config.nix.package}/bin/nix-env -p /nix/var/nix/profiles/system --set /run/current-system
-      '';
+      systemd.services.register-nix-paths = {
+        description = "Register Nix Store Paths";
+        unitConfig.DefaultDependencies = false;
+        wantedBy = [ "sysinit.target" ];
+        before = [
+          "sysinit.target"
+          "shutdown.target"
+          "nix-daemon.socket"
+          "nix-daemon.service"
+        ];
+        after = [ "local-fs.target" ];
+        conflicts = [ "shutdown.target" ];
+        restartIfChanged = false;
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          # After booting, register the contents of the Nix store
+          # in the Nix database in the tmpfs.
+          ${lib.getExe' config.nix.package "nix-store"} --load-db < /nix/store/nix-path-registration
+
+          # nixos-rebuild also requires a "system" profile and an /etc/NIXOS tag.
+          touch /etc/NIXOS
+          ${lib.getExe' config.nix.package "nix-env"} -p /nix/var/nix/profiles/system --set /run/current-system
+        '';
+      };
 
       # Create the squashfs image that contains the Nix store.
       system.build.squashfsStore = pkgs.callPackage "${toString modulesPath}/../lib/make-squashfs.nix" {
