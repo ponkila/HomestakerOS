@@ -512,7 +512,7 @@ in
             else ""
           )
           "--metrics"
-          "--checkpoint-sync-url \"https://beaconstate.info\""
+          "--checkpoint-sync-url \"https://mainnet.checkpoint.sigp.io\""
         ]
         ++ cfg.consensus.lighthouse.extraOptions;
         allowedPorts = [ 9000 9001 ];
